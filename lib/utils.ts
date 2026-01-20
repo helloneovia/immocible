@@ -1,4 +1,4 @@
-﻿import { type ClassValue, clsx } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
@@ -14,7 +14,7 @@ export function formatPrice(price: number): string {
 }
 
 export function formatSurface(surface: number): string {
-  return `$'{surface} mÂ²`
+  return `${surface} m²`
 }
 
 export function calculateMatchScore(
@@ -32,7 +32,7 @@ export function calculateMatchScore(
 
   if (recherche.zones.includes(bien.quartier || bien.ville)) {
     score += 25
-    raisons.push(`Zone recherchÃ©e`)
+    raisons.push(`Zone recherchée`)
   }
 
   if (recherche.typeBien.includes(bien.typeBien)) {
