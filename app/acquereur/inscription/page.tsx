@@ -5,90 +5,122 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Home, ArrowRight, Sparkles, CheckCircle2, Shield } from 'lucide-react'
 
 export default function InscriptionAcquereur() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-8">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">I</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              IMMOCIBLE
-            </span>
-          </Link>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      </div>
 
-        <Card className="shadow-xl border-2">
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Créer mon compte acquéreur</CardTitle>
-            <CardDescription>
-              Commencez votre recherche immobilière en quelques minutes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  required
-                  className="h-11"
-                />
+      <div className="relative min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="flex justify-center mb-8">
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <Home className="h-7 w-7 text-white" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  className="h-11"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Minimum 8 caractères
-                </p>
+              <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                IMMOCIBLE
+              </span>
+            </Link>
+          </div>
+
+          <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-xl">
+            <CardHeader className="space-y-1 text-center pb-6">
+              <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center mb-4 shadow-lg">
+                <Sparkles className="h-8 w-8 text-white" />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  className="h-11"
-                />
-              </div>
-              <Button type="submit" className="w-full h-11 text-base" size="lg">
-                Créer mon compte
-              </Button>
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+              <CardTitle className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Créer mon compte acquéreur
+              </CardTitle>
+              <CardDescription className="text-base pt-2">
+                Commencez votre recherche immobilière en quelques minutes
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="votre@email.com"
+                    required
+                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                  />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Ou</span>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold">Mot de passe</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                  />
+                  <p className="text-xs text-muted-foreground flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Minimum 8 caractères
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-semibold">Confirmer le mot de passe</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    required
+                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group"
+                  size="lg"
+                >
+                  Créer mon compte
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <div className="relative py-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-muted-foreground">Ou</span>
+                  </div>
+                </div>
+                <div className="text-center text-sm text-muted-foreground">
+                  Vous avez déjà un compte ?{' '}
+                  <Link href="/acquereur/dashboard" className="text-blue-600 hover:text-blue-700 underline font-semibold">
+                    Se connecter
+                  </Link>
+                </div>
+                <div className="text-center text-sm pt-2">
+                  <Link href="/agence/inscription" className="text-muted-foreground hover:text-blue-600 transition-colors font-medium">
+                    Vous êtes une agence ? Inscrivez-vous ici →
+                  </Link>
+                </div>
+              </form>
+              
+              {/* Trust indicators */}
+              <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-green-500" />
+                  <span>Sécurisé</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                  <span>100% Gratuit</span>
                 </div>
               </div>
-              <div className="text-center text-sm text-muted-foreground">
-                Vous avez déjà un compte ?{' '}
-                <Link href="/acquereur/dashboard" className="text-primary hover:underline font-medium">
-                  Se connecter
-                </Link>
-              </div>
-              <div className="text-center text-sm">
-                <Link href="/agence/inscription" className="text-muted-foreground hover:text-primary transition-colors">
-                  Vous êtes une agence ? Inscrivez-vous ici →
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
