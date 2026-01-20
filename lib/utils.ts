@@ -14,7 +14,7 @@ export function formatPrice(price: number): string {
 }
 
 export function formatSurface(surface: number): string {
-  return ${surface} mÂ²
+  return \ mÂ²
 }
 
 export function calculateMatchScore(
