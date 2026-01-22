@@ -73,6 +73,8 @@ export default function InscriptionAgence() {
         if (!profileCreated) {
           const { data: result, error: createError } = await supabase
             .rpc('create_user_profile', {
+              p_user_id: authData.user.id,
+              p_email: email,
               p_role: 'agence',
               p_nom_agence: nomAgence
             })
