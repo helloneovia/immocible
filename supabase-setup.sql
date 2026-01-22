@@ -34,13 +34,36 @@ CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
 
--- 6. Politique pour permettre l'insertion lors de l'inscription
--- IMPORTANT: Cette politique permet à un utilisateur authentifié de créer son propre profil
+-- 6. Créer une fonction pour créer automatiquement le profil
+-- Cette fonction sera appelée automatiquement lors de la création d'un utilisateur
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, role)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'acquereur')
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 7. Créer un trigger pour appeler cette fonction lors de la création d'un utilisateur
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- 8. Politique pour permettre l'insertion lors de l'inscription
+-- Note: Avec le trigger ci-dessus, cette politique est moins critique mais reste utile
 CREATE POLICY "Users can insert own profile"
   ON profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
--- 7. Fonction pour mettre à jour updated_at automatiquement
+-- 9. Fonction pour mettre à jour updated_at automatiquement
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -49,7 +72,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- 8. Trigger pour mettre à jour updated_at
+-- 10. Trigger pour mettre à jour updated_at
 DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at
   BEFORE UPDATE ON profiles

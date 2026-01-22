@@ -50,29 +50,41 @@ export default function InscriptionAcquereur() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Créer le profil dans la table profiles (upsert pour éviter les doublons)
-        const { error: profileError } = await supabase
+        // Le profil est créé automatiquement par le trigger PostgreSQL
+        // Attendre un peu pour que le trigger s'exécute
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Vérifier que le profil a été créé (optionnel, pour debug)
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
-          .upsert({
-            id: authData.user.id,
-            email: email,
-            role: 'acquereur',
-          }, {
-            onConflict: 'id'
-          })
+          .select('id, role')
+          .eq('id', authData.user.id)
+          .single()
 
-        if (profileError) {
-          console.error('Erreur lors de la création du profil:', profileError)
-          // Message d'erreur plus détaillé
-          if (profileError.code === '42P01') {
-            setError('La table profiles n\'existe pas. Veuillez exécuter le script SQL dans Supabase (voir SUPABASE_SETUP.md)')
-          } else if (profileError.code === '42501') {
-            setError('Erreur de permissions. Vérifiez les politiques RLS dans Supabase.')
-          } else {
-            setError(`Erreur lors de la création du profil: ${profileError.message}. Vérifiez que la table profiles existe dans Supabase.`)
+        // Si le profil n'existe toujours pas, essayer de le créer manuellement
+        if (profileError || !profile) {
+          const { error: createError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: authData.user.id,
+              email: email,
+              role: 'acquereur',
+            }, {
+              onConflict: 'id'
+            })
+
+          if (createError) {
+            console.error('Erreur lors de la création du profil:', createError)
+            if (createError.code === '42P01') {
+              setError('La table profiles n\'existe pas. Veuillez exécuter le script SQL dans Supabase (voir SUPABASE_SETUP.md)')
+            } else if (createError.code === '42501') {
+              setError('Erreur de permissions. Exécutez le script supabase-fix-rls.sql dans Supabase pour corriger les politiques RLS.')
+            } else {
+              setError(`Erreur lors de la création du profil: ${createError.message}`)
+            }
+            setLoading(false)
+            return
           }
-          setLoading(false)
-          return
         }
 
         // Rediriger vers le dashboard
