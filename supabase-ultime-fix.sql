@@ -62,11 +62,14 @@ EXCEPTION
 END;
 $$;
 
--- 5. Créer le trigger
+-- 5. Créer le trigger (activé par défaut)
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
+
+-- 5b. S'assurer que le trigger est activé
+ALTER TABLE auth.users ENABLE TRIGGER on_auth_user_created;
 
 -- 6. Créer les politiques RLS (version permissive pour l'insertion)
 -- SELECT : voir son propre profil
