@@ -36,7 +36,7 @@ export default function HomePage() {
               </span>
             </Link>
             <div className="flex items-center space-x-4">
-              <Link href="/acquereur/inscription">
+              <Link href="/acquereur/connexion">
                 <Button variant="ghost" className="font-medium">Connexion</Button>
               </Link>
               <Link href="/acquereur/inscription">

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 import { 
   Home, 
   Settings, 
@@ -19,7 +21,9 @@ import {
   Filter
 } from 'lucide-react'
 
-export default function DashboardAcquereur() {
+function DashboardContent() {
+  const { signOut } = useAuth()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
@@ -39,7 +43,7 @@ export default function DashboardAcquereur() {
                 <Settings className="h-5 w-5 mr-2" />
                 Paramètres
               </Button>
-              <Button variant="outline" className="font-medium">
+              <Button variant="outline" className="font-medium" onClick={signOut}>
                 <LogOut className="h-5 w-5 mr-2" />
                 Déconnexion
               </Button>
@@ -168,5 +172,13 @@ export default function DashboardAcquereur() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DashboardAcquereur() {
+  return (
+    <ProtectedRoute requiredRole="acquereur" redirectTo="/acquereur/connexion">
+      <DashboardContent />
+    </ProtectedRoute>
   )
 }

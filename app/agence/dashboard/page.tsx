@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
 import { 
   Home, 
   Settings, 
@@ -21,7 +23,9 @@ import {
   Star
 } from 'lucide-react'
 
-export default function DashboardAgence() {
+function DashboardContent() {
+  const { signOut } = useAuth()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100">
       {/* Navigation */}
@@ -41,7 +45,7 @@ export default function DashboardAgence() {
                 <Settings className="h-5 w-5 mr-2" />
                 Paramètres
               </Button>
-              <Button variant="outline" className="font-medium">
+              <Button variant="outline" className="font-medium" onClick={signOut}>
                 <LogOut className="h-5 w-5 mr-2" />
                 Déconnexion
               </Button>
@@ -166,5 +170,13 @@ export default function DashboardAgence() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DashboardAgence() {
+  return (
+    <ProtectedRoute requiredRole="agence" redirectTo="/agence/connexion">
+      <DashboardContent />
+    </ProtectedRoute>
   )
 }
