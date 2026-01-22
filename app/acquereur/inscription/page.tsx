@@ -80,7 +80,12 @@ export default function InscriptionAcquereur() {
         router.refresh()
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue lors de l\'inscription')
+      // Gestion spécifique de l'erreur de limite d'email
+      if (err.message?.includes('rate limit') || err.message?.includes('email rate limit')) {
+        setError('Limite d\'envoi d\'emails atteinte. Veuillez attendre quelques minutes avant de réessayer, ou désactivez la confirmation d\'email dans les paramètres Supabase (Authentication > Settings > Email Auth > Confirm email).')
+      } else {
+        setError(err.message || 'Une erreur est survenue lors de l\'inscription')
+      }
     } finally {
       setLoading(false)
     }
