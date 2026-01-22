@@ -77,9 +77,25 @@ export default function InscriptionAgence() {
               p_nom_agence: nomAgence
             })
 
-          if (createError || !result?.success) {
-            console.error('Erreur lors de la création du profil:', createError || result)
-            // Fallback : essayer l'insertion directe
+          // Si erreur RPC, vérifier si le profil existe quand même (la fonction peut avoir réussi malgré l'erreur)
+          if (createError) {
+            console.error('Erreur RPC create_user_profile:', {
+              error: createError,
+              result: result,
+              errorCode: createError?.code,
+              errorMessage: createError?.message
+            })
+          }
+
+          // Vérifier si le profil a été créé (même si la fonction a retourné une erreur)
+          const { data: profileCheck } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', authData.user.id)
+            .single()
+
+          if (!profileCheck) {
+            // Le profil n'existe toujours pas, essayer l'insertion directe en dernier recours
             const { error: insertError } = await supabase
               .from('profiles')
               .upsert({
@@ -96,7 +112,7 @@ export default function InscriptionAgence() {
               if (insertError.code === '42P01') {
                 setError('La table profiles n\'existe pas. Exécutez le script supabase-solution-simple.sql dans Supabase SQL Editor.')
               } else if (insertError.code === '42501') {
-                setError('Erreur de permissions. Exécutez le script supabase-solution-simple.sql dans Supabase SQL Editor. Si le problème persiste, exécutez aussi supabase-diagnostic.sql pour diagnostiquer.')
+                setError('Erreur de permissions RLS. La fonction create_user_profile() n\'a pas fonctionné. Vérifiez que vous avez exécuté supabase-solution-simple.sql dans Supabase SQL Editor.')
               } else {
                 setError(`Erreur: ${insertError.message}. Code: ${insertError.code}. Exécutez supabase-solution-simple.sql dans Supabase.`)
               }
