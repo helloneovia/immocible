@@ -77,7 +77,14 @@ export default function InscriptionAcquereur() {
             })
 
           if (createError || !result?.success) {
-            console.error('Erreur lors de la création du profil:', createError || result)
+            console.error('Erreur RPC create_user_profile:', {
+              error: createError,
+              result: result,
+              errorCode: createError?.code,
+              errorMessage: createError?.message,
+              errorDetails: createError?.details,
+              errorHint: createError?.hint
+            })
             // Fallback : essayer l'insertion directe
             const { error: insertError } = await supabase
               .from('profiles')
