@@ -20,14 +20,15 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- 3. NETTOYER : Supprimer toutes les anciennes politiques et fonctions
+-- IMPORTANT : Supprimer d'abord le trigger, puis la fonction (ordre inverse des dépendances)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.create_user_profile() CASCADE;
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON public.profiles;
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
-DROP FUNCTION IF EXISTS public.create_user_profile();
-DROP FUNCTION IF EXISTS public.handle_new_user();
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 
 -- 4. Créer une fonction que l'utilisateur peut appeler pour créer son profil
 -- Cette fonction utilise SECURITY DEFINER pour bypass RLS
