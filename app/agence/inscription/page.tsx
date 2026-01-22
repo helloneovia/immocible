@@ -92,12 +92,13 @@ export default function InscriptionAgence() {
               })
 
             if (insertError) {
+              console.error('Erreur détaillée:', insertError)
               if (insertError.code === '42P01') {
-                setError('La table profiles n\'existe pas. Exécutez le script supabase-solution-finale.sql dans Supabase SQL Editor.')
+                setError('La table profiles n\'existe pas. Exécutez le script supabase-solution-simple.sql dans Supabase SQL Editor.')
               } else if (insertError.code === '42501') {
-                setError('Erreur de permissions. Exécutez le script supabase-solution-finale.sql dans Supabase SQL Editor.')
+                setError('Erreur de permissions. Exécutez le script supabase-solution-simple.sql dans Supabase SQL Editor. Si le problème persiste, exécutez aussi supabase-diagnostic.sql pour diagnostiquer.')
               } else {
-                setError(`Erreur: ${insertError.message}. Exécutez supabase-solution-finale.sql dans Supabase.`)
+                setError(`Erreur: ${insertError.message}. Code: ${insertError.code}. Exécutez supabase-solution-simple.sql dans Supabase.`)
               }
               setLoading(false)
               return
