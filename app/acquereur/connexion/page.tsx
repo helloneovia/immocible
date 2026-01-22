@@ -33,18 +33,64 @@ export default function ConnexionAcquereur() {
 
       if (data.user) {
         // Vérifier le rôle de l'utilisateur
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', data.user.id)
           .single()
 
+        // Si le profil n'existe pas, le créer automatiquement
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profil n'existe pas, le créer
+          const { error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email || email,
+              role: 'acquereur',
+            })
+
+          if (createError) {
+            console.error('Erreur lors de la création du profil:', createError)
+            setError('Erreur lors de la création du profil. Veuillez réessayer.')
+            await supabase.auth.signOut()
+            return
+          }
+
+          // Rediriger après création
+          router.push('/acquereur/dashboard')
+          router.refresh()
+          return
+        }
+
+        if (profileError) {
+          console.error('Erreur lors de la récupération du profil:', profileError)
+          setError('Erreur lors de la connexion. Veuillez réessayer.')
+          await supabase.auth.signOut()
+          return
+        }
+
         if (profile?.role === 'acquereur') {
           router.push('/acquereur/dashboard')
           router.refresh()
-        } else {
+        } else if (profile?.role) {
           await supabase.auth.signOut()
           setError('Ce compte n\'est pas un compte acquéreur')
+        } else {
+          // Profil existe mais sans rôle, le mettre à jour
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ role: 'acquereur' })
+            .eq('id', data.user.id)
+
+          if (updateError) {
+            setError('Erreur lors de la mise à jour du profil.')
+            await supabase.auth.signOut()
+            return
+          }
+
+          router.push('/acquereur/dashboard')
+          router.refresh()
         }
       }
     } catch (err: any) {

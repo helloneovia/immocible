@@ -50,17 +50,22 @@ export default function InscriptionAcquereur() {
       if (authError) throw authError
 
       if (authData.user) {
-        // Créer le profil dans la table profiles
+        // Créer le profil dans la table profiles (upsert pour éviter les doublons)
         const { error: profileError } = await supabase
           .from('profiles')
-          .insert({
+          .upsert({
             id: authData.user.id,
             email: email,
             role: 'acquereur',
+          }, {
+            onConflict: 'id'
           })
 
         if (profileError) {
           console.error('Erreur lors de la création du profil:', profileError)
+          setError('Erreur lors de la création du profil. Veuillez réessayer.')
+          setLoading(false)
+          return
         }
 
         // Rediriger vers le dashboard
