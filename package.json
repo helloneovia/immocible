@@ -1,7 +1,7 @@
 {
   "name": "immocible",
   "version": "1.0.0",
-  "description": "Plateforme de matching acquÃ©reurs â†" opportunitÃ©s immobiliÃ¨res qualifiÃ©es",
+  "description": "Plateforme de matching acquereurs et opportunites immobilieres qualifiees",
   "main": "index.js",
   "engines": {
     "node": ">=20.0.0",
@@ -20,7 +20,7 @@
   "keywords": [
     "immobilier",
     "matching",
-    "acquÃ©reurs",
+    "acquereurs",
     "off-market"
   ],
   "author": "",
