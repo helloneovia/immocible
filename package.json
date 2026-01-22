@@ -1,8 +1,12 @@
 {
   "name": "immocible",
   "version": "1.0.0",
-  "description": "Plateforme de matching acquÃ©reurs â†” opportunitÃ©s immobiliÃ¨res qualifiÃ©es",
+  "description": "Plateforme de matching acquÃ©reurs â†" opportunitÃ©s immobiliÃ¨res qualifiÃ©es",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",

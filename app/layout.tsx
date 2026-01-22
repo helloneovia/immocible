@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: 'Plateforme de matching acquÃ©reurs â†" opportunitÃ©s immobiliÃ¨res qualifiÃ©es',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: {
