@@ -63,7 +63,14 @@ export default function InscriptionAcquereur() {
 
         if (profileError) {
           console.error('Erreur lors de la création du profil:', profileError)
-          setError('Erreur lors de la création du profil. Veuillez réessayer.')
+          // Message d'erreur plus détaillé
+          if (profileError.code === '42P01') {
+            setError('La table profiles n\'existe pas. Veuillez exécuter le script SQL dans Supabase (voir SUPABASE_SETUP.md)')
+          } else if (profileError.code === '42501') {
+            setError('Erreur de permissions. Vérifiez les politiques RLS dans Supabase.')
+          } else {
+            setError(`Erreur lors de la création du profil: ${profileError.message}. Vérifiez que la table profiles existe dans Supabase.`)
+          }
           setLoading(false)
           return
         }
