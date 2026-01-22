@@ -68,29 +68,38 @@ export default function InscriptionAcquereur() {
           }
         }
 
-        // Si le profil n'existe toujours pas après 2 secondes, essayer de le créer manuellement
+        // Si le profil n'existe toujours pas après 2 secondes, utiliser la fonction create_user_profile()
         if (!profileCreated) {
-          const { error: createError } = await supabase
-            .from('profiles')
-            .upsert({
-              id: authData.user.id,
-              email: email,
-              role: 'acquereur',
-            }, {
-              onConflict: 'id'
+          const { data: result, error: createError } = await supabase
+            .rpc('create_user_profile', {
+              p_role: 'acquereur',
+              p_nom_agence: null
             })
 
-          if (createError) {
-            console.error('Erreur lors de la création du profil:', createError)
-            if (createError.code === '42P01') {
-              setError('La table profiles n\'existe pas. Exécutez le script supabase-ultime-fix.sql dans Supabase SQL Editor.')
-            } else if (createError.code === '42501') {
-              setError('Erreur de permissions. Exécutez le script supabase-ultime-fix.sql dans Supabase SQL Editor pour corriger les politiques RLS.')
-            } else {
-              setError(`Erreur: ${createError.message}. Exécutez supabase-ultime-fix.sql dans Supabase.`)
+          if (createError || !result?.success) {
+            console.error('Erreur lors de la création du profil:', createError || result)
+            // Fallback : essayer l'insertion directe
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .upsert({
+                id: authData.user.id,
+                email: email,
+                role: 'acquereur',
+              }, {
+                onConflict: 'id'
+              })
+
+            if (insertError) {
+              if (insertError.code === '42P01') {
+                setError('La table profiles n\'existe pas. Exécutez le script supabase-solution-finale.sql dans Supabase SQL Editor.')
+              } else if (insertError.code === '42501') {
+                setError('Erreur de permissions. Exécutez le script supabase-solution-finale.sql dans Supabase SQL Editor.')
+              } else {
+                setError(`Erreur: ${insertError.message}. Exécutez supabase-solution-finale.sql dans Supabase.`)
+              }
+              setLoading(false)
+              return
             }
-            setLoading(false)
-            return
           }
         }
 

@@ -39,22 +39,31 @@ export default function ConnexionAgence() {
           .eq('id', data.user.id)
           .single()
 
-        // Si le profil n'existe pas, le créer automatiquement
+        // Si le profil n'existe pas, le créer automatiquement avec la fonction
         if (profileError && profileError.code === 'PGRST116') {
-          // Profil n'existe pas, le créer
-          const { error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: data.user.id,
-              email: data.user.email || email,
-              role: 'agence',
+          // Profil n'existe pas, utiliser la fonction create_user_profile()
+          const { data: result, error: createError } = await supabase
+            .rpc('create_user_profile', {
+              p_role: 'agence',
+              p_nom_agence: null
             })
 
-          if (createError) {
-            console.error('Erreur lors de la création du profil:', createError)
-            setError('Erreur lors de la création du profil. Veuillez réessayer.')
-            await supabase.auth.signOut()
-            return
+          if (createError || !result?.success) {
+            // Fallback : essayer l'insertion directe
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: data.user.id,
+                email: data.user.email || email,
+                role: 'agence',
+              })
+
+            if (insertError) {
+              console.error('Erreur lors de la création du profil:', insertError)
+              setError('Erreur lors de la création du profil. Exécutez supabase-solution-finale.sql dans Supabase.')
+              await supabase.auth.signOut()
+              return
+            }
           }
 
           // Rediriger après création
