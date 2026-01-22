@@ -78,7 +78,7 @@ export default function InscriptionAcquereur() {
             if (createError.code === '42P01') {
               setError('La table profiles n\'existe pas. Veuillez exécuter le script SQL dans Supabase (voir SUPABASE_SETUP.md)')
             } else if (createError.code === '42501') {
-              setError('Erreur de permissions. Exécutez le script supabase-fix-rls.sql dans Supabase pour corriger les politiques RLS.')
+              setError('Erreur de permissions. Exécutez le script supabase-setup.sql dans Supabase (SQL Editor) pour créer la table et configurer les politiques RLS.')
             } else {
               setError(`Erreur lors de la création du profil: ${createError.message}`)
             }
