@@ -51,18 +51,25 @@ export default function InscriptionAcquereur() {
 
       if (authData.user) {
         // Le profil est créé automatiquement par le trigger PostgreSQL
-        // Attendre un peu pour que le trigger s'exécute
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        // Vérifier que le profil a été créé (optionnel, pour debug)
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, role')
-          .eq('id', authData.user.id)
-          .single()
+        // Attendre un peu pour que le trigger s'exécute (jusqu'à 2 secondes)
+        let profileCreated = false
+        for (let i = 0; i < 4; i++) {
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', authData.user.id)
+            .single()
+          
+          if (profile) {
+            profileCreated = true
+            break
+          }
+        }
 
-        // Si le profil n'existe toujours pas, essayer de le créer manuellement
-        if (profileError || !profile) {
+        // Si le profil n'existe toujours pas après 2 secondes, essayer de le créer manuellement
+        if (!profileCreated) {
           const { error: createError } = await supabase
             .from('profiles')
             .upsert({
@@ -76,11 +83,11 @@ export default function InscriptionAcquereur() {
           if (createError) {
             console.error('Erreur lors de la création du profil:', createError)
             if (createError.code === '42P01') {
-              setError('La table profiles n\'existe pas. Veuillez exécuter le script SQL dans Supabase (voir SUPABASE_SETUP.md)')
+              setError('La table profiles n\'existe pas. Exécutez le script supabase-ultime-fix.sql dans Supabase SQL Editor.')
             } else if (createError.code === '42501') {
-              setError('Erreur de permissions. Exécutez le script supabase-setup.sql dans Supabase (SQL Editor) pour créer la table et configurer les politiques RLS.')
+              setError('Erreur de permissions. Exécutez le script supabase-ultime-fix.sql dans Supabase SQL Editor pour corriger les politiques RLS.')
             } else {
-              setError(`Erreur lors de la création du profil: ${createError.message}`)
+              setError(`Erreur: ${createError.message}. Exécutez supabase-ultime-fix.sql dans Supabase.`)
             }
             setLoading(false)
             return
