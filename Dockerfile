@@ -42,10 +42,17 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy Prisma files
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+# Copy Prisma files and binaries (needed for migrations)
+COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/prisma ./prisma
+
+# Copy scripts
+COPY --from=builder /app/scripts ./scripts
+
+# Make scripts executable before changing ownership
+RUN chmod +x ./scripts/init-db.sh
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -61,4 +68,5 @@ ENV HOSTNAME "0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-CMD ["node", "server.js"]
+# Run migrations on startup, then start the server
+CMD ["sh", "-c", "./scripts/init-db.sh && node server.js"]
