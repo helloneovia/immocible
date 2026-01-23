@@ -12,11 +12,41 @@ Invalid `prisma.user.findUnique()` invocation: The table `public.users` does not
 1. Go to your Dokploy dashboard
 2. Open your application
 3. Click on "Shell" or "Terminal"
-4. Run:
+4. First, check where you are and find the prisma directory:
+   ```bash
+   pwd
+   ls -la
+   find . -name "schema.prisma" 2>/dev/null
+   ```
+5. Navigate to the app directory (usually `/app`):
+   ```bash
+   cd /app
+   ```
+6. Verify prisma directory exists:
+   ```bash
+   ls -la prisma/
+   ```
+7. Find the prisma schema file:
+   ```bash
+   SCHEMA_PATH=$(find /app -name "schema.prisma" -type f 2>/dev/null | head -n 1)
+   echo "Schema found at: $SCHEMA_PATH"
+   ```
+8. Navigate to the directory containing the schema:
+   ```bash
+   cd $(dirname "$SCHEMA_PATH")/..
+   # Or if that doesn't work, try:
+   cd /app
+   ```
+9. Run the database setup:
    ```bash
    npx prisma generate
    npx prisma db push
    ```
+10. Alternative: Use the safe script if it exists:
+    ```bash
+    cd /app
+    ./scripts/init-db-safe.sh
+    ```
 
 This will create all tables immediately.
 

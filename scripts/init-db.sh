@@ -5,6 +5,9 @@
 set -e
 
 echo "Starting database initialization..."
+echo "Current directory: $(pwd)"
+echo "Listing files:"
+ls -la
 
 # Check if DATABASE_URL is set
 if [ -z "$DATABASE_URL" ]; then
@@ -12,12 +15,22 @@ if [ -z "$DATABASE_URL" ]; then
   exit 1
 fi
 
+# Verify Prisma schema exists
+if [ ! -f "prisma/schema.prisma" ]; then
+  echo "ERROR: prisma/schema.prisma not found in current directory"
+  echo "Looking for schema.prisma..."
+  find . -name "schema.prisma" 2>/dev/null || echo "Schema file not found anywhere"
+  exit 1
+fi
+
+echo "Prisma schema found at: $(pwd)/prisma/schema.prisma"
+
 # Generate Prisma Client (in case it wasn't generated during build)
 echo "Generating Prisma Client..."
 npx prisma generate
 
 # Check if migrations directory exists and has migrations
-if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null)" ]; then
+if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null | grep -v '^\.gitkeep$')" ]; then
   echo "Migrations found. Running migrations..."
   npx prisma migrate deploy
 else
