@@ -1,4 +1,4 @@
-﻿/** @type {import('next').NextConfig} */
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
@@ -14,6 +14,8 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  // Ensure Prisma files are not excluded from standalone build
+  // Note: Prisma directory will be copied separately in Dockerfile
 }
 
 module.exports = nextConfig

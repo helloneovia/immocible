@@ -41,18 +41,22 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 
 # Copy standalone build (this contains server.js and dependencies)
+# IMPORTANT: Copy standalone first, then overlay prisma and scripts
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Copy Prisma files and binaries (needed for migrations)
-# IMPORTANT: Copy prisma directory to root, standalone might have its own structure
+# These MUST be copied AFTER standalone to ensure they're not overwritten
 COPY --from=builder /app/prisma ./prisma
 COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
 
-# Copy scripts
+# Copy scripts (after standalone to ensure they're available)
 COPY --from=builder /app/scripts ./scripts
+
+# Copy package.json for npx to work correctly
+COPY --from=builder /app/package.json ./package.json
 
 # Verify Prisma schema exists (run as root before switching user)
 RUN ls -la /app/ || echo "WARNING: /app directory listing failed"
@@ -60,7 +64,7 @@ RUN ls -la /app/prisma/ || echo "WARNING: prisma directory not found"
 RUN test -f /app/prisma/schema.prisma || (echo "ERROR: prisma/schema.prisma not found" && ls -la /app/ && exit 1)
 
 # Make scripts executable before changing ownership
-RUN chmod +x ./scripts/init-db.sh ./scripts/init-db-safe.sh
+RUN chmod +x ./scripts/init-db.sh ./scripts/init-db-safe.sh ./scripts/init-db-robust.sh
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
@@ -77,5 +81,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Run migrations on startup, then start the server
-# Use the safe script that can find prisma schema in any location
-CMD ["sh", "-c", "cd /app && ./scripts/init-db-safe.sh && node server.js"]
+# Use the robust script that handles all directory structures
+CMD ["sh", "-c", "cd /app && ./scripts/init-db-robust.sh && node server.js"]

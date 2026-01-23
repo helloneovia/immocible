@@ -42,10 +42,24 @@ Invalid `prisma.user.findUnique()` invocation: The table `public.users` does not
    npx prisma generate
    npx prisma db push
    ```
-10. Alternative: Use the safe script if it exists:
+10. Alternative: Use the robust script (recommended):
     ```bash
     cd /app
-    ./scripts/init-db-safe.sh
+    ./scripts/init-db-robust.sh
+    ```
+    
+    Or if that doesn't work, try finding and using the schema directly:
+    ```bash
+    # Find the schema
+    SCHEMA=$(find /app -name "schema.prisma" -type f 2>/dev/null | head -n 1)
+    echo "Schema at: $SCHEMA"
+    
+    # Navigate to its directory
+    cd $(dirname "$SCHEMA")/..
+    
+    # Run prisma commands
+    npx prisma generate
+    npx prisma db push
     ```
 
 This will create all tables immediately.
