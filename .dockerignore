@@ -34,14 +34,8 @@ Thumbs.db
 *.md
 !README.md
 
-# Supabase files (no longer needed)
-supabase-*.sql
-SUPABASE_*.md
-MAILJET_*.md
-CONFIGURATION_*.md
-GUIDE_*.md
-INSTRUCTIONS_*.md
-TEST_*.md
+# Legacy files (no longer needed)
+*.sql
 
 # Other
 coverage

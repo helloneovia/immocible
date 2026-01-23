@@ -32,9 +32,9 @@ DATABASE_URL="postgresql://username:password@localhost:5432/immocible?schema=pub
   DATABASE_URL="postgresql://postgres:password@localhost:5432/immocible?schema=public"
   ```
 
-- **Supabase:**
+- **Cloud PostgreSQL (Supabase, Railway, Neon, etc.):**
   ```
-  DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-PROJECT-REF].supabase.co:5432/postgres?schema=public"
+  DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@[YOUR-HOST]:5432/postgres?schema=public"
   ```
 
 - **Railway/Neon/Other:**

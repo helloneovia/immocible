@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, Building2, CheckCircle2, Shield, AlertCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase-client'
 
 export default function InscriptionAgence() {
   const router = useRouter()
@@ -18,7 +17,6 @@ export default function InscriptionAgence() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,104 +35,30 @@ export default function InscriptionAgence() {
     setLoading(true)
 
     try {
-      // Inscription avec Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            role: 'agence',
-          },
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          email,
+          password,
+          role: 'agence',
+          nomAgence,
+        }),
       })
 
-      if (authError) throw authError
+      const data = await response.json()
 
-      if (authData.user) {
-        // Le profil est créé automatiquement par le trigger PostgreSQL
-        // Attendre un peu pour que le trigger s'exécute (jusqu'à 2 secondes)
-        let profileCreated = false
-        for (let i = 0; i < 4; i++) {
-          await new Promise(resolve => setTimeout(resolve, 500))
-          
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', authData.user.id)
-            .single()
-          
-          if (profile) {
-            profileCreated = true
-            break
-          }
-        }
-
-        // Si le profil n'existe toujours pas après 2 secondes, utiliser la fonction create_user_profile()
-        if (!profileCreated) {
-          const { data: result, error: createError } = await supabase
-            .rpc('create_user_profile', {
-              p_user_id: authData.user.id,
-              p_email: email,
-              p_role: 'agence',
-              p_nom_agence: nomAgence
-            })
-
-          // Si erreur RPC, vérifier si le profil existe quand même (la fonction peut avoir réussi malgré l'erreur)
-          if (createError) {
-            console.error('Erreur RPC create_user_profile:', {
-              error: createError,
-              result: result,
-              errorCode: createError?.code,
-              errorMessage: createError?.message
-            })
-          }
-
-          // Vérifier si le profil a été créé (même si la fonction a retourné une erreur)
-          const { data: profileCheck } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', authData.user.id)
-            .single()
-
-          if (!profileCheck) {
-            // Le profil n'existe toujours pas, essayer l'insertion directe en dernier recours
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .upsert({
-                id: authData.user.id,
-                email: email,
-                role: 'agence',
-                nom_agence: nomAgence,
-              }, {
-                onConflict: 'id'
-              })
-
-            if (insertError) {
-              console.error('Erreur détaillée:', insertError)
-              if (insertError.code === '42P01') {
-                setError('La table profiles n\'existe pas. Exécutez le script supabase-solution-simple.sql dans Supabase SQL Editor.')
-              } else if (insertError.code === '42501') {
-                setError('Erreur de permissions RLS. La fonction create_user_profile() n\'a pas fonctionné. Vérifiez que vous avez exécuté supabase-solution-simple.sql dans Supabase SQL Editor.')
-              } else {
-                setError(`Erreur: ${insertError.message}. Code: ${insertError.code}. Exécutez supabase-solution-simple.sql dans Supabase.`)
-              }
-              setLoading(false)
-              return
-            }
-          }
-        }
-
-        // Rediriger vers le dashboard
-        router.push('/agence/dashboard')
-        router.refresh()
+      if (!response.ok) {
+        throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
       }
+
+      // Redirect to dashboard
+      router.push('/agence/dashboard')
+      router.refresh()
     } catch (err: any) {
-      // Gestion spécifique de l'erreur de limite d'email
-      if (err.message?.includes('rate limit') || err.message?.includes('email rate limit')) {
-        setError('Limite d\'envoi d\'emails atteinte. Veuillez attendre quelques minutes avant de réessayer, ou désactivez la confirmation d\'email dans les paramètres Supabase (Authentication > Settings > Email Auth > Confirm email).')
-      } else {
-        setError(err.message || 'Une erreur est survenue lors de l\'inscription')
-      }
+      setError(err.message || 'Une erreur est survenue lors de l\'inscription')
     } finally {
       setLoading(false)
     }

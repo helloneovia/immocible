@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, LogIn, Shield, AlertCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase-client'
 
 export default function ConnexionAcquereur() {
   const router = useRouter()
@@ -16,7 +15,6 @@ export default function ConnexionAcquereur() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,84 +22,32 @@ export default function ConnexionAcquereur() {
     setLoading(true)
 
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       })
 
-      if (signInError) throw signInError
+      const data = await response.json()
 
-      if (data.user) {
-        // Vérifier le rôle de l'utilisateur
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', data.user.id)
-          .single()
-
-        // Si le profil n'existe pas, le créer automatiquement avec la fonction
-        if (profileError && profileError.code === 'PGRST116') {
-          // Profil n'existe pas, utiliser la fonction create_user_profile()
-          const { data: result, error: createError } = await supabase
-            .rpc('create_user_profile', {
-              p_role: 'acquereur',
-              p_nom_agence: null
-            })
-
-          if (createError || !result?.success) {
-            // Fallback : essayer l'insertion directe
-            const { error: insertError } = await supabase
-              .from('profiles')
-              .insert({
-                id: data.user.id,
-                email: data.user.email || email,
-                role: 'acquereur',
-              })
-
-            if (insertError) {
-              console.error('Erreur lors de la création du profil:', insertError)
-              setError('Erreur lors de la création du profil. Exécutez supabase-solution-finale.sql dans Supabase.')
-              await supabase.auth.signOut()
-              return
-            }
-          }
-
-          // Rediriger après création
-          router.push('/acquereur/dashboard')
-          router.refresh()
-          return
-        }
-
-        if (profileError) {
-          console.error('Erreur lors de la récupération du profil:', profileError)
-          setError('Erreur lors de la connexion. Veuillez réessayer.')
-          await supabase.auth.signOut()
-          return
-        }
-
-        if (profile?.role === 'acquereur') {
-          router.push('/acquereur/dashboard')
-          router.refresh()
-        } else if (profile?.role) {
-          await supabase.auth.signOut()
-          setError('Ce compte n\'est pas un compte acquéreur')
-        } else {
-          // Profil existe mais sans rôle, le mettre à jour
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ role: 'acquereur' })
-            .eq('id', data.user.id)
-
-          if (updateError) {
-            setError('Erreur lors de la mise à jour du profil.')
-            await supabase.auth.signOut()
-            return
-          }
-
-          router.push('/acquereur/dashboard')
-          router.refresh()
-        }
+      if (!response.ok) {
+        throw new Error(data.error || 'Email ou mot de passe incorrect')
       }
+
+      // Check if user is acquereur
+      if (data.user.role !== 'acquereur') {
+        setError('Ce compte n\'est pas un compte acquéreur')
+        return
+      }
+
+      // Redirect to dashboard
+      router.push('/acquereur/dashboard')
+      router.refresh()
     } catch (err: any) {
       setError(err.message || 'Email ou mot de passe incorrect')
     } finally {

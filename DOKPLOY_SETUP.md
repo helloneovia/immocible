@@ -43,7 +43,7 @@ NEXT_TELEMETRY_DISABLED=1
 
 #### Option A: External PostgreSQL
 
-1. Create a PostgreSQL database (e.g., on Railway, Supabase, or your own server)
+1. Create a PostgreSQL database (e.g., on Railway, Neon, or your own server)
 2. Add the connection string to `DATABASE_URL` environment variable
 3. Run migrations manually or set up a migration script
 
