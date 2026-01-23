@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  acquereur
+  agence
+}
+
+enum BienType {
+  appartement
+  maison
+  studio
+  loft
+  villa
+  terrain
+  autre
+}
+
+enum BienStatus {
+  disponible
+  reserve
+  vendu
+  archive
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile   Profile?
+  biens      Bien[]      @relation("BienOwner")
+  recherches Recherche[] @relation("RechercheOwner")
+  matches    Match[]      @relation("MatchUser")
+  favorites  Favorite[]
+  sessions   Session[]
+
+  @@map("users")
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  nom         String?
+  prenom      String?
+  telephone   String?
+  nomAgence   String?  // For agence role
+  adresse     String?
+  ville       String?
+  codePostal  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model Bien {
+  id            String     @id @default(uuid())
+  ownerId       String
+  titre         String
+  description   String?    @db.Text
+  typeBien      BienType
+  prix          Float
+  surface       Float      // in m²
+  nombrePieces  Int?
+  nombreChambres Int?
+  adresse       String
+  ville         String
+  codePostal    String
+  quartier      String?
+  latitude      Float?
+  longitude     Float?
+  status        BienStatus @default(disponible)
+  images        String[]   // Array of image URLs
+  caracteristiques Json?    // Additional characteristics as JSON
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  owner         User      @relation("BienOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  matches        Match[]
+  favorites      Favorite[]
+
+  @@map("biens")
+  @@index([ownerId])
+  @@index([ville, codePostal])
+  @@index([typeBien])
+  @@index([status])
+}
+
+model Recherche {
+  id            String   @id @default(uuid())
+  ownerId       String
+  prixMin       Float?
+  prixMax       Float
+  surfaceMin    Float?
+  surfaceMax    Float?
+  typeBien      BienType[]
+  zones         String[] // Array of zones (cities, neighborhoods)
+  nombrePiecesMin Int?
+  nombrePiecesMax Int?
+  nombreChambresMin Int?
+  nombreChambresMax Int?
+  caracteristiques Json?  // Additional search criteria as JSON
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  owner         User     @relation("RechercheOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  matches       Match[]
+
+  @@map("recherches")
+  @@index([ownerId])
+  @@index([isActive])
+}
+
+model Match {
+  id            String   @id @default(uuid())
+  userId        String   // acquereur
+  bienId        String
+  rechercheId   String?
+  score         Float    // Match score 0-100
+  raisons       String[] // Reasons for the match
+  suggestions   String[] // Suggestions for improvement
+  isViewed      Boolean  @default(false)
+  isInterested  Boolean?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user          User     @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
+  bien          Bien     @relation(fields: [bienId], references: [id], onDelete: Cascade)
+  recherche     Recherche? @relation(fields: [rechercheId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, bienId])
+  @@map("matches")
+  @@index([userId])
+  @@index([bienId])
+  @@index([score])
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  bienId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bien      Bien     @relation(fields: [bienId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bienId])
+  @@map("favorites")
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+  @@index([userId])
+  @@index([expiresAt])
+}

@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { createClient } from '@/lib/supabase-client'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -18,25 +17,17 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     if (!loading && !user) {
       router.push(redirectTo || '/')
     } else if (!loading && user && requiredRole) {
-      // Vérifier le rôle de l'utilisateur
-      supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-        .then(({ data: profile }) => {
-          if (profile?.role !== requiredRole) {
-            router.push(redirectTo || '/')
-          }
-        })
+      // Check user role
+      if (user.role !== requiredRole) {
+        router.push(redirectTo || '/')
+      }
     }
-  }, [user, loading, requiredRole, router, redirectTo, supabase])
+  }, [user, loading, requiredRole, router, redirectTo])
 
   if (loading) {
     return (
@@ -50,6 +41,10 @@ export function ProtectedRoute({
   }
 
   if (!user) {
+    return null
+  }
+
+  if (requiredRole && user.role !== requiredRole) {
     return null
   }
 
