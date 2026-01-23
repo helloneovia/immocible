@@ -8,6 +8,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
+# Install dependencies - package-lock.json ensures exact Prisma 5.7.1 version
 RUN npm ci
 
 # Generate Prisma Client
