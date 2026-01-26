@@ -30,6 +30,7 @@ export default function ConnexionAcquereur() {
         body: JSON.stringify({
           email,
           password,
+          role: 'acquereur',
         }),
       })
 

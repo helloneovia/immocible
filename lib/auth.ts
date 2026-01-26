@@ -50,7 +50,7 @@ export async function createUser(
   return user
 }
 
-export async function authenticateUser(email: string, password: string) {
+export async function authenticateUser(email: string, password: string, role?: UserRole) {
   const user = await prisma.user.findUnique({
     where: { email },
     include: {
@@ -60,6 +60,11 @@ export async function authenticateUser(email: string, password: string) {
 
   if (!user) {
     throw new Error('Email ou mot de passe incorrect')
+  }
+
+  if (role && user.role !== role) {
+    const roleName = role === 'acquereur' ? 'acquéreur' : 'agence'
+    throw new Error(`Ce compte n'est pas un compte ${roleName}`)
   }
 
   const isValid = await verifyPassword(password, user.password)

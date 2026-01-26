@@ -30,6 +30,7 @@ export default function ConnexionAgence() {
         body: JSON.stringify({
           email,
           password,
+          role: 'agence',
         }),
       })
 

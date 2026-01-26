@@ -34,6 +34,7 @@ export default function InscriptionAcquereur() {
     setLoading(true)
 
     try {
+      // 1. Register user
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -52,9 +53,20 @@ export default function InscriptionAcquereur() {
         throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
       }
 
-      // Redirect to dashboard
-      router.push('/acquereur/dashboard')
-      router.refresh()
+      // 2. Auto-login
+      const loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      if (loginResponse.ok) {
+        router.push('/acquereur/dashboard')
+        router.refresh()
+      } else {
+        // Fallback if login fails
+        router.push('/acquereur/connexion')
+      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
     } finally {
@@ -144,8 +156,8 @@ export default function InscriptionAcquereur() {
                     className="h-12 border-2 focus:border-blue-500 transition-colors"
                   />
                 </div>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={loading}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
@@ -173,7 +185,7 @@ export default function InscriptionAcquereur() {
                   </Link>
                 </div>
               </form>
-              
+
               {/* Trust indicators */}
               <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">

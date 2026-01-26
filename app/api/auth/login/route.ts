@@ -5,7 +5,7 @@ import { createSession } from '@/lib/session'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password } = body
+    const { email, password, role } = body
 
     // Validation
     if (!email || !password) {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Authenticate user
-    const user = await authenticateUser(email, password)
+    const user = await authenticateUser(email, password, role)
 
     // Create session
     await createSession(user.id)
