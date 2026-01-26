@@ -120,9 +120,14 @@ export default function ConnexionAgence() {
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 border-2 focus:border-indigo-500 transition-colors"
                   />
+                  <div className="flex justify-end pt-1">
+                    <Link href="/forgot-password" className="text-xs text-indigo-600 hover:text-indigo-700 font-medium hover:underline">
+                      Mot de passe oublié ?
+                    </Link>
+                  </div>
                 </div>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={loading}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
@@ -150,7 +155,7 @@ export default function ConnexionAgence() {
                   </Link>
                 </div>
               </form>
-              
+
               {/* Trust indicators */}
               <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">

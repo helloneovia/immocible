@@ -15,6 +15,7 @@ export default function InscriptionAgence() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [plan, setPlan] = useState('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,7 +36,8 @@ export default function InscriptionAgence() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
+      // 1. Register user (User is created with PENDING status)
+      const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,21 +47,42 @@ export default function InscriptionAgence() {
           password,
           role: 'agence',
           nomAgence,
+          plan,
         }),
       })
 
-      const data = await response.json()
+      const registerData = await registerResponse.json()
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
+      if (!registerResponse.ok) {
+        throw new Error(registerData.error || 'Une erreur est survenue lors de l\'inscription')
       }
 
-      // Redirect to dashboard
-      router.push('/agence/dashboard')
-      router.refresh()
+      // 2. Initiate Stripe Checkout
+      const checkoutResponse = await fetch('/api/payment/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          plan,
+          nomAgence
+        })
+      })
+
+      const checkoutData = await checkoutResponse.json()
+
+      if (!checkoutResponse.ok) {
+        throw new Error(checkoutData.error || 'Erreur lors de l\'initialisation du paiement')
+      }
+
+      // 3. Redirect to Stripe
+      if (checkoutData.url) {
+        window.location.href = checkoutData.url
+      } else {
+        throw new Error('Url de paiement invalide')
+      }
+
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
-    } finally {
       setLoading(false)
     }
   }
@@ -95,7 +118,7 @@ export default function InscriptionAgence() {
                 Créer mon compte agence
               </CardTitle>
               <CardDescription className="text-base pt-2">
-                Accédez à des acquéreurs vérifiés et sérieux
+                Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -158,8 +181,49 @@ export default function InscriptionAgence() {
                     className="h-12 border-2 focus:border-indigo-500 transition-colors"
                   />
                 </div>
-                <Button 
-                  type="submit" 
+
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold">Choisir une offre</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div
+                      className={`relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${plan === 'monthly' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300'}`}
+                      onClick={() => setPlan('monthly')}
+                    >
+                      <div className="font-bold text-gray-900">Mensuel</div>
+                      <div className="text-sm text-gray-500 mt-1">29€ / mois</div>
+                      <ul className="mt-4 space-y-2 text-xs text-gray-600">
+                        <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> 100 profils acquéreurs</li>
+                        <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Matches illimités</li>
+                      </ul>
+                      {plan === 'monthly' && (
+                        <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-indigo-600 flex items-center justify-center">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    <div
+                      className={`relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${plan === 'yearly' ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-200 hover:border-gray-300'}`}
+                      onClick={() => setPlan('yearly')}
+                    >
+                      <div className="font-bold text-gray-900">Annuel</div>
+                      <div className="text-sm text-gray-500 mt-1">290€ / an</div>
+                      <div className="text-[10px] text-indigo-600 font-semibold mb-1">2 mois offerts</div>
+                      <ul className="space-y-2 text-xs text-gray-600">
+                        <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Profils illimités</li>
+                        <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Badge "Agence Pro"</li>
+                      </ul>
+                      {plan === 'yearly' && (
+                        <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-indigo-600 flex items-center justify-center">
+                          <CheckCircle2 className="h-3 w-3 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
                   disabled={loading}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
@@ -187,16 +251,16 @@ export default function InscriptionAgence() {
                   </Link>
                 </div>
               </form>
-              
+
               {/* Trust indicators */}
               <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Shield className="h-4 w-4 text-green-500" />
-                  <span>Sécurisé</span>
+                  <span>Paiement sécurisé</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-indigo-500" />
-                  <span>100% Gratuit</span>
+                  <span>Essai gratuit 14 jours</span>
                 </div>
               </div>
             </CardContent>

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createUser } from '@/lib/auth'
 import { createSession } from '@/lib/session'
 import { UserRole } from '@prisma/client'
+import { sendWelcomeEmail } from '@/lib/mail'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, role, nomAgence } = body
+    const { email, password, role, nomAgence, plan } = body
 
     // Validation
     if (!email || !password || !role) {
@@ -35,8 +36,17 @@ export async function POST(request: NextRequest) {
       email,
       password,
       role as UserRole,
-      role === 'agence' ? nomAgence : undefined
+      role === 'agence' ? nomAgence : undefined,
+      role === 'agence' ? plan : undefined
     )
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(email, role, role === 'agence' ? nomAgence : undefined)
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError)
+      // Continue execution, don't fail registration
+    }
 
     // Create session
     await createSession(user.id)

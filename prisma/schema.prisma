@@ -51,6 +51,13 @@ model User {
   @@map("users")
 }
 
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  CANCELLED
+}
+
 model Profile {
   id          String   @id @default(uuid())
   userId      String   @unique
@@ -58,6 +65,9 @@ model Profile {
   prenom      String?
   telephone   String?
   nomAgence   String?  // For agence role
+  plan        String?  // For agence subscription plan
+  subscriptionStatus SubscriptionStatus @default(INACTIVE)
+  stripeCustomerId String?
   adresse     String?
   ville       String?
   codePostal  String?
