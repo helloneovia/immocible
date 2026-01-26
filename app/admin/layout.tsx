@@ -1,0 +1,63 @@
+
+import Link from 'next/link'
+import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2 } from 'lucide-react'
+
+export default function AdminLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    return (
+        <div className="min-h-screen bg-gray-100 flex">
+            {/* Sidebar */}
+            <aside className="w-64 bg-gray-900 text-white hidden md:flex flex-col">
+                <div className="p-6">
+                    <div className="flex items-center gap-2 font-bold text-xl">
+                        <span className="text-indigo-500">IMMOCIBLE</span> ADMIN
+                    </div>
+                </div>
+
+                <nav className="flex-1 px-4 space-y-2 py-4">
+                    <Link href="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <LayoutDashboard className="h-5 w-5" />
+                        Dashboard
+                    </Link>
+                    <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <Users className="h-5 w-5" />
+                        Utilisateurs
+                    </Link>
+                    <Link href="/admin/subscriptions" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <CreditCard className="h-5 w-5" />
+                        Abonnements
+                    </Link>
+                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-lg transition-colors mt-8">
+                        <Trash2 className="h-5 w-5" />
+                        Reset Database
+                    </Link>
+                </nav>
+
+                <div className="p-4 border-t border-gray-800">
+                    <Link href="/" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white transition-colors text-sm">
+                        <Home className="h-4 w-4" />
+                        Retour au site
+                    </Link>
+                    <button className="flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 transition-colors text-sm w-full text-left">
+                        <LogOut className="h-4 w-4" />
+                        Déconnexion
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto">
+                <header className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between md:hidden">
+                    <div className="font-bold">ADMIN PANEL</div>
+                    {/* Mobile menu trigger could go here */}
+                </header>
+                <div className="p-8">
+                    {children}
+                </div>
+            </main>
+        </div>
+    )
+}
