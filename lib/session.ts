@@ -92,15 +92,35 @@ export async function deleteSession(sessionId?: string) {
   const cookieStore = cookies()
   const id = sessionId || cookieStore.get(SESSION_COOKIE_NAME)?.value
 
+  console.log('[deleteSession] 1. Request to delete session. ID:', id || 'unknown')
+
   if (id) {
-    await prisma.session.delete({
-      where: { id },
-    }).catch(() => {
-      // Session might not exist, ignore error
-    })
+    try {
+      await prisma.session.delete({
+        where: { id },
+      })
+      console.log('[deleteSession] 2. DB session deleted.')
+    } catch (e) {
+      console.log('[deleteSession] 2. DB session deletion skipped (not found or error).')
+    }
   }
 
-  cookieStore.delete(SESSION_COOKIE_NAME)
+  // Forcefully delete cookie by setting maxAge to 0 and empty value
+  // We must match the attributes (Secure, SameSite, Path) exactly for strict browsers.
+
+  // Re-calculate secure flag logic to match creation
+  const isSecure = process.env.NODE_ENV === 'production' && (Boolean(process.env.NEXTAUTH_URL) && process.env.NEXTAUTH_URL!.startsWith('https'))
+
+  console.log('[deleteSession] 3. Clearing cookie. Secure:', isSecure)
+
+  // Explicitly overwrite with an expired cookie
+  cookieStore.set(SESSION_COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  })
 }
 
 export async function getCurrentUser() {
