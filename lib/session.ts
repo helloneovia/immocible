@@ -6,7 +6,7 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 
 export async function createSession(userId: string) {
   const sessionId = crypto.randomUUID()
-  
+
   // Store session in database
   await prisma.session.create({
     data: {
@@ -20,7 +20,8 @@ export async function createSession(userId: string) {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // TODO: Set to true in production with HTTPS
+    secure: false,
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
     path: '/',
