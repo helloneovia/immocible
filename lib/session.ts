@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 
-const SESSION_COOKIE_NAME = 'immocible_session'
+const SESSION_COOKIE_NAME = 'immocible_session_v2'
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 
 export async function createSession(userId: string) {
