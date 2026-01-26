@@ -105,22 +105,28 @@ export async function deleteSession(sessionId?: string) {
     }
   }
 
-  // Forcefully delete cookie by setting maxAge to 0 and empty value
-  // We must match the attributes (Secure, SameSite, Path) exactly for strict browsers.
+  // AGGRESSIVE COOKIE CLEARING STRATEGY
+  // We don't know if the browser holds a "Secure" or "Non-Secure" cookie (due to env changes).
+  // We will attempt to clear both.
 
-  // Re-calculate secure flag logic to match creation
-  const isSecure = process.env.NODE_ENV === 'production' && (Boolean(process.env.NEXTAUTH_URL) && process.env.NEXTAUTH_URL!.startsWith('https'))
-
-  console.log('[deleteSession] 3. Clearing cookie. Secure:', isSecure)
-
-  // Explicitly overwrite with an expired cookie
-  cookieStore.set(SESSION_COOKIE_NAME, '', {
+  const commonOptions = {
     httpOnly: true,
-    secure: isSecure,
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     maxAge: 0,
     path: '/',
-  })
+  }
+
+  // 1. Clear with Secure: false (likely default for HTTP/local/broken env)
+  cookieStore.set(SESSION_COOKIE_NAME, '', { ...commonOptions, secure: false })
+
+  // 2. Clear with Secure: true (for HTTPS envs)
+  // Note: One of these might be redundant or fail depending on connection, but it ensures coverage.
+  if (process.env.NODE_ENV === 'production') {
+    cookieStore.set(SESSION_COOKIE_NAME, '', { ...commonOptions, secure: true })
+    console.log('[deleteSession] 3. Cleared cookie with Secure: false AND Secure: true')
+  } else {
+    console.log('[deleteSession] 3. Cleared cookie with Secure: false')
+  }
 }
 
 export async function getCurrentUser() {
