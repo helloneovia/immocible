@@ -16,11 +16,16 @@ export async function createSession(userId: string) {
     },
   })
 
-  // Set cookie - cookies() returns a promise in Next.js 14
-  const cookieStore = await cookies()
+  // Set cookie
+  const cookieStore = cookies()
+
+  // Only use secure cookies in production if the URL is HTTPS
+  // This allows production builds to work on HTTP (e.g. internal testing) if NEXTAUTH_URL is set to http://...
+  const isSecure = process.env.NODE_ENV === 'production' && (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.startsWith('https'))
+
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
     path: '/',
@@ -30,7 +35,7 @@ export async function createSession(userId: string) {
 }
 
 export async function getSession() {
-  const cookieStore = await cookies()
+  const cookieStore = cookies()
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
   if (!sessionId) {
@@ -58,7 +63,7 @@ export async function getSession() {
 }
 
 export async function deleteSession(sessionId?: string) {
-  const cookieStore = await cookies()
+  const cookieStore = cookies()
   const id = sessionId || cookieStore.get(SESSION_COOKIE_NAME)?.value
 
   if (id) {
