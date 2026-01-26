@@ -36,18 +36,35 @@ export async function GET(request: NextRequest) {
         const email = session.customer_details?.email || session.metadata?.email
 
         if (email) {
-            // Activate user in DB
-            await prisma.profile.updateMany({
-                where: {
-                    user: {
-                        email: email
-                    }
-                },
-                data: {
-                    subscriptionStatus: 'ACTIVE',
-                    stripeCustomerId: session.customer as string
-                }
+            // Find user first
+            const user = await prisma.user.findUnique({
+                where: { email },
+                include: { profile: true }
             })
+
+            if (user) {
+                // Activate user in DB
+                await prisma.profile.update({
+                    where: { userId: user.id },
+                    data: {
+                        subscriptionStatus: 'ACTIVE',
+                        stripeCustomerId: session.customer as string
+                    }
+                })
+
+                // Save payment transaction
+                await prisma.payment.create({
+                    data: {
+                        userId: user.id,
+                        stripeSessionId: session.id,
+                        stripePaymentIntentId: session.payment_intent as string | null,
+                        amount: session.amount_total ? session.amount_total / 100 : 0,
+                        currency: session.currency || 'eur',
+                        status: session.payment_status,
+                        plan: user.profile?.plan || session.metadata?.plan,
+                    }
+                })
+            }
         }
 
         return NextResponse.json({ valid: true })

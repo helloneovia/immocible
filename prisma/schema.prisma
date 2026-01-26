@@ -48,6 +48,7 @@ model User {
   matches    Match[]      @relation("MatchUser")
   favorites  Favorite[]
   sessions   Session[]
+  payments   Payment[]
 
   @@map("users")
 }
@@ -194,4 +195,21 @@ model Session {
   @@map("sessions")
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  userId          String
+  stripeSessionId String?  @unique
+  stripePaymentIntentId String? @unique
+  amount          Float
+  currency        String   @default("eur")
+  status          String   // succeeded, pending, failed, refunded
+  plan            String?  // monthly, yearly
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+  @@index([userId])
 }
