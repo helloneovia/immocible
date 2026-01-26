@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const user = await getCurrentUser()
+    console.log('API /auth/me: Checking session', user ? `User found: ${user.id}` : 'No user found')
 
     if (!user) {
       return NextResponse.json(

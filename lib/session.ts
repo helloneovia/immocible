@@ -20,8 +20,7 @@ export async function createSession(userId: string) {
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
-    // TODO: Set to true in production with HTTPS
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: SESSION_MAX_AGE,
     path: '/',
