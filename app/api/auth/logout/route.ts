@@ -1,19 +1,19 @@
+
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteSession } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
-  try {
-    await deleteSession()
+  // Delete session
+  await deleteSession()
 
-    return NextResponse.json(
-      { message: 'Logged out successfully' },
-      { status: 200 }
-    )
-  } catch (error: any) {
-    console.error('Logout error:', error)
-    return NextResponse.json(
-      { error: 'Logout failed' },
-      { status: 500 }
-    )
-  }
+  // Redirect to home/login
+  const url = request.nextUrl.clone()
+  url.pathname = '/admin/login' // Default redirect
+
+  return NextResponse.redirect(url)
+}
+
+export async function GET(request: NextRequest) {
+  await deleteSession()
+  return NextResponse.redirect(new URL('/', request.url))
 }

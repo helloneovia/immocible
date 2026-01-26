@@ -64,7 +64,12 @@ export async function authenticateUser(email: string, password: string, role?: U
 
   if (role && user.role !== role) {
     const roleName = role === 'acquereur' ? 'acquéreur' : 'agence'
-    throw new Error(`Ce compte n'est pas un compte ${roleName}`)
+    const actualRoleName = user.role === 'acquereur' ? 'acquéreur' : user.role === 'agence' ? 'agence' : 'admin'
+
+    // Debug log
+    console.error(`Login failed: Role mismatch. Expected ${role} (${roleName}), got ${user.role}`)
+
+    throw new Error(`Ce compte est un compte ${actualRoleName}, pas un compte ${roleName}. Veuillez vous connecter sur le bon portail.`)
   }
 
   const isValid = await verifyPassword(password, user.password)

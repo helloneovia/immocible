@@ -53,20 +53,11 @@ export default function InscriptionAcquereur() {
         throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
       }
 
-      // 2. Auto-login
-      const loginResponse = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      })
+      // 2. Redirect to dashboard
+      // Note: Registration route already sets the session cookie
+      router.refresh()
+      router.push('/acquereur/dashboard')
 
-      if (loginResponse.ok) {
-        router.push('/acquereur/dashboard')
-        router.refresh()
-      } else {
-        // Fallback if login fails
-        router.push('/acquereur/connexion')
-      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
     } finally {
