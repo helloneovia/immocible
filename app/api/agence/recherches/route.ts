@@ -20,12 +20,12 @@ export async function GET() {
                 owner: {
                     select: {
                         id: true,
-                        email: true,
+                        // email: false, // Hidden
                         profile: {
                             select: {
                                 nom: true,
                                 prenom: true,
-                                telephone: true,
+                                // telephone: false, // Hidden
                                 ville: true,
                             }
                         }
