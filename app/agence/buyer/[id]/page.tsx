@@ -55,7 +55,9 @@ function BuyerProfileContent() {
                 setBuyerData(refreshData)
                 alert('Contact débloqué avec succès !')
             } else {
-                alert('Erreur technique (Base de données). Si vous êtes le développeur, veuillez redémarrer le serveur (npm run dev) pour appliquer les changements de schéma.')
+                const errData = await res.json().catch(() => ({}))
+                const msg = errData.details || 'Erreur inconnue'
+                alert(`Erreur lors du paiement: ${msg}\n\nSi le message indique que la table n'existe pas, veuillez redémarrer le serveur (npm run dev).`)
             }
         } catch (error) {
             console.error('Payment error', error)

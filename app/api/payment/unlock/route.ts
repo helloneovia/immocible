@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
 
     } catch (e) {
         console.error('Unlock error', e)
-        return NextResponse.json({ error: 'Internal Error' }, { status: 500 })
+        return NextResponse.json({
+            error: 'Internal Error',
+            details: e instanceof Error ? e.message : String(e)
+        }, { status: 500 })
     }
 }
