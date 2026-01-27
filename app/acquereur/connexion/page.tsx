@@ -32,17 +32,7 @@ export default function ConnexionAcquereur() {
     resolver: zodResolver(loginSchema),
   })
 
-  // clear any stale sessions on mount
-  useEffect(() => {
-    const clearSession = async () => {
-      try {
-        await fetch('/api/auth/logout', { method: 'POST' })
-      } catch (e) {
-        // ignore errors during cleanup
-      }
-    }
-    clearSession()
-  }, [])
+
 
   const onSubmit = async (data: LoginFormValues) => {
     setGlobalError(null)

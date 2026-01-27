@@ -30,9 +30,9 @@ export async function createSession(userId: string) {
   // Only use secure cookies in production if the URL is HTTPS
   // This allows production builds to work on HTTP (e.g. internal testing) if NEXTAUTH_URL is set to http://...
 
-  // LOGIC UPDATE: Default to FALSE if NEXTAUTH_URL is missing to avoid "Secure: true" on HTTP deployments (like Docker without proper ENV).
-  // Ideally, users SHOULD set NEXTAUTH_URL, but this unblocks the issue.
-  const isSecure = process.env.NODE_ENV === 'production' && (Boolean(process.env.NEXTAUTH_URL) && process.env.NEXTAUTH_URL!.startsWith('https'))
+  // LOGIC UPDATE: Force Secure: true in production for immocible.com (HTTPS).
+  // Only downgrade to false if NEXTAUTH_URL is explicitly HTTP.
+  const isSecure = process.env.NODE_ENV === 'production' && (!process.env.NEXTAUTH_URL || !process.env.NEXTAUTH_URL.startsWith('http://'))
 
   console.log('[createSession] 3. Setting cookie. Secure:', isSecure, 'Env:', process.env.NODE_ENV, 'NEXTAUTH_URL:', process.env.NEXTAUTH_URL || '(not set)')
 
