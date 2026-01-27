@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -15,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { 
-  Home, 
-  ArrowRight, 
+import {
+  Home,
+  ArrowRight,
   ArrowLeft,
   MapPin,
   Euro,
@@ -31,7 +32,7 @@ interface QuestionnaireData {
   situationFamiliale: string
   nombreEnfants: string
   situationProfessionnelle: string
-  
+
   // Critères de recherche
   typeBien: string[]
   budgetMin: string
@@ -41,7 +42,7 @@ interface QuestionnaireData {
   nombrePieces: string
   localisation: string
   quartiers: string[]
-  
+
   // Critères supplémentaires
   balcon: boolean
   terrasse: boolean
@@ -49,12 +50,12 @@ interface QuestionnaireData {
   parking: boolean
   cave: boolean
   ascenseur: boolean
-  
+
   // Financement
   apport: string
   financement: string
   dureePret: string
-  
+
   // Urgence
   delaiRecherche: string
   flexibilite: string
@@ -132,11 +133,14 @@ export default function QuestionnaireAcquereur() {
     }
   }
 
+  const router = useRouter() // Import useRouter
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Données du questionnaire:', formData)
     // Ici, vous pouvez envoyer les données à votre API
-    alert('Questionnaire soumis avec succès !')
+    // alert('Questionnaire soumis avec succès !') // Removed alert
+    router.push('/acquereur/dashboard') // Add redirect
   }
 
   const quartiersParis = [
@@ -234,11 +238,10 @@ export default function QuestionnaireAcquereur() {
                   <div
                     key={type}
                     onClick={() => toggleTypeBien(type.toLowerCase())}
-                    className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      formData.typeBien.includes(type.toLowerCase())
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.typeBien.includes(type.toLowerCase())
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <Checkbox
                       checked={formData.typeBien.includes(type.toLowerCase())}
@@ -420,11 +423,10 @@ export default function QuestionnaireAcquereur() {
                     <div
                       key={quartier}
                       onClick={() => toggleQuartier(quartier)}
-                      className={`flex items-center space-x-2 p-2 rounded cursor-pointer transition-all ${
-                        formData.quartiers.includes(quartier)
-                          ? 'bg-blue-50 border-blue-600 border'
-                          : 'hover:bg-gray-50'
-                      }`}
+                      className={`flex items-center space-x-2 p-2 rounded cursor-pointer transition-all ${formData.quartiers.includes(quartier)
+                        ? 'bg-blue-50 border-blue-600 border'
+                        : 'hover:bg-gray-50'
+                        }`}
                     >
                       <Checkbox
                         checked={formData.quartiers.includes(quartier)}
@@ -457,11 +459,10 @@ export default function QuestionnaireAcquereur() {
                 <div
                   key={key}
                   onClick={() => updateFormData(key as keyof QuestionnaireData, !formData[key as keyof QuestionnaireData])}
-                  className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                    formData[key as keyof QuestionnaireData]
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData[key as keyof QuestionnaireData]
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <Checkbox
                     checked={formData[key as keyof QuestionnaireData] as boolean}
@@ -574,31 +575,28 @@ export default function QuestionnaireAcquereur() {
                   const Icon = step.icon
                   const isActive = currentStep === step.id
                   const isCompleted = currentStep > step.id
-                  
+
                   return (
                     <div key={step.id} className="flex items-center flex-1">
                       <div className="flex flex-col items-center flex-1">
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                            isActive
-                              ? 'bg-blue-600 text-white scale-110'
-                              : isCompleted
+                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isActive
+                            ? 'bg-blue-600 text-white scale-110'
+                            : isCompleted
                               ? 'bg-green-500 text-white'
                               : 'bg-gray-200 text-gray-500'
-                          }`}
+                            }`}
                         >
                           <Icon className="h-6 w-6" />
                         </div>
-                        <p className={`text-xs mt-2 text-center font-medium ${
-                          isActive ? 'text-blue-600' : 'text-gray-500'
-                        }`}>
+                        <p className={`text-xs mt-2 text-center font-medium ${isActive ? 'text-blue-600' : 'text-gray-500'
+                          }`}>
                           {step.title}
                         </p>
                       </div>
                       {index < STEPS.length - 1 && (
-                        <div className={`h-1 flex-1 mx-2 rounded ${
-                          isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                        }`} />
+                        <div className={`h-1 flex-1 mx-2 rounded ${isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                          }`} />
                       )}
                     </div>
                   )
@@ -622,7 +620,7 @@ export default function QuestionnaireAcquereur() {
                   <ArrowLeft className="h-4 w-4" />
                   Précédent
                 </Button>
-                
+
                 {currentStep < STEPS.length ? (
                   <Button
                     type="button"
