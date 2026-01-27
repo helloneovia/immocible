@@ -1,22 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2 } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
-function BuyerProfileContent({ params }: { params: { id: string } }) {
+function BuyerProfileContent() {
+    const params = useParams()
+    const id = params?.id as string
     const router = useRouter()
     const [buyerData, setBuyerData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [unlocking, setUnlocking] = useState(false)
 
     useEffect(() => {
+        if (!id) return
         const fetchBuyer = async () => {
             try {
-                const res = await fetch(`/api/agence/buyer/${params.id}`)
+                const res = await fetch(`/api/agence/buyer/${id}`)
                 if (res.ok) {
                     const data = await res.json()
                     setBuyerData(data)
@@ -28,7 +31,7 @@ function BuyerProfileContent({ params }: { params: { id: string } }) {
             }
         }
         fetchBuyer()
-    }, [params.id])
+    }, [id])
 
     const handleUnlock = async () => {
         if (!confirm(`Confirmer le paiement de ${buyerData.price}€ pour débloquer ce contact ?`)) return
@@ -40,14 +43,14 @@ function BuyerProfileContent({ params }: { params: { id: string } }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    buyerId: params.id,
+                    buyerId: id,
                     amount: buyerData.price
                 })
             })
 
             if (res.ok) {
                 // Refresh data
-                const refreshRes = await fetch(`/api/agence/buyer/${params.id}`)
+                const refreshRes = await fetch(`/api/agence/buyer/${id}`)
                 const refreshData = await refreshRes.json()
                 setBuyerData(refreshData)
                 alert('Contact débloqué avec succès !')
@@ -215,10 +218,10 @@ function BuyerProfileContent({ params }: { params: { id: string } }) {
     )
 }
 
-export default function BuyerProfilePage({ params }: { params: { id: string } }) {
+export default function BuyerProfilePage() {
     return (
         <ProtectedRoute requiredRole="agence">
-            <BuyerProfileContent params={params} />
+            <BuyerProfileContent />
         </ProtectedRoute>
     )
 }
