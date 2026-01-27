@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
@@ -70,7 +71,7 @@ const STEPS = [
   { id: 6, title: 'Urgence et flexibilité', icon: Home },
 ]
 
-export default function QuestionnaireAcquereur() {
+function QuestionnaireContent() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -695,5 +696,13 @@ export default function QuestionnaireAcquereur() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function QuestionnaireAcquereur() {
+  return (
+    <ProtectedRoute requiredRole="acquereur" redirectTo="/acquereur/connexion">
+      <QuestionnaireContent />
+    </ProtectedRoute>
   )
 }
