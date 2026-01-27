@@ -50,6 +50,25 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
         return () => clearInterval(interval)
     }, [conversationId])
 
+    // Mark as read when messages load
+    useEffect(() => {
+        const markAsRead = async () => {
+            const hasUnread = messages.some(m => !m.isRead && m.senderId !== currentUserId)
+            if (hasUnread) {
+                try {
+                    await fetch('/api/chat/read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ conversationId }),
+                    })
+                } catch (e) {
+                    console.error('Error marking read:', e)
+                }
+            }
+        }
+        markAsRead()
+    }, [messages, conversationId, currentUserId])
+
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight

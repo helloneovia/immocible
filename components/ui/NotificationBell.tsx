@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 interface NotificationBellProps {
     role: 'acquereur' | 'agence'
@@ -13,6 +14,7 @@ export function NotificationBell({ role }: NotificationBellProps) {
     const [unreadCount, setUnreadCount] = useState(0)
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const previousCountRef = useRef(0)
+    const pathname = usePathname()
 
     useEffect(() => {
         // Initialize audio
@@ -26,8 +28,8 @@ export function NotificationBell({ role }: NotificationBellProps) {
                     const data = await res.json()
                     const newCount = data.count
 
-                    // Play sound if count increased
-                    if (newCount > previousCountRef.current && newCount > 0) {
+                    // Play sound if count increased AND not on messages page
+                    if (newCount > previousCountRef.current && newCount > 0 && !pathname.includes('/messages')) {
                         try {
                             // User interaction is usually required to play audio, 
                             // but inside an effect it might be blocked until user interacts with the page.
