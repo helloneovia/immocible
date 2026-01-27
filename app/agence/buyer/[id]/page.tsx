@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid } from 'lucide-react'
@@ -9,11 +9,14 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function BuyerProfileContent() {
     const params = useParams()
+    const searchParams = useSearchParams()
     const id = params?.id as string
+    const sessionId = searchParams.get('session_id')
     const router = useRouter()
     const [buyerData, setBuyerData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [unlocking, setUnlocking] = useState(false)
+    const [verifying, setVerifying] = useState(false)
 
     useEffect(() => {
         if (!id) return
@@ -33,6 +36,40 @@ function BuyerProfileContent() {
         fetchBuyer()
     }, [id])
 
+    // Verify Payment Effect
+    useEffect(() => {
+        if (!sessionId || verifying) return
+
+        const verifyPayment = async () => {
+            setVerifying(true)
+            try {
+                const res = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                })
+
+                if (res.ok) {
+                    alert('Paiement validé avec succès !')
+                    // Clear query param
+                    router.replace(`/agence/buyer/${id}`)
+                    // Refresh data happens automatically via other useEffect if we trigger it? 
+                    // Or we just reload location.
+                    window.location.href = `/agence/buyer/${id}`
+                } else {
+                    const err = await res.json()
+                    console.error('Verify failed', err)
+                }
+            } catch (e) {
+                console.error('Verify error', e)
+            } finally {
+                setVerifying(false)
+            }
+        }
+
+        verifyPayment()
+    }, [sessionId])
+
     const handleUnlock = async () => {
         if (!confirm(`Confirmer le paiement de ${buyerData.price}€ pour débloquer ce contact ?`)) return
 
@@ -48,15 +85,23 @@ function BuyerProfileContent() {
                 })
             })
 
+            const responseData = await res.json().catch(() => ({}))
+
             if (res.ok) {
+                if (responseData.url) {
+                    // Redirect to Stripe
+                    window.location.href = responseData.url
+                    return
+                }
+
+                // Mock Success
                 // Refresh data
                 const refreshRes = await fetch(`/api/agence/buyer/${id}`)
                 const refreshData = await refreshRes.json()
                 setBuyerData(refreshData)
-                alert('Contact débloqué avec succès !')
+                alert('Contact débloqué avec succès ! (Mode Démonstration / Sans Stripe)')
             } else {
-                const errData = await res.json().catch(() => ({}))
-                const msg = errData.details || 'Erreur inconnue'
+                const msg = responseData.details || 'Erreur inconnue'
                 alert(`Erreur lors du paiement: ${msg}\n\nSi le message indique que la table n'existe pas, veuillez redémarrer le serveur (npm run dev).`)
             }
         } catch (error) {

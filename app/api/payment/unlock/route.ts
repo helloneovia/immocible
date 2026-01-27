@@ -30,6 +30,48 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true, message: 'Already unlocked' })
         }
 
+        // Check for Stripe
+        if (process.env.STRIPE_SECRET_KEY) {
+            try {
+                const Stripe = require('stripe')
+                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+
+                const session = await stripe.checkout.sessions.create({
+                    payment_method_types: ['card'],
+                    line_items: [
+                        {
+                            price_data: {
+                                currency: 'eur',
+                                product_data: {
+                                    name: 'Déblocage Contact Acquéreur',
+                                    description: `Accès aux coordonnées pour le dossier #${buyerId.slice(0, 8)}`,
+                                },
+                                unit_amount: Math.round((amount || 0) * 100), // Amount in cents
+                            },
+                            quantity: 1,
+                        },
+                    ],
+                    mode: 'payment',
+                    success_url: `${process.env.NEXTAUTH_URL || request.headers.get('origin')}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
+                    cancel_url: `${process.env.NEXTAUTH_URL || request.headers.get('origin')}/agence/buyer/${buyerId}`,
+                    metadata: {
+                        agencyId: currentUser.id,
+                        buyerId: buyerId,
+                        type: 'unlock_contact'
+                    },
+                })
+
+                return NextResponse.json({ url: session.url })
+            } catch (stripeError) {
+                console.error('Stripe Error:', stripeError)
+                return NextResponse.json({
+                    error: 'Payment Init Error',
+                    details: stripeError instanceof Error ? stripeError.message : String(stripeError)
+                }, { status: 500 })
+            }
+        }
+
+        // Fallback: Mock Unlock (Immediate) - Only if no Stripe Key
         // 1. Create Unlock Record
         await prisma.unlockedProfile.create({
             data: {
