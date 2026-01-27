@@ -20,7 +20,8 @@ import {
   MapPin,
   Euro,
   Star,
-  Filter
+  Filter,
+  MessageSquare
 } from 'lucide-react'
 
 function DashboardContent() {
@@ -65,6 +66,13 @@ function DashboardContent() {
                 <Settings className="h-5 w-5 mr-2" />
                 Paramètres
               </Button>
+              <Link href="/acquereur/messages">
+                <Button variant="ghost" className="font-medium relative">
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Messagerie
+                  {/* Optional: Add badge here if unread count > 0 */}
+                </Button>
+              </Link>
               <Button variant="outline" className="font-medium" onClick={signOut}>
                 <LogOut className="h-5 w-5 mr-2" />
                 Déconnexion
@@ -117,6 +125,19 @@ function DashboardContent() {
               <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
+
+          <Link href="/acquereur/messages" className="block">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white hover:scale-105 transition-transform cursor-pointer h-full">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-teal-100 flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Communications
+                </CardDescription>
+                <CardTitle className="text-2xl font-extrabold text-white">Messagerie</CardTitle>
+                <p className="text-sm text-teal-100 mt-2">Discutez avec les agences</p>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
 
         {/* Actions */}
