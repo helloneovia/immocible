@@ -1,5 +1,7 @@
 ﻿'use client'
 
+import { useState, useEffect } from 'react'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,6 +25,16 @@ import {
 
 function DashboardContent() {
   const { signOut } = useAuth()
+  const [profileCompleted, setProfileCompleted] = useState(false)
+
+  useEffect(() => {
+    // Check local storage or URL param
+    if (typeof window !== 'undefined') {
+      const isCompleted = localStorage.getItem('profileCompleted') === 'true' ||
+        window.location.search.includes('profile=completed')
+      setProfileCompleted(isCompleted)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -80,10 +92,10 @@ function DashboardContent() {
                 <FileText className="h-4 w-4" />
                 Profil complété
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">0%</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">{profileCompleted ? '100%' : '0%'}</CardTitle>
             </CardHeader>
             <CardContent>
-              <Progress value={0} className="h-3 bg-white/20" />
+              <Progress value={profileCompleted ? 100 : 0} className="h-3 bg-white/20" />
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white">

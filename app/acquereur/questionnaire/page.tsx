@@ -137,10 +137,21 @@ export default function QuestionnaireAcquereur() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    // If not last step, treat as "Next"
+    if (currentStep < STEPS.length) {
+      handleNext()
+      return
+    }
+
     console.log('Données du questionnaire:', formData)
-    // Ici, vous pouvez envoyer les données à votre API
-    // alert('Questionnaire soumis avec succès !') // Removed alert
-    router.push('/acquereur/dashboard') // Add redirect
+
+    // Simulate updating profile completion in local storage (mock backend)
+    // In a real app, you would send a POST request here
+    localStorage.setItem('profileCompleted', 'true')
+
+    // Redirect
+    router.push('/acquereur/dashboard?profile=completed')
   }
 
   const quartiersParis = [
