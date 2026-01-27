@@ -27,6 +27,16 @@ export async function GET(request: NextRequest) {
                     orderBy: { createdAt: 'desc' },
                     take: 1,
                 },
+                _count: {
+                    select: {
+                        messages: {
+                            where: {
+                                isRead: false,
+                                senderId: { not: currentUser.id }
+                            }
+                        }
+                    }
+                }
             },
             orderBy: { updatedAt: 'desc' },
         })

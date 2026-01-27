@@ -16,6 +16,9 @@ interface Conversation {
     updatedAt: string
     agency?: { email: string, profile: any }
     buyer?: { email: string, profile: any }
+    _count?: {
+        messages: number
+    }
 }
 
 function MessagesContent() {
@@ -103,7 +106,14 @@ function MessagesContent() {
                                                             {recipient.name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <h4 className="text-sm font-semibold text-gray-900 truncate">{recipient.name}</h4>
+                                                            <div className="flex justify-between items-center">
+                                                                <h4 className="text-sm font-semibold text-gray-900 truncate">{recipient.name}</h4>
+                                                                {conv._count && conv._count.messages > 0 && (
+                                                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shrink-0">
+                                                                        {conv._count.messages}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <p className="text-xs text-muted-foreground truncate">
                                                                 Cliquez pour voir les messages
                                                             </p>
