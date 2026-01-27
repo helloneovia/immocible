@@ -45,7 +45,7 @@ function MessagesContent() {
     const getRecipient = (conv: Conversation) => {
         if (user?.role === 'agence') {
             return {
-                name: conv.buyer?.profile?.nom || conv.buyer?.email || 'Acquéreur',
+                name: (conv.buyer?.profile?.prenom ? `${conv.buyer.profile.prenom} ${conv.buyer.profile.nom || ''}`.trim() : conv.buyer?.profile?.nom) || conv.buyer?.email || 'Acquéreur',
                 role: 'Acquéreur'
             }
         } else {

@@ -31,7 +31,34 @@ export async function GET(request: NextRequest) {
             orderBy: { updatedAt: 'desc' },
         })
 
-        return NextResponse.json({ conversations })
+        // Sanitize data: Hide buyer contact info if user is an agency
+        const sanitizedConversations = conversations.map(conv => {
+            if (currentUser.role === 'agence') {
+                if (conv.buyer) {
+                    // Create a shallow copy of buyer object (or modify it if mutable, but copy is safer)
+                    // Note: Prisma objects are plain objects here
+                    const { email, profile, ...buyerRest } = conv.buyer
+
+                    let sanitizedProfile = profile
+                    if (profile) {
+                        const { telephone, ...profileRest } = profile as any
+                        sanitizedProfile = profileRest
+                    }
+
+                    return {
+                        ...conv,
+                        buyer: {
+                            ...buyerRest,
+                            // email: undefined/removed
+                            profile: sanitizedProfile
+                        }
+                    }
+                }
+            }
+            return conv
+        })
+
+        return NextResponse.json({ conversations: sanitizedConversations })
     } catch (error) {
         console.error('Get conversations error:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
