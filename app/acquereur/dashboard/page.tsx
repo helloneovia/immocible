@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
+import { NotificationBell } from '@/components/ui/NotificationBell'
 import {
   Home,
   Settings,
@@ -62,6 +63,7 @@ function DashboardContent() {
               </span>
             </Link>
             <div className="flex items-center space-x-4">
+              <NotificationBell role="acquereur" />
               <Button variant="ghost" className="font-medium">
                 <Settings className="h-5 w-5 mr-2" />
                 Paramètres
