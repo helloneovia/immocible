@@ -36,6 +36,18 @@ export async function createSession(userId: string) {
 
   console.log('[createSession] 3. Setting cookie. Secure:', isSecure, 'Env:', process.env.NODE_ENV, 'NEXTAUTH_URL:', process.env.NEXTAUTH_URL || '(not set)')
 
+  // Safety: If we are in secure mode, explicitly nuke any non-secure ghost cookie
+  // that might be lingering from the previous "aggressive clearing" bug.
+  if (isSecure) {
+    cookieStore.set(SESSION_COOKIE_NAME, '', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false, // Explicitly target non-secure
+      maxAge: 0,
+      path: '/',
+    })
+  }
+
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
     secure: isSecure,
@@ -105,28 +117,18 @@ export async function deleteSession(sessionId?: string) {
     }
   }
 
-  // AGGRESSIVE COOKIE CLEARING STRATEGY
-  // We don't know if the browser holds a "Secure" or "Non-Secure" cookie (due to env changes).
-  // We will attempt to clear both.
+  // Determine if we should use secure cookies, matching createSession logic
+  const isSecure = process.env.NODE_ENV === 'production' && (!process.env.NEXTAUTH_URL || !process.env.NEXTAUTH_URL.startsWith('http://'))
 
-  const commonOptions = {
+  console.log('[deleteSession] 3. Clearing cookie. Secure:', isSecure)
+
+  cookieStore.set(SESSION_COOKIE_NAME, '', {
     httpOnly: true,
-    sameSite: 'lax' as const,
+    sameSite: 'lax',
+    secure: isSecure,
     maxAge: 0,
     path: '/',
-  }
-
-  // 1. Clear with Secure: false (likely default for HTTP/local/broken env)
-  cookieStore.set(SESSION_COOKIE_NAME, '', { ...commonOptions, secure: false })
-
-  // 2. Clear with Secure: true (for HTTPS envs)
-  // Note: One of these might be redundant or fail depending on connection, but it ensures coverage.
-  if (process.env.NODE_ENV === 'production') {
-    cookieStore.set(SESSION_COOKIE_NAME, '', { ...commonOptions, secure: true })
-    console.log('[deleteSession] 3. Cleared cookie with Secure: false AND Secure: true')
-  } else {
-    console.log('[deleteSession] 3. Cleared cookie with Secure: false')
-  }
+  })
 }
 
 export async function getCurrentUser() {

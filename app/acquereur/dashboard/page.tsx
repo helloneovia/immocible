@@ -28,12 +28,22 @@ function DashboardContent() {
   const [profileCompleted, setProfileCompleted] = useState(false)
 
   useEffect(() => {
-    // Check local storage or URL param
-    if (typeof window !== 'undefined') {
-      const isCompleted = localStorage.getItem('profileCompleted') === 'true' ||
-        window.location.search.includes('profile=completed')
-      setProfileCompleted(isCompleted)
+    const checkProfileStatus = async () => {
+      try {
+        const response = await fetch('/api/acquereur/questionnaire')
+        if (response.ok) {
+          const { data } = await response.json()
+          // If data is returned (not null), the profile is completed
+          if (data) {
+            setProfileCompleted(true)
+          }
+        }
+      } catch (error) {
+        console.error('Error checking profile status:', error)
+      }
     }
+
+    checkProfileStatus()
   }, [])
 
   return (
@@ -117,7 +127,7 @@ function DashboardContent() {
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
             >
               <FileText className="mr-2 h-5 w-5" />
-              Compléter mon profil
+              {profileCompleted ? 'Modifier mes critères' : 'Compléter mon profil'}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
@@ -140,7 +150,9 @@ function DashboardContent() {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun match pour le moment</h3>
             <p className="text-gray-500 max-w-sm mx-auto">
-              Complétez votre profil pour que nous puissions trouver les biens qui vous correspondent.
+              {profileCompleted
+                ? 'Nous recherchons des biens correspondant à vos critères.'
+                : 'Complétez votre profil pour que nous puissions trouver les biens qui vous correspondent.'}
             </p>
           </div>
         </div>

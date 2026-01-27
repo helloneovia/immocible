@@ -71,7 +71,8 @@ const STEPS = [
 ]
 
 export default function QuestionnaireAcquereur() {
-  const [currentStep, setCurrentStep] = useState(1)
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState<QuestionnaireData>({
     situationFamiliale: '',
     nombreEnfants: '',
@@ -96,6 +97,27 @@ export default function QuestionnaireAcquereur() {
     delaiRecherche: '',
     flexibilite: '',
   })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/acquereur/questionnaire')
+        if (response.ok) {
+          const { data } = await response.json()
+          if (data) {
+            setFormData(data)
+            // If data exists, we can assume profile is somewhat active/previously filled
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching questionnaire data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const progress = (currentStep / STEPS.length) * 100
 
@@ -133,9 +155,7 @@ export default function QuestionnaireAcquereur() {
     }
   }
 
-  const router = useRouter() // Import useRouter
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // If not last step, treat as "Next"
@@ -144,14 +164,32 @@ export default function QuestionnaireAcquereur() {
       return
     }
 
-    console.log('Données du questionnaire:', formData)
+    try {
+      const response = await fetch('/api/acquereur/questionnaire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
 
-    // Simulate updating profile completion in local storage (mock backend)
-    // In a real app, you would send a POST request here
-    localStorage.setItem('profileCompleted', 'true')
+      if (!response.ok) {
+        throw new Error('Failed to save questionnaire')
+      }
 
-    // Redirect
-    router.push('/acquereur/dashboard?profile=completed')
+      // Update local storage for client-side immediate feedback (optional, since we now rely more on server state)
+      localStorage.setItem('profileCompleted', 'true')
+
+      // Redirect
+      router.push('/acquereur/dashboard?profile=completed')
+    } catch (error) {
+      console.error('Error saving questionnaire:', error)
+      alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')
+    }
+  }
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
   }
 
   const quartiersParis = [
