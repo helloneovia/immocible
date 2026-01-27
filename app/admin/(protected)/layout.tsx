@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
+import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
 
 export default async function AdminLayout({
     children,
@@ -72,7 +73,7 @@ export default async function AdminLayout({
             <main className="flex-1 overflow-auto">
                 <header className="bg-white shadow-sm border-b px-6 py-4 flex items-center justify-between md:hidden">
                     <div className="font-bold">ADMIN PANEL</div>
-                    {/* Mobile menu trigger could go here */}
+                    <AdminMobileNav />
                 </header>
                 <div className="p-8">
                     {children}
