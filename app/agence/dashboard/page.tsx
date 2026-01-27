@@ -177,7 +177,7 @@ function DashboardContent() {
                   <div className="space-y-3">
                     <div className="flex items-center text-sm text-gray-600">
                       <Euro className="h-4 w-4 mr-2 text-gray-400" />
-                      {search.budgetMax.toLocaleString()} € max
+                      {(search.prixMax || 0).toLocaleString()} € max
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
                       <TrendingUp className="h-4 w-4 mr-2 text-gray-400" />
