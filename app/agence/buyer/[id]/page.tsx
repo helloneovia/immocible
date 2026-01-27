@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function BuyerProfileContent() {
@@ -55,7 +55,7 @@ function BuyerProfileContent() {
                 setBuyerData(refreshData)
                 alert('Contact débloqué avec succès !')
             } else {
-                alert('Erreur lors du paiement.')
+                alert('Erreur technique (Base de données). Si vous êtes le développeur, veuillez redémarrer le serveur (npm run dev) pour appliquer les changements de schéma.')
             }
         } catch (error) {
             console.error('Payment error', error)
@@ -112,19 +112,37 @@ function BuyerProfileContent() {
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                                         <BadgeEuro className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Budget Max</span>
+                                        <span className="text-sm font-medium">Budget</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {search?.prixMax?.toLocaleString()} €
+                                    <p className="text-lg font-bold text-gray-900 break-words">
+                                        {search?.prixMin ? `${search.prixMin.toLocaleString()} - ` : ''}{search?.prixMax?.toLocaleString()} €
                                     </p>
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                                         <Ruler className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Surface Min</span>
+                                        <span className="text-sm font-medium">Surface</span>
                                     </div>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {search?.surfaceMin || 0} m²
+                                    <p className="text-lg font-bold text-gray-900">
+                                        {search?.surfaceMin || 0}{search?.surfaceMax ? ` - ${search.surfaceMax}` : ''} m²
+                                    </p>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                                        <LayoutGrid className="h-4 w-4" />
+                                        <span className="text-sm font-medium">Pièces</span>
+                                    </div>
+                                    <p className="text-lg font-bold text-gray-900">
+                                        {search?.nombrePiecesMin || '1'}{search?.nombrePiecesMax ? ` - ${search.nombrePiecesMax}` : '+'}
+                                    </p>
+                                </div>
+                                <div className="p-4 bg-gray-50 rounded-xl">
+                                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                                        <BedDouble className="h-4 w-4" />
+                                        <span className="text-sm font-medium">Chambres</span>
+                                    </div>
+                                    <p className="text-lg font-bold text-gray-900">
+                                        {search?.nombreChambresMin || '0'}{search?.nombreChambresMax ? ` - ${search.nombreChambresMax}` : '+'}
                                     </p>
                                 </div>
                             </div>
