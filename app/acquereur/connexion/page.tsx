@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, LogIn, Shield, AlertCircle, Loader2 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 // Validation schema
 const loginSchema = z.object({
@@ -22,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function ConnexionAcquereur() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [globalError, setGlobalError] = useState<string | null>(null)
 
   const {
@@ -60,6 +62,9 @@ export default function ConnexionAcquereur() {
       if (result.user.role !== 'acquereur') {
         throw new Error('Ce compte n\'est pas un compte acquéreur')
       }
+
+      // Refresh the auth context before redirecting
+      await refreshUser()
 
       router.push('/acquereur/dashboard')
       router.refresh()

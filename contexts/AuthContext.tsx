@@ -67,8 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error signing out:', error)
     } finally {
       setUser(null)
-      router.push('/')
-      router.refresh()
+      // Force a hard reload to clear all application state and ensure cookies are cleared
+      window.location.href = '/'
     }
   }
 
