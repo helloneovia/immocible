@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json()
         setUser(data.user)
       } else {
+        // If 401 or other error, ensure user is null so ProtectedRoute can handle redirect
         setUser(null)
       }
     } catch (error) {
