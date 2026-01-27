@@ -1,59 +1,33 @@
 import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 
-const SESSION_COOKIE_NAME = 'immocible_session_v2'
+const SESSION_COOKIE_NAME = 'immocible_session_v3' // Bump version to force fresh start
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 
 export async function createSession(userId: string) {
   const sessionId = crypto.randomUUID()
 
-  console.log('[createSession] 1. Creating session. UserId:', userId, 'SessionID:', sessionId)
+  console.log('[Auth] Creating session for user:', userId)
 
-  // Store session in database
-  try {
-    await prisma.session.create({
-      data: {
-        id: sessionId,
-        userId,
-        expiresAt: new Date(Date.now() + SESSION_MAX_AGE * 1000),
-      },
-    })
-    console.log('[createSession] 2. DB session created.')
-  } catch (e) {
-    console.error('[createSession] ERROR creating DB session:', e)
-    throw e
-  }
+  // 1. Create session in DB
+  await prisma.session.create({
+    data: {
+      id: sessionId,
+      userId,
+      expiresAt: new Date(Date.now() + SESSION_MAX_AGE * 1000),
+    },
+  })
 
-  // Set cookie
+  // 2. Set Cookie
   const cookieStore = cookies()
 
-  // Only use secure cookies in production if the URL is HTTPS
-  // This allows production builds to work on HTTP (e.g. internal testing) if NEXTAUTH_URL is set to http://...
-
-  // LOGIC UPDATE: Force Secure: true in production for immocible.com (HTTPS).
-  // Only downgrade to false if NEXTAUTH_URL is explicitly HTTP.
-  const isSecure = process.env.NODE_ENV === 'production' && (!process.env.NEXTAUTH_URL || !process.env.NEXTAUTH_URL.startsWith('http://'))
-
-  console.log('[createSession] 3. Setting cookie. Secure:', isSecure, 'Env:', process.env.NODE_ENV, 'NEXTAUTH_URL:', process.env.NEXTAUTH_URL || '(not set)')
-
-  // Safety: If we are in secure mode, explicitly nuke any non-secure ghost cookie
-  // that might be lingering from the previous "aggressive clearing" bug.
-  if (isSecure) {
-    cookieStore.set(SESSION_COOKIE_NAME, '', {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: false, // Explicitly target non-secure
-      maxAge: 0,
-      path: '/',
-    })
-  }
-
+  // Simple, robust cookie settings
   cookieStore.set(SESSION_COOKIE_NAME, sessionId, {
     httpOnly: true,
-    secure: isSecure,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE,
     path: '/',
+    maxAge: SESSION_MAX_AGE,
   })
 
   return sessionId
@@ -63,80 +37,66 @@ export async function getSession() {
   const cookieStore = cookies()
   const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
-  console.log('[getSession] 1. Cookie retrieved:', sessionId ? sessionId.substring(0, 8) + '...' : 'UNDEFINED')
-
-  if (!sessionId) {
-    return null
-  }
+  if (!sessionId) return null
 
   try {
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
       include: {
         user: {
-          include: {
-            profile: true,
-          },
-        },
-      },
+          include: { profile: true }
+        }
+      }
     })
 
     if (!session) {
-      console.log('[getSession] 2. Session NOT found in DB. ID:', sessionId)
+      // Cookie exists but invalid in DB -> Clear it
+      await deleteSession()
       return null
     }
 
     if (session.expiresAt < new Date()) {
-      console.log('[getSession] 3. Session expired. ExpiresAt:', session.expiresAt, 'Now:', new Date())
-      await deleteSession(sessionId)
+      await deleteSession()
       return null
     }
 
-    console.log('[getSession] 4. Session valid. User:', session.user.id)
     return session
-  } catch (e) {
-    console.error('[getSession] ERROR retrieving session:', e)
+  } catch (error) {
+    console.error('[Auth] Error getting session:', error)
     return null
   }
 }
 
-export async function deleteSession(sessionId?: string) {
+export async function deleteSession() {
   const cookieStore = cookies()
-  const id = sessionId || cookieStore.get(SESSION_COOKIE_NAME)?.value
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value
 
-  console.log('[deleteSession] 1. Request to delete session. ID:', id || 'unknown')
-
-  if (id) {
+  if (sessionId) {
+    // Delete from DB
     try {
-      await prisma.session.delete({
-        where: { id },
+      await prisma.session.deleteMany({
+        where: { id: sessionId }
       })
-      console.log('[deleteSession] 2. DB session deleted.')
     } catch (e) {
-      console.log('[deleteSession] 2. DB session deletion skipped (not found or error).')
+      // Ignore if already deleted
     }
   }
 
-  // Determine if we should use secure cookies, matching createSession logic
-  const isSecure = process.env.NODE_ENV === 'production' && (!process.env.NEXTAUTH_URL || !process.env.NEXTAUTH_URL.startsWith('http://'))
-
-  console.log('[deleteSession] 3. Clearing cookie. Secure:', isSecure)
-
+  // Clear cookie
   cookieStore.set(SESSION_COOKIE_NAME, '', {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    secure: isSecure,
-    maxAge: 0,
     path: '/',
+    maxAge: 0,
   })
 }
 
 export async function getCurrentUser() {
   const session = await getSession()
-  if (!session) {
-    return null
-  }
+  if (!session) return null
 
+  // Return user without password
   const { password: _, ...userWithoutPassword } = session.user
   return userWithoutPassword
 }

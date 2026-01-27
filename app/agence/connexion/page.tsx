@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, LogIn, Shield, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function ConnexionAgence() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -45,6 +47,9 @@ export default function ConnexionAgence() {
         setError('Ce compte n\'est pas un compte agence')
         return
       }
+
+      // Refresh auth context
+      await refreshUser()
 
       // Redirect to dashboard
       router.push('/agence/dashboard')

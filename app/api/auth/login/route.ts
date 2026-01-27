@@ -7,28 +7,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { email, password, role } = body
 
-    // Validation
+    console.log(`[Login] Attempt for ${email} as ${role || 'unknown'}`)
+
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Email et mot de passe requis' },
         { status: 400 }
       )
     }
 
-    // Authenticate user
+    // Authenticate (throws error if invalid)
     const user = await authenticateUser(email, password, role)
 
-    // Create session
+    // Create Session
     await createSession(user.id)
 
+    console.log(`[Login] Success for user ${user.id}`)
+
     return NextResponse.json(
-      { user },
+      { success: true, user },
       { status: 200 }
     )
+
   } catch (error: any) {
-    console.error('Login error:', error)
+    console.error('[Login] Error:', error.message)
     return NextResponse.json(
-      { error: error.message || 'Login failed' },
+      { error: error.message || 'Authentification échouée' },
       { status: 401 }
     )
   }
