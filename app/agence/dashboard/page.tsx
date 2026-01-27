@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
-import { 
-  Home, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Building2, 
-  TrendingUp, 
+import {
+  Home,
+  Settings,
+  LogOut,
+  Search,
+  Building2,
+  TrendingUp,
   FileText,
   ArrowRight,
   MapPin,
@@ -73,7 +73,7 @@ function DashboardContent() {
                 <Search className="h-4 w-4" />
                 Recherches actives
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">24</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
@@ -82,7 +82,7 @@ function DashboardContent() {
                 <TrendingUp className="h-4 w-4" />
                 Matches trouvés
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">8</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white">
@@ -91,7 +91,7 @@ function DashboardContent() {
                 <Building2 className="h-4 w-4" />
                 Biens publiés
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">12</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -99,8 +99,8 @@ function DashboardContent() {
         {/* Actions */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <Link href="/agence/biens">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
             >
               <Plus className="mr-2 h-5 w-5" />
@@ -108,9 +108,9 @@ function DashboardContent() {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Button 
-            size="lg" 
-            variant="outline" 
+          <Button
+            size="lg"
+            variant="outline"
             className="border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
           >
             <Filter className="mr-2 h-5 w-5" />
@@ -120,53 +120,16 @@ function DashboardContent() {
 
         {/* Matches List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card 
-              key={i} 
-              className="group border-2 hover:border-purple-300 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer"
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between mb-3">
-                  <CardTitle className="text-xl font-bold">Recherche #{i}</CardTitle>
-                  <span className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full font-bold flex items-center gap-1 shadow-lg">
-                    <Star className="h-3 w-3 fill-white" />
-                    {94 + i}%
-                  </span>
-                </div>
-                <CardDescription className="flex items-center gap-2 text-base">
-                  <Building2 className="h-4 w-4" />
-                  Appartement • Paris 15e
-                </CardDescription>
-                <CardDescription className="flex items-center gap-1 mt-1">
-                  <Euro className="h-3 w-3" />
-                  Budget: {(600 + i * 50).toLocaleString('fr-FR')} - {(800 + i * 50).toLocaleString('fr-FR')}€
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="font-medium">Acquéreur vérifié</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="font-medium">Financement validé</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                    <span className="font-medium">Dossier complet</span>
-                  </div>
-                </div>
-                <Button 
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 group-hover:shadow-lg transition-all duration-300"
-                  variant="default"
-                >
-                  Contacter l&apos;acquéreur
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {/* No searches yet */}
+          <div className="md:col-span-2 lg:col-span-3 text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
+            <div className="mx-auto h-24 w-24 rounded-full bg-indigo-50 flex items-center justify-center mb-4">
+              <Search className="h-10 w-10 text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucune recherche active</h3>
+            <p className="text-gray-500 max-w-sm mx-auto">
+              Publiez vos biens pour voir apparaître les acquéreurs compatibles.
+            </p>
+          </div>
         </div>
       </div>
     </div>

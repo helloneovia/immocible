@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
-import { 
-  Home, 
-  Settings, 
-  LogOut, 
-  Search, 
-  Heart, 
-  TrendingUp, 
+import {
+  Home,
+  Settings,
+  LogOut,
+  Search,
+  Heart,
+  TrendingUp,
   FileText,
   ArrowRight,
   MapPin,
@@ -71,7 +71,7 @@ function DashboardContent() {
                 <Search className="h-4 w-4" />
                 Matches trouvés
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">12</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
@@ -80,10 +80,10 @@ function DashboardContent() {
                 <FileText className="h-4 w-4" />
                 Profil complété
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">85%</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0%</CardTitle>
             </CardHeader>
             <CardContent>
-              <Progress value={85} className="h-3 bg-white/20" />
+              <Progress value={0} className="h-3 bg-white/20" />
             </CardContent>
           </Card>
           <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white">
@@ -92,7 +92,7 @@ function DashboardContent() {
                 <Heart className="h-4 w-4" />
                 Biens favoris
               </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">5</CardTitle>
+              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
         </div>
@@ -100,8 +100,8 @@ function DashboardContent() {
         {/* Actions */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <Link href="/acquereur/questionnaire">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
             >
               <FileText className="mr-2 h-5 w-5" />
@@ -109,9 +109,9 @@ function DashboardContent() {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Button 
-            size="lg" 
-            variant="outline" 
+          <Button
+            size="lg"
+            variant="outline"
             className="border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
           >
             <Filter className="mr-2 h-5 w-5" />
@@ -121,54 +121,16 @@ function DashboardContent() {
 
         {/* Matches List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card 
-              key={i} 
-              className="group border-2 hover:border-indigo-300 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer overflow-hidden"
-            >
-              <CardHeader className="p-0">
-                <div className="relative aspect-video bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                  <Home className="h-20 w-20 text-indigo-300 group-hover:scale-110 transition-transform duration-300" />
-                  <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                    <Star className="h-3 w-3 fill-white" />
-                    {92 + i}%
-                  </div>
-                </div>
-              </CardHeader>
-              <CardHeader className="pt-6">
-                <CardTitle className="text-xl font-bold mb-1">Appartement 4 pièces</CardTitle>
-                <CardDescription className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  75014 Paris • 120m²
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground font-medium">Prix</span>
-                    <span className="text-lg font-extrabold text-gray-900 flex items-center gap-1">
-                      <Euro className="h-4 w-4" />
-                      {(850 + i * 50).toLocaleString('fr-FR')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-2 border-t">
-                    <span className="text-sm text-muted-foreground font-medium">Score de match</span>
-                    <span className="text-lg font-bold text-green-600 flex items-center gap-1">
-                      <TrendingUp className="h-4 w-4" />
-                      {92 + i}%
-                    </span>
-                  </div>
-                </div>
-                <Button 
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 group-hover:shadow-lg transition-all duration-300"
-                  variant="default"
-                >
-                  Voir les détails
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {/* No matches yet */}
+          <div className="md:col-span-2 lg:col-span-3 text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
+            <div className="mx-auto h-24 w-24 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+              <Search className="h-10 w-10 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun match pour le moment</h3>
+            <p className="text-gray-500 max-w-sm mx-auto">
+              Complétez votre profil pour que nous puissions trouver les biens qui vous correspondent.
+            </p>
+          </div>
         </div>
       </div>
     </div>
