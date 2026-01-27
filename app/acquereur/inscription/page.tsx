@@ -56,7 +56,7 @@ export default function InscriptionAcquereur() {
       // 2. Redirect to dashboard
       // Note: Registration route already sets the session cookie
       router.refresh()
-      router.push('/acquereur/dashboard')
+      router.push('/acquereur/questionnaire')
 
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
