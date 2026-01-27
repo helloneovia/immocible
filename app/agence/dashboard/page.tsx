@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import {
   Home,
+  MessageSquare,
   Settings,
   LogOut,
   Search,
@@ -41,6 +42,12 @@ function DashboardContent() {
               </span>
             </Link>
             <div className="flex items-center space-x-4">
+              <Button variant="ghost" className="font-medium" asChild>
+                <Link href="/agence/messages">
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                  Messagerie
+                </Link>
+              </Button>
               <Button variant="ghost" className="font-medium">
                 <Settings className="h-5 w-5 mr-2" />
                 Paramètres
