@@ -1,25 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, ArrowRight, LogIn, Shield, AlertCircle } from 'lucide-react'
+import { Home, ArrowRight, LogIn, Shield, AlertCircle, Loader2 } from 'lucide-react'
+
+// Validation schema
+const loginSchema = z.object({
+  email: z.string().email('Email invalide'),
+  password: z.string().min(1, 'Le mot de passe est requis'),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export default function ConnexionAcquereur() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [globalError, setGlobalError] = useState<string | null>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  // clear any stale sessions on mount
+  useEffect(() => {
+    const clearSession = async () => {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' })
+      } catch (e) {
+        // ignore errors during cleanup
+      }
+    }
+    clearSession()
+  }, [])
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setGlobalError(null)
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -28,31 +54,27 @@ export default function ConnexionAcquereur() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
-          password,
+          email: data.email,
+          password: data.password,
           role: 'acquereur',
         }),
       })
 
-      const data = await response.json()
+      const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Email ou mot de passe incorrect')
+        throw new Error(result.error || 'Identifiants incorrects')
       }
 
-      // Check if user is acquereur
-      if (data.user.role !== 'acquereur') {
-        setError('Ce compte n\'est pas un compte acquéreur')
-        return
+      // Strict role check
+      if (result.user.role !== 'acquereur') {
+        throw new Error('Ce compte n\'est pas un compte acquéreur')
       }
 
-      // Redirect to dashboard
       router.push('/acquereur/dashboard')
       router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Email ou mot de passe incorrect')
-    } finally {
-      setLoading(false)
+      setGlobalError(err.message || 'Une erreur est survenue lors de la connexion')
     }
   }
 
@@ -91,51 +113,66 @@ export default function ConnexionAcquereur() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5" />
-                    <span className="text-sm">{error}</span>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {globalError && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                    <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-sm">{globalError}</span>
                   </div>
                 )}
+
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="votre@email.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                    className={`h-12 border-2 transition-colors ${errors.email ? 'border-red-300 focus:border-red-500' : 'focus:border-blue-500'}`}
+                    {...register('email')}
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>
+                  )}
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold">Mot de passe</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 border-2 focus:border-blue-500 transition-colors"
-                  />
-                  <div className="flex justify-end pt-1">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="password" className="text-sm font-semibold">Mot de passe</Label>
                     <Link href="/forgot-password" className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline">
                       Mot de passe oublié ?
                     </Link>
                   </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    className={`h-12 border-2 transition-colors ${errors.password ? 'border-red-300 focus:border-red-500' : 'focus:border-blue-500'}`}
+                    {...register('password')}
+                  />
+                  {errors.password && (
+                    <p className="text-xs text-red-500 font-medium">{errors.password.message}</p>
+                  )}
                 </div>
+
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={isSubmitting}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
                 >
-                  {loading ? 'Connexion...' : 'Se connecter'}
-                  {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Connexion...
+                    </div>
+                  ) : (
+                    <>
+                      Se connecter
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </Button>
+
                 <div className="relative py-4">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -144,12 +181,14 @@ export default function ConnexionAcquereur() {
                     <span className="bg-white px-2 text-muted-foreground">Ou</span>
                   </div>
                 </div>
+
                 <div className="text-center text-sm text-muted-foreground">
                   Vous n&apos;avez pas de compte ?{' '}
                   <Link href="/acquereur/inscription" className="text-blue-600 hover:text-blue-700 underline font-semibold">
                     Créer un compte
                   </Link>
                 </div>
+
                 <div className="text-center text-sm pt-2">
                   <Link href="/agence/connexion" className="text-muted-foreground hover:text-blue-600 transition-colors font-medium">
                     Vous êtes une agence ? Connectez-vous ici →
