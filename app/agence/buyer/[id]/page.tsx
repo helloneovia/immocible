@@ -70,7 +70,15 @@ function BuyerProfileContent() {
     }
 
     if (!buyerData) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50">Profil introuvable</div>
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Profil introuvable</h2>
+                <p className="text-gray-500">ID recherché: <code className="bg-gray-200 px-1 rounded">{id || 'undefined'}</code></p>
+                <Button variant="outline" className="mt-4" onClick={() => router.back()}>
+                    Retour
+                </Button>
+            </div>
+        )
     }
 
     const { search, profile, unlocked, price } = buyerData

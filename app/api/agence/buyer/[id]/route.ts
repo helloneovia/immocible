@@ -12,14 +12,21 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         }
 
         // Check unlock status
-        const unlocked = await prisma.unlockedProfile.findUnique({
-            where: {
-                agencyId_buyerId: {
-                    agencyId: currentUser.id,
-                    buyerId: buyerId
+        let unlocked = null
+        try {
+            unlocked = await prisma.unlockedProfile.findUnique({
+                where: {
+                    agencyId_buyerId: {
+                        agencyId: currentUser.id,
+                        buyerId: buyerId
+                    }
                 }
-            }
-        })
+            })
+        } catch (e) {
+            console.warn('Failed to check unlock status (possibly stale schema):', e)
+            // Default to locked if schema mismatch
+            unlocked = null
+        }
 
         // Fetch Buyer & Search
         const buyer = await prisma.user.findUnique({
