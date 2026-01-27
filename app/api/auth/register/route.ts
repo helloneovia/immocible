@@ -7,7 +7,7 @@ import { sendWelcomeEmail } from '@/lib/mail'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, role, nomAgence, plan } = body
+    const { email, password, role, nomAgence, plan, firstName, telephone } = body
 
     // Validation
     if (!email || !password || !role) {
@@ -37,7 +37,9 @@ export async function POST(request: NextRequest) {
       password,
       role as UserRole,
       role === 'agence' ? nomAgence : undefined,
-      role === 'agence' ? plan : undefined
+      role === 'agence' ? plan : undefined,
+      firstName,
+      telephone
     )
 
     // Send welcome email

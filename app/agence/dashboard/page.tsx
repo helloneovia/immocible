@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react'
 
 function DashboardContent() {
+  const router = useRouter()
   const { signOut } = useAuth()
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
@@ -47,6 +49,26 @@ function DashboardContent() {
 
     fetchSearches()
   }, [])
+
+  const handleChat = async (buyerId: string) => {
+    try {
+      const response = await fetch('/api/chat/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buyerId })
+      })
+      const data = await response.json()
+
+      if (response.ok) {
+        router.push(`/agence/messages?conversation=${data.conversationId}`)
+      } else {
+        alert(data.error || "Une erreur est survenue")
+      }
+    } catch (error) {
+      console.error('Error initiating chat:', error)
+      alert("Impossible de contacter ce profil pour le moment.")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100">
@@ -195,9 +217,20 @@ function DashboardContent() {
                         <p className="text-gray-500">Il y a {new Date(search.updatedAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <Button size="sm" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-0">
-                      Voir <ArrowRight className="ml-1 h-3 w-3" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                        onClick={() => handleChat(search.owner.id)}
+                      >
+                        <MessageSquare className="h-4 w-4 mr-1" />
+                        Discuter
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-2">
+                        Voir <ArrowRight className="ml-1 h-3 w-3" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -14,6 +14,8 @@ export default function InscriptionAcquereur() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [telephone, setTelephone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,6 +46,8 @@ export default function InscriptionAcquereur() {
           email,
           password,
           role: 'acquereur',
+          firstName,
+          telephone,
         }),
       })
 
@@ -107,6 +111,33 @@ export default function InscriptionAcquereur() {
                     <span className="text-sm">{error}</span>
                   </div>
                 )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-semibold">Prénom & Nom</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="Jean Dupont"
+                    required
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="telephone" className="text-sm font-semibold">Téléphone mobile</Label>
+                  <Input
+                    id="telephone"
+                    type="tel"
+                    placeholder="06 12 34 56 78"
+                    required
+                    value={telephone}
+                    onChange={(e) => setTelephone(e.target.value)}
+                    className="h-12 border-2 focus:border-blue-500 transition-colors"
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
                   <Input
