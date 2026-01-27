@@ -54,6 +54,10 @@ model User {
   agencyConversations Conversation[] @relation("AgencyConversations")
   buyerConversations  Conversation[] @relation("BuyerConversations")
   sentMessages        Message[]      @relation("SentMessages")
+  
+  // Unlock Relations
+  unlockedProfiles UnlockedProfile[] @relation("AgencyUnlocks")
+  unlockedBy       UnlockedProfile[] @relation("BuyerUnlocked")
 
   @@map("users")
 }
@@ -252,9 +256,23 @@ model Message {
   
   // Relations
   conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender          User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  sender          User         @relation("SentMessages", fields: [senderId], references: [id])
 
   @@map("messages")
   @@index([conversationId])
   @@index([senderId])
+}
+
+model UnlockedProfile {
+  id        String   @id @default(uuid())
+  agencyId  String
+  buyerId   String
+  amount    Float    // Amount paid
+  createdAt DateTime @default(now())
+  
+  agency    User     @relation("AgencyUnlocks", fields: [agencyId], references: [id])
+  buyer     User     @relation("BuyerUnlocked", fields: [buyerId], references: [id])
+
+  @@unique([agencyId, buyerId])
+  @@map("unlocked_profiles")
 }

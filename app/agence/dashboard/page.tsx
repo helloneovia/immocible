@@ -229,9 +229,11 @@ function DashboardContent() {
                         <MessageSquare className="h-4 w-4 mr-1" />
                         Discuter
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-2">
-                        Voir <ArrowRight className="ml-1 h-3 w-3" />
-                      </Button>
+                      <Link href={`/agence/buyer/${search.owner.id}`}>
+                        <Button size="sm" variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 p-2">
+                          Voir <ArrowRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      </Link>
                     </div>
                   </div>
                 </CardContent>
