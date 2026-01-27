@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await fetch('/api/auth/me', {
         cache: 'no-store',
+        credentials: 'include', // Ensure cookies are sent
       })
       if (response.ok) {
         const data = await response.json()
