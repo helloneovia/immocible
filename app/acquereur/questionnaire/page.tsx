@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -72,6 +72,7 @@ const STEPS = [
 
 export default function QuestionnaireAcquereur() {
   const router = useRouter()
+  const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState<QuestionnaireData>({
     situationFamiliale: '',
