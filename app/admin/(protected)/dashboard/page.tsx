@@ -35,8 +35,28 @@ async function getStats() {
     })
 
     // Calculate MRR (Monthly Recurring Revenue)
-    // Yearly revenue / 12 for MRR contribution
     const mrr = (monthlyActive * 29) + ((yearlyActive * 290) / 12)
+
+    // Unlock Revenue
+    const unlockPayments = await prisma.payment.aggregate({
+        where: { plan: 'unlock_contact' },
+        _sum: { amount: true },
+        _count: true
+    })
+
+    const unlockRevenue = unlockPayments._sum.amount || 0
+    const totalRevenue = mrr + unlockRevenue // Approximation (MRR is monthly, unlock is total... maybe separate them)
+
+    // Recent Payments
+    const recentPayments = await prisma.payment.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+            user: {
+                include: { profile: true }
+            }
+        }
+    })
 
     return {
         totalUsers,
@@ -44,7 +64,10 @@ async function getStats() {
         agences,
         monthlyActive,
         yearlyActive,
-        mrr
+        mrr,
+        unlockRevenue,
+        unlockNotionalRevenue: unlockPayments._sum.amount || 0, // Total lifetime
+        recentPayments
     }
 }
 
@@ -70,17 +93,6 @@ export default async function AdminDashboard() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Acquéreurs</CardTitle>
-                        <UserCircle className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{stats.acquereurs}</div>
-                        <p className="text-xs text-muted-foreground">Profils acheteurs</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Agences</CardTitle>
                         <Building2 className="h-4 w-4 text-purple-500" />
                     </CardHeader>
@@ -92,18 +104,29 @@ export default async function AdminDashboard() {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Revenu Mensuel (MRR)</CardTitle>
+                        <CardTitle className="text-sm font-medium">MRR (Abonnements)</CardTitle>
                         <TrendingUp className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.mrr)}</div>
-                        <p className="text-xs text-muted-foreground">Estimé sur abonnements actifs</p>
+                        <p className="text-xs text-muted-foreground">Revenu Récurrent Mensuel</p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Déblocages (Total)</CardTitle>
+                        <CreditCard className="h-4 w-4 text-orange-500" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.unlockRevenue)}</div>
+                        <p className="text-xs text-muted-foreground">Achats ponctuels de contacts</p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Subscription Breakdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Subscription Breakdown */}
                 <Card className="col-span-1">
                     <CardHeader>
                         <CardTitle>Répartition des Abonnements</CardTitle>
@@ -135,6 +158,40 @@ export default async function AdminDashboard() {
                                 </div>
                                 <div className="text-xl font-bold">{stats.yearlyActive}</div>
                             </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Recent Transactions */}
+                <Card className="col-span-1">
+                    <CardHeader>
+                        <CardTitle>Dernières Transactions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {stats.recentPayments.length === 0 ? (
+                                <p className="text-sm text-gray-500 text-center py-4">Aucune transaction récente</p>
+                            ) : (
+                                stats.recentPayments.map(payment => (
+                                    <div key={payment.id} className="flex items-center justify-between p-3 border-b last:border-0">
+                                        <div>
+                                            <p className="font-medium text-sm">{payment.user.profile?.nomAgence || payment.user.email}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {new Date(payment.createdAt).toLocaleDateString()} -
+                                                {payment.plan === 'unlock_contact' ? ' Déblocage Contact' : ' Abonnement'}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-sm">
+                                                +{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
+                                            </p>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${payment.status === 'succeeded' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                {payment.status}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </CardContent>
                 </Card>

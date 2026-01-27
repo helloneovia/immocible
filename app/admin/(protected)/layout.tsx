@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2 } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 
@@ -36,6 +36,10 @@ export default async function AdminLayout({
                     <Link href="/admin/subscriptions" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
                         <CreditCard className="h-5 w-5" />
                         Abonnements
+                    </Link>
+                    <Link href="/admin/transactions" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <Receipt className="h-5 w-5" />
+                        Transactions
                     </Link>
                     <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-lg transition-colors mt-8">
                         <Trash2 className="h-5 w-5" />
