@@ -46,7 +46,7 @@ interface QuestionnaireData {
   nombrePieces: string
   nombreChambres: string
   localisation: string[]
-  quartiers: string[]
+
 
   // Critères supplémentaires
   balcon: boolean
@@ -92,8 +92,8 @@ function QuestionnaireContent() {
     surfaceMax: '',
     nombrePieces: '',
     nombreChambres: '',
+
     localisation: [],
-    quartiers: [],
     balcon: false,
     terrasse: false,
     jardin: false,
@@ -145,14 +145,7 @@ function QuestionnaireContent() {
     }))
   }
 
-  const toggleQuartier = (quartier: string) => {
-    setFormData(prev => ({
-      ...prev,
-      quartiers: prev.quartiers.includes(quartier)
-        ? prev.quartiers.filter(q => q !== quartier)
-        : [...prev.quartiers, quartier]
-    }))
-  }
+
 
   const validateStep = (step: number) => {
     switch (step) {
@@ -223,28 +216,7 @@ function QuestionnaireContent() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
   }
 
-  const getArrondissements = (cities: string[]) => {
-    let allArrondissements: string[] = []
 
-    cities.forEach(city => {
-      const lowerCity = city.toLowerCase()
-      let count = 0
-      let cityName = ''
-      if (lowerCity.includes('paris')) { count = 20; cityName = 'Paris'; }
-      else if (lowerCity.includes('marseille')) { count = 16; cityName = 'Marseille'; }
-      else if (lowerCity.includes('lyon')) { count = 9; cityName = 'Lyon'; }
-
-      if (count > 0) {
-        const districts = Array.from({ length: count }, (_, i) =>
-          `${cityName} - ${i + 1}${i === 0 ? 'er' : 'e'} arrondissement`
-        )
-        allArrondissements = [...allArrondissements, ...districts]
-      }
-    })
-    return allArrondissements
-  }
-
-  const arrondissements = getArrondissements(formData.localisation)
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -578,32 +550,6 @@ function QuestionnaireContent() {
                 {formData.localisation.length === 0 ? "Recherchez et sélectionnez une ville." : "Vous pouvez ajouter d'autres villes."}
               </p>
             </div>
-
-            {arrondissements.length > 0 && (
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">
-                  Arrondissements souhaités (plusieurs choix possibles)
-                </Label>
-                <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2 border rounded-lg">
-                  {arrondissements.map((quartier) => (
-                    <div
-                      key={quartier}
-                      onClick={() => toggleQuartier(quartier)}
-                      className={`flex items-center space-x-2 p-2 rounded cursor-pointer transition-all ${formData.quartiers.includes(quartier)
-                        ? 'bg-blue-50 border-blue-600 border'
-                        : 'hover:bg-gray-50'
-                        }`}
-                    >
-                      <Checkbox
-                        checked={formData.quartiers.includes(quartier)}
-                        onChange={() => toggleQuartier(quartier)}
-                      />
-                      <Label className="cursor-pointer text-sm">{quartier}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )
 
