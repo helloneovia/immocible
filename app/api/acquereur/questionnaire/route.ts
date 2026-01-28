@@ -65,12 +65,12 @@ export async function GET() {
             situationProfessionnelle: getVal('situationProfessionnelle'),
 
             // Search Criteria
-            typeBien: recherche.typeBien.map((t: string) => t.toLowerCase().charAt(0).toUpperCase() + t.slice(1).toLowerCase()), // Capitalize first letter
+            typeBien: recherche.typeBien.map((t: string) => t.toLowerCase()), // Keep lowercase to match frontend values
             budgetMin: recherche.prixMin?.toString() || '',
             budgetMax: recherche.prixMax?.toString() || '',
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
-            nombrePieces: recherche.nombrePiecesMin?.toString() || '',
+            nombrePieces: (recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || ''),
 
             // Localisation
             localisation: recherche.zones && recherche.zones.length > 0 ? recherche.zones[0] : '', // Assuming first zone is the main city

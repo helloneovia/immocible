@@ -221,15 +221,19 @@ function QuestionnaireContent() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
   }
 
-  const quartiersParis = [
-    '1er arrondissement', '2e arrondissement', '3e arrondissement',
-    '4e arrondissement', '5e arrondissement', '6e arrondissement',
-    '7e arrondissement', '8e arrondissement', '9e arrondissement',
-    '10e arrondissement', '11e arrondissement', '12e arrondissement',
-    '13e arrondissement', '14e arrondissement', '15e arrondissement',
-    '16e arrondissement', '17e arrondissement', '18e arrondissement',
-    '19e arrondissement', '20e arrondissement'
-  ]
+  const getArrondissements = (city: string) => {
+    const lowerCity = city.toLowerCase()
+    let count = 0
+
+    if (lowerCity.includes('paris')) count = 20
+    else if (lowerCity.includes('marseille')) count = 16
+    else if (lowerCity.includes('lyon')) count = 9
+    else return []
+
+    return Array.from({ length: count }, (_, i) => `${i + 1}${i === 0 ? 'er' : 'e'} arrondissement`)
+  }
+
+  const arrondissements = getArrondissements(formData.localisation)
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -488,13 +492,13 @@ function QuestionnaireContent() {
               />
             </div>
 
-            {formData.localisation.toLowerCase().includes('paris') && (
+            {arrondissements.length > 0 && (
               <div className="space-y-3">
                 <Label className="text-base font-semibold">
                   Arrondissements souhaités (plusieurs choix possibles)
                 </Label>
                 <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto p-2 border rounded-lg">
-                  {quartiersParis.map((quartier) => (
+                  {arrondissements.map((quartier) => (
                     <div
                       key={quartier}
                       onClick={() => toggleQuartier(quartier)}
@@ -520,7 +524,7 @@ function QuestionnaireContent() {
         return (
           <div className="space-y-6">
             <Label className="text-base font-semibold">
-              Critères supplémentaires (cochez ceux qui vous intéressent)
+              Critères supplémentaires (Optionnel)
             </Label>
             <div className="grid grid-cols-2 gap-4">
               {[
