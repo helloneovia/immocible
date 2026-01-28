@@ -26,10 +26,13 @@ import {
   Users,
   Building2,
   CheckCircle2,
-  X // Added X
+  X,
+  Search,
+  Check
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
+import { Navbar } from '@/components/layout/Navbar'
 
 interface QuestionnaireData {
   // Informations personnelles
@@ -620,23 +623,7 @@ function QuestionnaireContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Navigation */}
-      <nav className="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center">
-                <Home className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                IMMOCIBLE
-              </span>
-            </Link>
-            <Button variant="ghost" asChild>
-              <Link href="/acquereur/dashboard">Retour au dashboard</Link>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar role="acquereur" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto">

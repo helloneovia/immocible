@@ -6,8 +6,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { useAuth } from '@/contexts/AuthContext'
-import { MessageSquare, Search, ArrowLeft } from 'lucide-react'
+import { MessageSquare, Search } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Navbar } from '@/components/layout/Navbar'
 
 interface Conversation {
     id: string
@@ -53,15 +54,11 @@ function MessagesContent() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-4 mb-8">
-                    <Button variant="ghost" className="gap-2" onClick={() => router.push('/acquereur/dashboard')}>
-                        <ArrowLeft className="h-4 w-4" />
-                        Tableau de bord
-                    </Button>
-                    <h1 className="text-3xl font-bold text-gray-900">Messagerie</h1>
-                </div>
+        <div className="min-h-screen bg-gray-50">
+            <Navbar role="acquereur" />
+
+            <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+                <h1 className="text-3xl font-bold text-gray-900 mb-8">Messagerie</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[600px]">
                     {/* List */}
