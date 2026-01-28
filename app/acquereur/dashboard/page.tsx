@@ -97,15 +97,7 @@ function DashboardContent() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-blue-100 flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                Matches trouvés
-              </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
-            </CardHeader>
-          </Card>
+
           <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
             <CardHeader className="pb-3">
               <CardDescription className="text-indigo-100 flex items-center gap-2">
@@ -118,15 +110,7 @@ function DashboardContent() {
               <Progress value={profileCompleted ? 100 : 0} className="h-3 bg-white/20" />
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-pink-100 flex items-center gap-2">
-                <Heart className="h-4 w-4" />
-                Biens favoris
-              </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
-            </CardHeader>
-          </Card>
+
 
           <Link href="/acquereur/messages" className="block">
             <Card className="border-0 shadow-lg bg-gradient-to-br from-teal-500 to-emerald-600 text-white hover:scale-105 transition-transform cursor-pointer h-full">
@@ -154,14 +138,7 @@ function DashboardContent() {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            <Filter className="mr-2 h-5 w-5" />
-            Filtrer les résultats
-          </Button>
+
         </div>
 
         {/* Matches List */}
@@ -171,11 +148,13 @@ function DashboardContent() {
             <div className="mx-auto h-24 w-24 rounded-full bg-blue-50 flex items-center justify-center mb-4">
               <Search className="h-10 w-10 text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Aucun match pour le moment</h3>
-            <p className="text-gray-500 max-w-sm mx-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {profileCompleted ? 'Recherche en cours' : 'Bienvenue'}
+            </h3>
+            <p className="text-gray-500 max-w-lg mx-auto text-lg leading-relaxed">
               {profileCompleted
-                ? 'Nous recherchons des biens correspondant à vos critères.'
-                : 'Complétez votre profil pour que nous puissions trouver les biens qui vous correspondent.'}
+                ? 'Votre demande est en cours de traitement, nous vous recommanderons les meilleurs biens selon vos critères.'
+                : 'Veuillez compléter le questionnaire pour nous permettre de vous recommander les meilleurs biens selon vos besoins.'}
             </p>
           </div>
         </div>
