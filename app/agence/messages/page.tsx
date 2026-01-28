@@ -7,9 +7,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { useAuth } from '@/contexts/AuthContext'
-import { MessageSquare, Search, ArrowLeft, Home, Settings, LogOut } from 'lucide-react'
+import { MessageSquare, Search, ArrowLeft } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-import { NotificationBell } from '@/components/ui/NotificationBell'
+import { Navbar } from '@/components/layout/Navbar'
 
 interface Conversation {
     id: string
@@ -64,37 +64,7 @@ function MessagesContent() {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Navigation */}
-            <nav className="border-b border-white/20 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm sticky top-0 z-50">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-20 items-center justify-between">
-                        <Link href="/agence/dashboard" className="flex items-center space-x-3 group">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Home className="h-6 w-6 text-white" />
-                            </div>
-                            <span className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                IMMOCIBLE
-                            </span>
-                        </Link>
-                        <div className="flex items-center space-x-4">
-                            <NotificationBell role="agence" />
-                            <Button variant="ghost" className="font-medium bg-indigo-50 text-indigo-700">
-                                <MessageSquare className="h-5 w-5 mr-2" />
-                                Messagerie
-                            </Button>
-                            <Link href="/settings">
-                                <Button variant="ghost" className="font-medium">
-                                    <Settings className="h-5 w-5 mr-2" />
-                                    Paramètres
-                                </Button>
-                            </Link>
-                            <Button variant="outline" className="font-medium" onClick={signOut}>
-                                <LogOut className="h-5 w-5 mr-2" />
-                                Déconnexion
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+            <Navbar role="agence" />
 
             <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Messagerie</h1>

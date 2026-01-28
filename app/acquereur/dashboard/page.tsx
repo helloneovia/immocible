@@ -24,6 +24,7 @@ import {
   Filter,
   MessageSquare
 } from 'lucide-react'
+import { Navbar } from '@/components/layout/Navbar'
 
 function DashboardContent() {
   const { signOut } = useAuth()
@@ -51,40 +52,8 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Navigation */}
-      <nav className="border-b border-white/20 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <Home className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                IMMOCIBLE
-              </span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <NotificationBell role="acquereur" />
-              <Link href="/settings">
-                <Button variant="ghost" className="font-medium">
-                  <Settings className="h-5 w-5 mr-2" />
-                  Paramètres
-                </Button>
-              </Link>
-              <Link href="/acquereur/messages">
-                <Button variant="ghost" className="font-medium relative">
-                  <MessageSquare className="h-5 w-5 mr-2" />
-                  Messagerie
-                  {/* Optional: Add badge here if unread count > 0 */}
-                </Button>
-              </Link>
-              <Button variant="outline" className="font-medium" onClick={signOut}>
-                <LogOut className="h-5 w-5 mr-2" />
-                Déconnexion
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Navigation */}
+      <Navbar role="acquereur" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}

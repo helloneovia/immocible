@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid, Briefcase, Wallet, Banknote } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { Navbar } from '@/components/layout/Navbar'
 
 function BuyerProfileContent() {
     const params = useParams()
@@ -131,8 +132,10 @@ function BuyerProfileContent() {
     const { search, profile, unlocked, price } = buyerData
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto space-y-8">
+        <div className="min-h-screen bg-gray-50">
+            <Navbar role="agence" />
+
+            <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
