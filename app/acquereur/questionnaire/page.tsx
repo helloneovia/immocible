@@ -156,7 +156,9 @@ function QuestionnaireContent() {
         return !!(formData.budgetMin && formData.budgetMax && formData.apport && formData.financement)
       case 4:
         return !!(formData.localisation.length > 0)
-      case 6: // Step 5 is optional (checkboxes)
+      case 5:
+        return formData.balcon || formData.terrasse || formData.jardin || formData.parking || formData.cave || formData.ascenseur
+      case 6: // Step 6
         return !!(formData.delaiRecherche && formData.flexibilite)
       default:
         return true
@@ -524,7 +526,7 @@ function QuestionnaireContent() {
         return (
           <div className="space-y-6">
             <Label className="text-base font-semibold">
-              Critères supplémentaires (Optionnel)
+              Critères supplémentaires * (au moins un choix)
             </Label>
             <div className="grid grid-cols-2 gap-4">
               {[
