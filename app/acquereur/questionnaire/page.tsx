@@ -61,6 +61,8 @@ interface QuestionnaireData {
   // Urgence
   delaiRecherche: string
   flexibilite: string
+  salaire: string
+  patrimoine: string
 }
 
 const STEPS = [
@@ -99,6 +101,8 @@ function QuestionnaireContent() {
     dureePret: '',
     delaiRecherche: '',
     flexibilite: '',
+    salaire: '',
+    patrimoine: '',
   })
 
   useEffect(() => {
@@ -149,7 +153,7 @@ function QuestionnaireContent() {
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return !!(formData.situationFamiliale && formData.situationProfessionnelle)
+        return !!(formData.situationFamiliale && formData.situationProfessionnelle && formData.salaire && formData.patrimoine)
       case 2:
         return !!(formData.typeBien.length > 0 && formData.surfaceMin && formData.nombrePieces)
       case 3:
@@ -298,6 +302,35 @@ function QuestionnaireContent() {
                   <SelectItem value="autre">Autre</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="salaire" className="text-base font-semibold">
+                  Revenus mensuels nets (€) *
+                </Label>
+                <Input
+                  id="salaire"
+                  type="number"
+                  placeholder="Ex: 4500"
+                  value={formData.salaire}
+                  onChange={(e) => updateFormData('salaire', e.target.value)}
+                  className="h-12"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="patrimoine" className="text-base font-semibold">
+                  Patrimoine total (€) *
+                </Label>
+                <Input
+                  id="patrimoine"
+                  type="number"
+                  placeholder="Ex: 150000"
+                  value={formData.patrimoine}
+                  onChange={(e) => updateFormData('patrimoine', e.target.value)}
+                  className="h-12"
+                />
+              </div>
             </div>
           </div>
         )

@@ -27,6 +27,8 @@ interface QuestionnaireData {
     dureePret: string
     delaiRecherche: string
     flexibilite: string
+    salaire: string
+    patrimoine: string
 }
 
 export async function GET() {
@@ -71,6 +73,8 @@ export async function GET() {
             situationFamiliale: getVal('situationFamiliale'),
             nombreEnfants: getVal('nombreEnfants'),
             situationProfessionnelle: getVal('situationProfessionnelle'),
+            salaire: getVal('salaire'),
+            patrimoine: getVal('patrimoine'),
 
             // Search Criteria
             typeBien: recherche.typeBien.map((t: string) => t.toLowerCase()), // Keep lowercase to match frontend values
@@ -136,6 +140,8 @@ export async function POST(request: Request) {
             situationFamiliale: body.situationFamiliale,
             nombreEnfants: body.nombreEnfants,
             situationProfessionnelle: body.situationProfessionnelle,
+            salaire: body.salaire,
+            patrimoine: body.patrimoine,
             quartiers: body.quartiers,
             balcon: body.balcon,
             terrasse: body.terrasse,

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid } from 'lucide-react'
+import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid, Briefcase, Wallet, Banknote } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 function BuyerProfileContent() {
@@ -219,6 +219,52 @@ function BuyerProfileContent() {
                                             )) || <span className="text-gray-900">Non spécifié</span>}
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Financial & Professional Profile */}
+                    <Card className="border-none shadow-lg bg-white overflow-hidden">
+                        <CardHeader className="bg-gradient-to-r from-teal-500 to-green-600 text-white p-6">
+                            <CardTitle className="text-2xl flex items-center gap-2">
+                                <Briefcase className="h-6 w-6" />
+                                Situation & Finance
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <Briefcase className="h-4 w-4" /> Situation Professionnelle
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900 capitalize">
+                                        {search?.caracteristiques?.situationProfessionnelle || 'Non spécifié'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <Banknote className="h-4 w-4" /> Revenus Mensuels
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {search?.caracteristiques?.salaire ? `${search.caracteristiques.salaire} €` : 'Non spécifié'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <Wallet className="h-4 w-4" /> Patrimoine
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {search?.caracteristiques?.patrimoine ? `${search.caracteristiques.patrimoine} €` : 'Non spécifié'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <BadgeEuro className="h-4 w-4" /> Apport
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {search?.caracteristiques?.apport ? `${search.caracteristiques.apport} €` : 'Non spécifié'}
+                                    </p>
                                 </div>
                             </div>
                         </CardContent>
