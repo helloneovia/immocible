@@ -181,15 +181,7 @@ function QuestionnaireContent() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // If not last step, treat as "Next"
-    if (currentStep < STEPS.length) {
-      handleNext()
-      return
-    }
-
+  const handleFinalize = async () => {
     if (!validateStep(currentStep)) {
       alert("Veuillez remplir les champs obligatoires (*) avant de finaliser.")
       return
@@ -685,7 +677,7 @@ function QuestionnaireContent() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e) => e.preventDefault()}>
               <CardContent className="space-y-8 py-8 min-h-[400px]">
                 {renderStepContent()}
               </CardContent>
@@ -713,7 +705,8 @@ function QuestionnaireContent() {
                   </Button>
                 ) : (
                   <Button
-                    type="submit"
+                    type="button"
+                    onClick={handleFinalize}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center gap-2"
                   >
                     Finaliser mon profil
