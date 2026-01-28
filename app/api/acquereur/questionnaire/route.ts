@@ -53,7 +53,15 @@ export async function GET() {
         }
 
         // Map Prisma data back to Frontend format
-        const caracteristiques = (recherche.caracteristiques as any) || {}
+        let caracteristiques = (recherche.caracteristiques as any) || {}
+        if (typeof caracteristiques === 'string') {
+            try {
+                caracteristiques = JSON.parse(caracteristiques)
+            } catch (e) {
+                console.error('[API] Failed to parse caracteristiques JSON', e)
+                caracteristiques = {}
+            }
+        }
 
         // Helper to get value from caracteristiques or default
         const getVal = (key: string, def: any = '') => caracteristiques[key] !== undefined ? caracteristiques[key] : def
