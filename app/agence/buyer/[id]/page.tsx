@@ -201,7 +201,9 @@ function BuyerProfileContent() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Type de bien</p>
-                                        <p className="text-lg font-semibold text-gray-900 capitalize">{search?.typeBien || 'Non spécifié'}</p>
+                                        <p className="text-lg font-semibold text-gray-900 capitalize">
+                                            {(search?.typeBien || []).join(', ') || 'Non spécifié'}
+                                        </p>
                                     </div>
                                 </div>
 
