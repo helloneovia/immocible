@@ -100,18 +100,20 @@ function DashboardContent() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-indigo-100 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Profil complété
-              </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">{profileCompleted ? '100%' : '0%'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={profileCompleted ? 100 : 0} className="h-3 bg-white/20" />
-            </CardContent>
-          </Card>
+          <Link href="/acquereur/questionnaire" className="block">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white hover:scale-105 transition-transform cursor-pointer h-full">
+              <CardHeader className="pb-3">
+                <CardDescription className="text-indigo-100 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Profil complété
+                </CardDescription>
+                <CardTitle className="text-4xl font-extrabold text-white">{profileCompleted ? '100%' : '0%'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Progress value={profileCompleted ? 100 : 0} className="h-3 bg-white/20" />
+              </CardContent>
+            </Card>
+          </Link>
 
 
           <Link href="/acquereur/messages" className="block">
