@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Send, User as UserIcon, Loader2 } from 'lucide-react'
+import { Send, User as UserIcon, Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -21,9 +21,10 @@ interface ChatWindowProps {
     currentUserId: string
     recipientName: string
     recipientRole?: string
+    onBack?: () => void
 }
 
-export function ChatWindow({ conversationId, currentUserId, recipientName, recipientRole }: ChatWindowProps) {
+export function ChatWindow({ conversationId, currentUserId, recipientName, recipientRole, onBack }: ChatWindowProps) {
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [loading, setLoading] = useState(true)
@@ -105,6 +106,11 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
         <div className="flex flex-col h-[600px] border rounded-xl bg-white shadow-sm overflow-hidden">
             {/* Header */}
             <div className="p-4 border-b bg-gray-50 flex items-center gap-3">
+                {onBack && (
+                    <Button variant="ghost" size="icon" className="md:hidden mr-1" onClick={onBack}>
+                        <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                )}
                 <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
                         {recipientName.charAt(0).toUpperCase()}

@@ -642,7 +642,7 @@ function QuestionnaireContent() {
             </CardHeader>
 
             {/* Steps indicator */}
-            <div className="px-6 pb-6">
+            <div className="px-6 pb-6 hidden md:block">
               <div className="flex justify-between items-center">
                 {STEPS.map((step, index) => {
                   const Icon = step.icon

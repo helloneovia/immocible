@@ -126,6 +126,7 @@ function MessagesContent() {
                                 currentUserId={user?.id || ''}
                                 recipientName={getRecipient(selectedConversation).name}
                                 recipientRole={getRecipient(selectedConversation).role}
+                                onBack={() => setSelectedConversation(null)}
                             />
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center bg-white rounded-xl border border-dashed text-center p-8 text-muted-foreground">
