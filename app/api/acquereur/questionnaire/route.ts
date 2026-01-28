@@ -178,7 +178,8 @@ export async function POST(request: Request) {
             zones: body.localisation || [],
             // If "quartiers" are present, we could append them or store separate.
             // For standard "Recherche" model, zones usually means searchable areas.
-            nombrePiecesMin: parseInt(body.nombrePieces) || null,
+            // Parse integers safely
+            nombrePiecesMin: (body.nombrePieces && !isNaN(parseInt(body.nombrePieces))) ? parseInt(body.nombrePieces) : null,
             caracteristiques: caracteristiques
         }
 

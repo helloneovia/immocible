@@ -264,6 +264,24 @@ function BuyerProfileContent() {
                                     </p>
                                 </div>
                             </div>
+                            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <Banknote className="h-4 w-4" /> Type de Financement
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900 capitalize">
+                                        {search?.caracteristiques?.financement ? search.caracteristiques.financement.replace('-', ' ') : 'Non spécifié'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                                        <Briefcase className="h-4 w-4" /> Durée du Prêt
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {search?.caracteristiques?.dureePret ? `${search.caracteristiques.dureePret} ans` : 'Non spécifié'}
+                                    </p>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
 
