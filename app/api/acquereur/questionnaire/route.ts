@@ -69,6 +69,13 @@ export async function GET() {
         // Helper to get value from caracteristiques or default
         const getVal = (key: string, def: any = '') => caracteristiques[key] !== undefined ? caracteristiques[key] : def
 
+        console.log('[API GET] Raw Search Data:', {
+            id: recherche.id,
+            piecesMin: recherche.nombrePiecesMin,
+            caracteristiquesType: typeof recherche?.caracteristiques,
+            caracteristiques: caracteristiques
+        })
+
         const data: QuestionnaireData = {
             // Personal Info (Stored in JSON)
             situationFamiliale: getVal('situationFamiliale'),
@@ -155,8 +162,11 @@ export async function POST(request: Request) {
             dureePret: body.dureePret,
             delaiRecherche: body.delaiRecherche,
             flexibilite: body.flexibilite,
-            nombrePieces: body.nombrePieces, // Redundant storage
+            nombrePieces: String(body.nombrePieces || ''), // Ensure string storage
         }
+
+        console.log('[API POST] Saving caracteristiques:', JSON.stringify(caracteristiques, null, 2))
+        console.log('[API POST] nombrePiecesMin to save:', parseInt(body.nombrePieces) || null)
 
         // Check if an active search already exists
         const existingRecherche = await prisma.recherche.findFirst({
