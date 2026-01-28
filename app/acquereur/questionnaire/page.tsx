@@ -27,6 +27,7 @@ import {
   Building2,
   CheckCircle2
 } from 'lucide-react'
+import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
 
 interface QuestionnaireData {
   // Informations personnelles
@@ -145,7 +146,28 @@ function QuestionnaireContent() {
     }))
   }
 
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        return !!(formData.situationFamiliale && formData.situationProfessionnelle)
+      case 2:
+        return !!(formData.typeBien.length > 0 && formData.surfaceMin && formData.nombrePieces)
+      case 3:
+        return !!(formData.budgetMin && formData.budgetMax && formData.apport && formData.financement)
+      case 4:
+        return !!(formData.localisation.length > 0)
+      case 6: // Step 5 is optional (checkboxes)
+        return !!(formData.delaiRecherche && formData.flexibilite)
+      default:
+        return true
+    }
+  }
+
   const handleNext = () => {
+    if (!validateStep(currentStep)) {
+      alert("Veuillez remplir les champs obligatoires (*) avant de continuer.")
+      return
+    }
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1)
     }
@@ -163,6 +185,11 @@ function QuestionnaireContent() {
     // If not last step, treat as "Next"
     if (currentStep < STEPS.length) {
       handleNext()
+      return
+    }
+
+    if (!validateStep(currentStep)) {
+      alert("Veuillez remplir les champs obligatoires (*) avant de finaliser.")
       return
     }
 
@@ -454,13 +481,10 @@ function QuestionnaireContent() {
               <Label htmlFor="localisation" className="text-base font-semibold">
                 Ville ou région recherchée *
               </Label>
-              <Input
-                id="localisation"
-                type="text"
-                placeholder="Ex: Paris, Lyon, Marseille..."
+              <LocationAutocomplete
                 value={formData.localisation}
-                onChange={(e) => updateFormData('localisation', e.target.value)}
-                className="h-12"
+                onChange={(val: string) => updateFormData('localisation', val)}
+                placeholder="Rechercher une ville, un code postal..."
               />
             </div>
 
