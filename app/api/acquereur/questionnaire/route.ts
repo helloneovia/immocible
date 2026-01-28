@@ -14,8 +14,9 @@ interface QuestionnaireData {
     surfaceMin: string
     surfaceMax: string
     nombrePieces: string
-    localisation: string
+    localisation: string[]
     quartiers: string[]
+
     balcon: boolean
     terrasse: boolean
     jardin: boolean
@@ -85,7 +86,7 @@ export async function GET() {
             nombrePieces: getVal('nombrePieces') || ((recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || '')),
 
             // Localisation
-            localisation: recherche.zones && recherche.zones.length > 0 ? recherche.zones[0] : '', // Assuming first zone is the main city
+            localisation: recherche.zones || [],
             quartiers: getVal('quartiers', []),
 
             // Extra
@@ -173,10 +174,10 @@ export async function POST(request: Request) {
             surfaceMin: parseFloat(body.surfaceMin) || null,
             surfaceMax: parseFloat(body.surfaceMax) || null,
             typeBien: mappedTypes,
-            // Assuming body.localisation is a single string like "Paris", we put it in zones array
+            // Assuming body.localisation is a string array like ["Paris", "Lyon"]
+            zones: body.localisation || [],
             // If "quartiers" are present, we could append them or store separate.
             // For standard "Recherche" model, zones usually means searchable areas.
-            zones: body.localisation ? [body.localisation] : [],
             nombrePiecesMin: parseInt(body.nombrePieces) || null,
             caracteristiques: caracteristiques
         }

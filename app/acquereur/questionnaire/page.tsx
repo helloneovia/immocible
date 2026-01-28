@@ -25,8 +25,10 @@ import {
   Euro,
   Users,
   Building2,
-  CheckCircle2
+  CheckCircle2,
+  X // Added X
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
 
 interface QuestionnaireData {
@@ -42,7 +44,7 @@ interface QuestionnaireData {
   surfaceMin: string
   surfaceMax: string
   nombrePieces: string
-  localisation: string
+  localisation: string[]
   quartiers: string[]
 
   // Critères supplémentaires
@@ -88,7 +90,7 @@ function QuestionnaireContent() {
     surfaceMin: '',
     surfaceMax: '',
     nombrePieces: '',
-    localisation: '',
+    localisation: [],
     quartiers: [],
     balcon: false,
     terrasse: false,
@@ -219,16 +221,25 @@ function QuestionnaireContent() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
   }
 
-  const getArrondissements = (city: string) => {
-    const lowerCity = city.toLowerCase()
-    let count = 0
+  const getArrondissements = (cities: string[]) => {
+    let allArrondissements: string[] = []
 
-    if (lowerCity.includes('paris')) count = 20
-    else if (lowerCity.includes('marseille')) count = 16
-    else if (lowerCity.includes('lyon')) count = 9
-    else return []
+    cities.forEach(city => {
+      const lowerCity = city.toLowerCase()
+      let count = 0
+      let cityName = ''
+      if (lowerCity.includes('paris')) { count = 20; cityName = 'Paris'; }
+      else if (lowerCity.includes('marseille')) { count = 16; cityName = 'Marseille'; }
+      else if (lowerCity.includes('lyon')) { count = 9; cityName = 'Lyon'; }
 
-    return Array.from({ length: count }, (_, i) => `${i + 1}${i === 0 ? 'er' : 'e'} arrondissement`)
+      if (count > 0) {
+        const districts = Array.from({ length: count }, (_, i) =>
+          `${cityName} - ${i + 1}${i === 0 ? 'er' : 'e'} arrondissement`
+        )
+        allArrondissements = [...allArrondissements, ...districts]
+      }
+    })
+    return allArrondissements
   }
 
   const arrondissements = getArrondissements(formData.localisation)
@@ -508,15 +519,38 @@ function QuestionnaireContent() {
       case 4:
         return (
           <div className="space-y-6">
-            <div className="space-y-2">
+            <div className="space-y-4">
               <Label htmlFor="localisation" className="text-base font-semibold">
-                Ville ou région recherchée *
+                Villes ou régions recherchées *
               </Label>
+
+              {/* Selected Locations */}
+              <div className="flex flex-wrap gap-2 min-h-[30px]">
+                {formData.localisation.map((loc) => (
+                  <Badge
+                    key={loc}
+                    variant="secondary"
+                    className="px-3 py-1 flex items-center gap-2 cursor-pointer hover:bg-red-50 hover:text-red-600 transition-colors border"
+                    onClick={() => updateFormData('localisation', formData.localisation.filter(l => l !== loc))}
+                  >
+                    {loc} <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+              </div>
+
               <LocationAutocomplete
-                value={formData.localisation}
-                onChange={(val: string) => updateFormData('localisation', val)}
-                placeholder="Rechercher une ville, un code postal..."
+                key={formData.localisation.length} // Force reset on selection
+                value=""
+                onChange={(val: string) => {
+                  if (val && !formData.localisation.includes(val)) {
+                    updateFormData('localisation', [...formData.localisation, val])
+                  }
+                }}
+                placeholder="Ajouter une ville..."
               />
+              <p className="text-sm text-gray-500">
+                {formData.localisation.length === 0 ? "Recherchez et sélectionnez une ville." : "Vous pouvez ajouter d'autres villes."}
+              </p>
             </div>
 
             {arrondissements.length > 0 && (
