@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChatWindow } from '@/components/chat/ChatWindow'
 import { useAuth } from '@/contexts/AuthContext'
-import { MessageSquare, Search, ArrowLeft } from 'lucide-react'
+import { MessageSquare, Search, ArrowLeft, Home, Settings, LogOut } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { NotificationBell } from '@/components/ui/NotificationBell'
 
 interface Conversation {
     id: string
@@ -22,7 +24,7 @@ interface Conversation {
 }
 
 function MessagesContent() {
-    const { user } = useAuth()
+    const { user, signOut } = useAuth()
     const router = useRouter()
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -60,15 +62,42 @@ function MessagesContent() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex items-center gap-4 mb-8">
-                    <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4" />
-                        Retour
-                    </Button>
-                    <h1 className="text-3xl font-bold text-gray-900">Messagerie</h1>
+        <div className="min-h-screen bg-gray-50">
+            {/* Navigation */}
+            <nav className="border-b border-white/20 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm sticky top-0 z-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-20 items-center justify-between">
+                        <Link href="/agence/dashboard" className="flex items-center space-x-3 group">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <Home className="h-6 w-6 text-white" />
+                            </div>
+                            <span className="text-2xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                IMMOCIBLE
+                            </span>
+                        </Link>
+                        <div className="flex items-center space-x-4">
+                            <NotificationBell role="agence" />
+                            <Button variant="ghost" className="font-medium bg-indigo-50 text-indigo-700">
+                                <MessageSquare className="h-5 w-5 mr-2" />
+                                Messagerie
+                            </Button>
+                            <Link href="/settings">
+                                <Button variant="ghost" className="font-medium">
+                                    <Settings className="h-5 w-5 mr-2" />
+                                    Paramètres
+                                </Button>
+                            </Link>
+                            <Button variant="outline" className="font-medium" onClick={signOut}>
+                                <LogOut className="h-5 w-5 mr-2" />
+                                Déconnexion
+                            </Button>
+                        </div>
+                    </div>
                 </div>
+            </nav>
+
+            <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+                <h1 className="text-3xl font-bold text-gray-900 mb-8">Messagerie</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[600px]">
                     {/* List */}

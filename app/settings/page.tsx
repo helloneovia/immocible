@@ -7,11 +7,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Home, MessageSquare, Settings, LogOut } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
+import { useAuth } from '@/contexts/AuthContext'
+import { NotificationBell } from '@/components/ui/NotificationBell'
 
 function SettingsContent() {
     const router = useRouter()
+    const { signOut } = useAuth()
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [role, setRole] = useState('')
@@ -95,15 +98,42 @@ function SettingsContent() {
     const backLink = role === 'agence' ? '/agence/dashboard' : (role === 'admin' ? '/admin/dashboard' : '/acquereur/dashboard')
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
+        <div className="min-h-screen bg-gray-50">
+            {/* Navigation */}
+            <nav className="border-b border-white/20 bg-white/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm sticky top-0 z-50">
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-20 items-center justify-between">
+                        <Link href={backLink} className="flex items-center space-x-3 group">
+                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <Home className="h-6 w-6 text-white" />
+                            </div>
+                            <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                                IMMOCIBLE
+                            </span>
+                        </Link>
+                        <div className="flex items-center space-x-4">
+                            <NotificationBell role={role as any} />
+                            <Link href={role === 'agence' ? "/agence/messages" : "/acquereur/messages"}>
+                                <Button variant="ghost" className="font-medium">
+                                    <MessageSquare className="h-5 w-5 mr-2" />
+                                    Messagerie
+                                </Button>
+                            </Link>
+                            <Button variant="ghost" className="font-medium bg-gray-100">
+                                <Settings className="h-5 w-5 mr-2" />
+                                Paramètres
+                            </Button>
+                            <Button variant="outline" className="font-medium" onClick={signOut}>
+                                <LogOut className="h-5 w-5 mr-2" />
+                                Déconnexion
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
                 <div className="mb-6 flex items-center justify-between">
-                    <Link href={backLink}>
-                        <Button variant="ghost" className="gap-2">
-                            <ArrowLeft className="h-4 w-4" />
-                            Retour au tableau de bord
-                        </Button>
-                    </Link>
                     <h1 className="text-2xl font-bold text-gray-900">Paramètres du compte</h1>
                 </div>
 
