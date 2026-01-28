@@ -93,10 +93,12 @@ function DashboardContent() {
                   Messagerie
                 </Link>
               </Button>
-              <Button variant="ghost" className="font-medium">
-                <Settings className="h-5 w-5 mr-2" />
-                Paramètres
-              </Button>
+              <Link href="/settings">
+                <Button variant="ghost" className="font-medium">
+                  <Settings className="h-5 w-5 mr-2" />
+                  Paramètres
+                </Button>
+              </Link>
               <Button variant="outline" className="font-medium" onClick={signOut}>
                 <LogOut className="h-5 w-5 mr-2" />
                 Déconnexion

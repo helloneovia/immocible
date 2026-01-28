@@ -64,10 +64,12 @@ function DashboardContent() {
             </Link>
             <div className="flex items-center space-x-4">
               <NotificationBell role="acquereur" />
-              <Button variant="ghost" className="font-medium">
-                <Settings className="h-5 w-5 mr-2" />
-                Paramètres
-              </Button>
+              <Link href="/settings">
+                <Button variant="ghost" className="font-medium">
+                  <Settings className="h-5 w-5 mr-2" />
+                  Paramètres
+                </Button>
+              </Link>
               <Link href="/acquereur/messages">
                 <Button variant="ghost" className="font-medium relative">
                   <MessageSquare className="h-5 w-5 mr-2" />
