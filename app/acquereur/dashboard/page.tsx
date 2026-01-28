@@ -134,9 +134,10 @@ function DashboardContent() {
             <Button
               size={!profileCompleted ? "default" : "lg"}
               className={`
-                bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 
+                ${!profileCompleted
+                  ? 'bg-red-600 hover:bg-red-700 h-20 text-xl md:text-2xl px-8 md:px-12 font-bold w-full md:w-auto'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'}
                 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group
-                ${!profileCompleted ? 'h-20 text-xl md:text-2xl px-8 md:px-12 font-bold w-full md:w-auto animate-pulse' : ''}
               `}
             >
               <FileText className={`${!profileCompleted ? 'mr-3 h-6 w-6 md:h-8 md:w-8' : 'mr-2 h-5 w-5'}`} />
