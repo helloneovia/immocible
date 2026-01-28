@@ -153,7 +153,7 @@ function DashboardContent() {
         {/* Matches List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* No matches yet */}
-          <div className="md:col-span-2 lg:col-span-3 text-center py-20 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
+          <div className="md:col-span-2 lg:col-span-3 text-center py-12 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-gray-200">
             <div className="mx-auto h-24 w-24 rounded-full bg-blue-50 flex items-center justify-center mb-4">
               <Search className="h-10 w-10 text-blue-400" />
             </div>
