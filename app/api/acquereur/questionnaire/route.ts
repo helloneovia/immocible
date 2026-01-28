@@ -14,7 +14,6 @@ interface QuestionnaireData {
     surfaceMin: string
     surfaceMax: string
     nombrePieces: string
-    nombreChambres: string
     localisation: string[]
     quartiers: string[]
 
@@ -85,7 +84,6 @@ export async function GET() {
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
             nombrePieces: getVal('nombrePieces') || ((recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || '')),
-            nombreChambres: getVal('nombreChambres') || (recherche.nombreChambresMin?.toString() || ''),
 
             // Localisation
             localisation: recherche.zones || [],
@@ -181,7 +179,6 @@ export async function POST(request: Request) {
             // If "quartiers" are present, we could append them or store separate.
             // For standard "Recherche" model, zones usually means searchable areas.
             nombrePiecesMin: parseInt(body.nombrePieces) || null,
-            nombreChambresMin: parseInt(body.nombreChambres) || null,
             caracteristiques: caracteristiques
         }
 

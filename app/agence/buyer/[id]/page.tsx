@@ -183,15 +183,7 @@ function BuyerProfileContent() {
                                         {search?.nombrePiecesMin || '1'}{search?.nombrePiecesMax ? ` - ${search.nombrePiecesMax}` : '+'}
                                     </p>
                                 </div>
-                                <div className="p-4 bg-gray-50 rounded-xl">
-                                    <div className="flex items-center gap-2 text-gray-500 mb-1">
-                                        <BedDouble className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Chambres</span>
-                                    </div>
-                                    <p className="text-lg font-bold text-gray-900">
-                                        {search?.nombreChambresMin || '0'}{search?.nombreChambresMax ? ` - ${search.nombreChambresMax}` : '+'}
-                                    </p>
-                                </div>
+
                             </div>
 
                             <div className="space-y-4">

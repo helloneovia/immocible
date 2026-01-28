@@ -44,7 +44,6 @@ interface QuestionnaireData {
   surfaceMin: string
   surfaceMax: string
   nombrePieces: string
-  nombreChambres: string
   localisation: string[]
 
 
@@ -91,7 +90,6 @@ function QuestionnaireContent() {
     surfaceMin: '',
     surfaceMax: '',
     nombrePieces: '',
-    nombreChambres: '',
 
     localisation: [],
     balcon: false,
@@ -376,50 +374,26 @@ function QuestionnaireContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nombrePieces" className="text-base font-semibold">
-                  Nombre de pièces (min) *
-                </Label>
-                <Select
-                  value={formData.nombrePieces}
-                  onValueChange={(value) => updateFormData('nombrePieces', value)}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Nb pièces" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 pièce</SelectItem>
-                    <SelectItem value="2">2 pièces</SelectItem>
-                    <SelectItem value="3">3 pièces</SelectItem>
-                    <SelectItem value="4">4 pièces</SelectItem>
-                    <SelectItem value="5">5 pièces</SelectItem>
-                    <SelectItem value="6">6 pièces+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="nombreChambres" className="text-base font-semibold">
-                  Nombre de chambres (min)
-                </Label>
-                <Select
-                  value={formData.nombreChambres}
-                  onValueChange={(value) => updateFormData('nombreChambres', value)}
-                >
-                  <SelectTrigger className="h-12">
-                    <SelectValue placeholder="Nb chambres" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Studio / 0</SelectItem>
-                    <SelectItem value="1">1 chambre</SelectItem>
-                    <SelectItem value="2">2 chambres</SelectItem>
-                    <SelectItem value="3">3 chambres</SelectItem>
-                    <SelectItem value="4">4 chambres</SelectItem>
-                    <SelectItem value="5">5 chambres+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="nombrePieces" className="text-base font-semibold">
+                Nombre de pièces (min) *
+              </Label>
+              <Select
+                value={formData.nombrePieces}
+                onValueChange={(value) => updateFormData('nombrePieces', value)}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Nb pièces" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 pièce</SelectItem>
+                  <SelectItem value="2">2 pièces</SelectItem>
+                  <SelectItem value="3">3 pièces</SelectItem>
+                  <SelectItem value="4">4 pièces</SelectItem>
+                  <SelectItem value="5">5 pièces</SelectItem>
+                  <SelectItem value="6">6 pièces+</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         )
