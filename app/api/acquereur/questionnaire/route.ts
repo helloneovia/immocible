@@ -78,7 +78,7 @@ export async function GET() {
             budgetMax: recherche.prixMax?.toString() || '',
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
-            nombrePieces: (recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || ''),
+            nombrePieces: getVal('nombrePieces') || ((recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || '')),
 
             // Localisation
             localisation: recherche.zones && recherche.zones.length > 0 ? recherche.zones[0] : '', // Assuming first zone is the main city
@@ -120,6 +120,7 @@ export async function POST(request: Request) {
         const body: QuestionnaireData = await request.json()
 
         console.log('[API] Saving questionnaire for user:', user.id)
+        console.log('[API] Incoming pieces:', body.nombrePieces, 'Financement:', body.financement)
 
         // Map Frontend data to Prisma format
 
@@ -147,6 +148,7 @@ export async function POST(request: Request) {
             dureePret: body.dureePret,
             delaiRecherche: body.delaiRecherche,
             flexibilite: body.flexibilite,
+            nombrePieces: body.nombrePieces, // Redundant storage
         }
 
         // Check if an active search already exists
