@@ -24,14 +24,26 @@ import {
   CheckCircle2,
   Filter,
   Plus,
-  Star
+  Star,
+  X
 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 
 function DashboardContent() {
   const router = useRouter()
   const { signOut } = useAuth()
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    location: '',
+    budgetMin: '',
+    surfaceMin: '',
+    typeBien: 'all'
+  })
 
   useEffect(() => {
     const fetchSearches = async () => {
@@ -50,6 +62,34 @@ function DashboardContent() {
 
     fetchSearches()
   }, [])
+
+  const filteredSearches = activeSearches.filter((search: any) => {
+    if (filters.location) {
+      const match = search.zones?.some((z: string) => z.toLowerCase().includes(filters.location.toLowerCase()))
+      if (!match) return false
+    }
+    if (filters.budgetMin) {
+      if ((search.prixMax || 0) < parseInt(filters.budgetMin)) return false
+    }
+    if (filters.surfaceMin) {
+      if ((search.surfaceMin || 0) < parseInt(filters.surfaceMin)) return false
+    }
+    if (filters.typeBien !== 'all') {
+      const type = filters.typeBien.toLowerCase()
+      if (!search.typeBien?.some((t: string) => t.toLowerCase() === type)) return false
+    }
+    return true
+  })
+
+  // Clear filters
+  const clearFilters = () => {
+    setFilters({
+      location: '',
+      budgetMin: '',
+      surfaceMin: '',
+      typeBien: 'all'
+    })
+  }
 
   const handleChat = async (buyerId: string) => {
     try {
@@ -166,11 +206,73 @@ function DashboardContent() {
             size="lg"
             variant="outline"
             className="border-2 bg-white/80 backdrop-blur-sm hover:bg-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="mr-2 h-5 w-5" />
-            Filtrer les recherches
+            {showFilters ? 'Masquer les filtres' : 'Filtrer les recherches'}
           </Button>
         </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <Card className="mb-8 border-none shadow-md bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-4 border-b border-gray-100 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-bold">Filtres</CardTitle>
+                <CardDescription>Affinez les résultats selon vos critères</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                <X className="mr-2 h-4 w-4" /> Réinitialiser
+              </Button>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="space-y-2">
+                  <Label>Localisation (Ville)</Label>
+                  <Input
+                    placeholder="Ex: Paris"
+                    value={filters.location}
+                    onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Budget Min (Acquéreur)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Min €"
+                    value={filters.budgetMin}
+                    onChange={(e) => setFilters(prev => ({ ...prev, budgetMin: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Surface Min (Recherchée)</Label>
+                  <Input
+                    type="number"
+                    placeholder="Min m²"
+                    value={filters.surfaceMin}
+                    onChange={(e) => setFilters(prev => ({ ...prev, surfaceMin: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Type de bien</Label>
+                  <Select
+                    value={filters.typeBien}
+                    onValueChange={(val) => setFilters(prev => ({ ...prev, typeBien: val }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Tous" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous</SelectItem>
+                      <SelectItem value="appartement">Appartement</SelectItem>
+                      <SelectItem value="maison">Maison</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Matches List / Active Searches */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -178,8 +280,8 @@ function DashboardContent() {
             <div className="col-span-full py-20 text-center text-gray-500">
               Chargement des recherches...
             </div>
-          ) : activeSearches.length > 0 ? (
-            activeSearches.map((search: any) => (
+          ) : filteredSearches.length > 0 ? (
+            filteredSearches.map((search: any) => (
               <Card key={search.id} className="border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm overflow-hidden group">
                 <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-600 w-full" />
                 <CardHeader className="pb-2">
