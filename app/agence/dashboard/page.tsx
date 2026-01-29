@@ -66,7 +66,7 @@ function DashboardContent() {
 
   const filteredSearches = activeSearches.filter((search: any) => {
     if (filters.location) {
-      const match = search.zones?.some((z: string) => z.toLowerCase().includes(filters.location.toLowerCase()))
+      const match = search.localisation?.some((z: string) => z.toLowerCase().includes(filters.location.toLowerCase()))
       if (!match) return false
     }
     if (filters.budgetMin) {
@@ -263,11 +263,11 @@ function DashboardContent() {
                     </span>
                   </div>
                   <CardTitle className="mt-4 text-lg font-bold text-gray-900">
-                    Recherche {search.typeBien.join(', ')}
+                    Recherche {(search.typeBien || []).join(', ')}
                   </CardTitle>
                   <CardDescription className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
-                    {search.zones.join(', ')}
+                    {(search.localisation || []).join(', ')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

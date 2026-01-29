@@ -183,7 +183,7 @@ function BuyerProfileContent() {
                                         <span className="text-sm font-medium">Pièces</span>
                                     </div>
                                     <p className="text-lg font-bold text-gray-900">
-                                        {search?.nombrePiecesMin || '1'}{search?.nombrePiecesMax ? ` - ${search.nombrePiecesMax}` : '+'}
+                                        {search?.nombrePieces || 'Non spécifié'}
                                     </p>
                                 </div>
 
@@ -209,7 +209,7 @@ function BuyerProfileContent() {
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Secteur(s)</p>
                                         <div className="flex flex-wrap gap-2 mt-1">
-                                            {search?.zones?.map((zone: string, i: number) => (
+                                            {search?.localisation?.map((zone: string, i: number) => (
                                                 <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     {zone}
                                                 </span>
@@ -270,7 +270,7 @@ function BuyerProfileContent() {
                                         <Banknote className="h-4 w-4" /> Type de Financement
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900 capitalize">
-                                        {search?.caracteristiques?.financement ? search.caracteristiques.financement.replace('-', ' ') : 'Non spécifié'}
+                                        {search?.financement ? search.financement.replace('-', ' ') : 'Non spécifié'}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
