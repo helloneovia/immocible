@@ -90,7 +90,7 @@ export async function GET() {
             budgetMax: recherche.prixMax?.toString() || '',
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
-            nombrePieces: getVal('nombrePieces') || ((recherche.nombrePiecesMin || 0) >= 6 ? '6+' : (recherche.nombrePiecesMin?.toString() || '')),
+            nombrePieces: getVal('nombrePieces') || (recherche.nombrePiecesMin ? (recherche.nombrePiecesMin >= 6 ? '6' : recherche.nombrePiecesMin.toString()) : ''),
 
             // Localisation
             localisation: recherche.zones || [],
@@ -165,7 +165,10 @@ export async function POST(request: Request) {
             nombrePieces: String(body.nombrePieces || ''), // Ensure string storage
         }
 
-        console.log('[API POST] Saving caracteristiques:', JSON.stringify(caracteristiques, null, 2))
+        // Sanitize object to remove undefined values and ensure pure JSON compatibility
+        const cleanCaracteristiques = JSON.parse(JSON.stringify(caracteristiques))
+
+        console.log('[API POST] Saving caracteristiques:', JSON.stringify(cleanCaracteristiques, null, 2))
         console.log('[API POST] nombrePiecesMin to save:', parseInt(body.nombrePieces) || null)
 
         // Check if an active search already exists
@@ -190,7 +193,7 @@ export async function POST(request: Request) {
             // For standard "Recherche" model, zones usually means searchable areas.
             // Parse integers safely
             nombrePiecesMin: (body.nombrePieces && !isNaN(parseInt(body.nombrePieces))) ? parseInt(body.nombrePieces) : null,
-            caracteristiques: caracteristiques
+            caracteristiques: cleanCaracteristiques
         }
 
         if (existingRecherche) {
