@@ -280,6 +280,23 @@ function DashboardContent() {
                       <TrendingUp className="h-4 w-4 mr-2 text-gray-400" />
                       {search.surfaceMin} m² min
                     </div>
+                    {search.caracteristiques?.salaire && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Euro className="h-4 w-4 mr-2 text-gray-400" />
+                        {search.caracteristiques.salaire} €/mois revenu
+                      </div>
+                    )}
+                    {search.caracteristiques?.delaiRecherche && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <div className="h-4 w-4 mr-2 text-gray-400 flex items-center justify-center">
+                          <span className="text-[10px] font-bold">⏱</span>
+                        </div>
+                        {search.caracteristiques.delaiRecherche === 'urgent' ? 'Urgent (< 1 mois)' :
+                          search.caracteristiques.delaiRecherche === '1-3' ? '1 à 3 mois' :
+                            search.caracteristiques.delaiRecherche === '3-6' ? '3 à 6 mois' :
+                              search.caracteristiques.delaiRecherche}
+                      </div>
+                    )}
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
