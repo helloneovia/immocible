@@ -67,14 +67,12 @@ export async function GET() {
         }
 
         // Helper to get value from caracteristiques or default
-        const getVal = (key: string, def: any = '') => caracteristiques[key] !== undefined ? caracteristiques[key] : def
-
-        console.log('[API GET] Raw Search Data:', {
-            id: recherche.id,
-            piecesMin: recherche.nombrePiecesMin,
-            caracteristiquesType: typeof recherche?.caracteristiques,
-            caracteristiques: caracteristiques
-        })
+        const getVal = (key: string, def: any = '') => {
+            if (caracteristiques && caracteristiques[key] !== undefined && caracteristiques[key] !== null) {
+                return caracteristiques[key]
+            }
+            return def
+        }
 
         const data: QuestionnaireData = {
             // Personal Info (Stored in JSON)
@@ -90,10 +88,10 @@ export async function GET() {
             budgetMax: recherche.prixMax?.toString() || '',
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
-            nombrePieces: getVal('nombrePieces') || (recherche.nombrePiecesMin ? (recherche.nombrePiecesMin >= 6 ? '6' : recherche.nombrePiecesMin.toString()) : ''),
+            nombrePieces: recherche.nombrePieces ?? getVal('nombrePieces'),
 
             // Localisation
-            localisation: recherche.zones || [],
+            localisation: recherche.localisation || [],
             quartiers: getVal('quartiers', []),
 
             // Extra
@@ -106,7 +104,7 @@ export async function GET() {
 
             // Financement
             apport: getVal('apport'),
-            financement: getVal('financement'),
+            financement: recherche.financement ?? getVal('financement'),
             dureePret: getVal('dureePret'),
 
             // Urgence
@@ -132,7 +130,6 @@ export async function POST(request: Request) {
         const body: QuestionnaireData = await request.json()
 
         console.log('[API] Saving questionnaire for user:', user.id)
-        console.log('[API] Incoming pieces:', body.nombrePieces, 'Financement:', body.financement)
 
         // Map Frontend data to Prisma format
 
@@ -158,18 +155,13 @@ export async function POST(request: Request) {
             cave: body.cave,
             ascenseur: body.ascenseur,
             apport: body.apport,
-            financement: body.financement,
             dureePret: body.dureePret,
             delaiRecherche: body.delaiRecherche,
             flexibilite: body.flexibilite,
-            nombrePieces: String(body.nombrePieces || ''), // Ensure string storage
         }
 
         // Sanitize object to remove undefined values and ensure pure JSON compatibility
         const cleanCaracteristiques = JSON.parse(JSON.stringify(caracteristiques))
-
-        console.log('[API POST] Saving caracteristiques:', JSON.stringify(cleanCaracteristiques, null, 2))
-        console.log('[API POST] nombrePiecesMin to save:', parseInt(body.nombrePieces) || null)
 
         // Check if an active search already exists
         const existingRecherche = await prisma.recherche.findFirst({
@@ -182,17 +174,14 @@ export async function POST(request: Request) {
         let recherche
 
         const commonData = {
-            prixMin: parseFloat(body.budgetMin) || 0, // Should this be null? Schema says Float?
+            prixMin: parseFloat(body.budgetMin) || 0,
             prixMax: parseFloat(body.budgetMax) || 0,
             surfaceMin: parseFloat(body.surfaceMin) || null,
             surfaceMax: parseFloat(body.surfaceMax) || null,
             typeBien: mappedTypes,
-            // Assuming body.localisation is a string array like ["Paris", "Lyon"]
-            zones: body.localisation || [],
-            // If "quartiers" are present, we could append them or store separate.
-            // For standard "Recherche" model, zones usually means searchable areas.
-            // Parse integers safely
-            nombrePiecesMin: (body.nombrePieces && !isNaN(parseInt(body.nombrePieces))) ? parseInt(body.nombrePieces) : null,
+            localisation: body.localisation || [],
+            nombrePieces: body.nombrePieces || null,
+            financement: body.financement || null,
             caracteristiques: cleanCaracteristiques
         }
 

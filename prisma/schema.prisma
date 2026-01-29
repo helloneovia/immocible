@@ -138,11 +138,9 @@ model Recherche {
   surfaceMin    Float?
   surfaceMax    Float?
   typeBien      BienType[]
-  zones         String[] // Array of zones (cities, neighborhoods)
-  nombrePiecesMin Int?
-  nombrePiecesMax Int?
-  nombreChambresMin Int?
-  nombreChambresMax Int?
+  localisation  String[] // Array of zones (cities, neighborhoods)
+  nombrePieces  String?
+  financement   String?
   caracteristiques Json?  // Additional search criteria as JSON
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())

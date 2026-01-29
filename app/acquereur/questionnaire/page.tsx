@@ -382,7 +382,7 @@ function QuestionnaireContent() {
                 Nombre de pièces (min) *
               </Label>
               <Select
-                value={formData.nombrePieces?.toString() || ''}
+                value={formData.nombrePieces}
                 onValueChange={(value) => updateFormData('nombrePieces', value)}
               >
                 <SelectTrigger className="h-12">
@@ -452,7 +452,7 @@ function QuestionnaireContent() {
                 Type de financement *
               </Label>
               <Select
-                value={formData.financement?.toString() || ''}
+                value={formData.financement}
                 onValueChange={(value) => updateFormData('financement', value)}
               >
                 <SelectTrigger className="h-12">
