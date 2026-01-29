@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid, Briefcase, Wallet, Banknote } from 'lucide-react'
+import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid, Briefcase, Wallet, Banknote, Users, Clock, Calendar } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Navbar } from '@/components/layout/Navbar'
 
@@ -217,6 +217,72 @@ function BuyerProfileContent() {
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Amenities Section */}
+                                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="mt-1 bg-orange-100 p-2 rounded-full text-orange-600">
+                                        <CheckCircle2 className="h-4 w-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Critères supplémentaires</p>
+                                        <div className="flex flex-wrap gap-2 mt-1">
+                                            {[
+                                                { k: 'balcon', l: 'Balcon' },
+                                                { k: 'terrasse', l: 'Terrasse' },
+                                                { k: 'jardin', l: 'Jardin' },
+                                                { k: 'parking', l: 'Parking' },
+                                                { k: 'cave', l: 'Cave' },
+                                                { k: 'ascenseur', l: 'Ascenseur' }
+                                            ].filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
+                                                <span key={k} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                                                    {l}
+                                                </span>
+                                            )).length > 0
+                                                ? [
+                                                    { k: 'balcon', l: 'Balcon' },
+                                                    { k: 'terrasse', l: 'Terrasse' },
+                                                    { k: 'jardin', l: 'Jardin' },
+                                                    { k: 'parking', l: 'Parking' },
+                                                    { k: 'cave', l: 'Cave' },
+                                                    { k: 'ascenseur', l: 'Ascenseur' }
+                                                ].filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
+                                                    <span key={k} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                                                        {l}
+                                                    </span>
+                                                ))
+                                                : <span className="text-gray-500 italic">Aucun critère spécifique</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Project Urgency Section */}
+                                <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className="mt-1 bg-indigo-100 p-2 rounded-full text-indigo-600">
+                                        <Clock className="h-4 w-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500">Projet</p>
+                                        <div className="grid grid-cols-2 gap-x-8 gap-y-1 mt-1">
+                                            <div>
+                                                <span className="text-xs text-gray-500 uppercase">Délai:</span>
+                                                <p className="font-semibold text-gray-900">
+                                                    {search?.caracteristiques?.delaiRecherche === 'urgent' ? 'Urgent (< 1 mois)' :
+                                                        search?.caracteristiques?.delaiRecherche === '1-3' ? '1 à 3 mois' :
+                                                            search?.caracteristiques?.delaiRecherche === '3-6' ? '3 à 6 mois' :
+                                                                search?.caracteristiques?.delaiRecherche === '6-12' ? '6 à 12 mois' :
+                                                                    search?.caracteristiques?.delaiRecherche === '12+' ? '+ 12 mois' : 'Non défini'}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <span className="text-xs text-gray-500 uppercase">Flexibilité:</span>
+                                                <p className="font-semibold text-gray-900 capitalize">
+                                                    {search?.caracteristiques?.flexibilite || 'Non défini'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -279,6 +345,32 @@ function BuyerProfileContent() {
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900">
                                         {search?.caracteristiques?.dureePret ? `${search.caracteristiques.dureePret} ans` : 'Non spécifié'}
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Personal Situation Card (New) */}
+                    <Card className="border-none shadow-lg bg-white overflow-hidden">
+                        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
+                            <CardTitle className="text-2xl flex items-center gap-2">
+                                <Users className="h-6 w-6" />
+                                Situation Personnelle
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Situation Familiale</p>
+                                    <p className="text-lg font-semibold text-gray-900 capitalize">
+                                        {search?.caracteristiques?.situationFamiliale || 'Non spécifié'}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium text-gray-500">Enfants</p>
+                                    <p className="text-lg font-semibold text-gray-900">
+                                        {search?.caracteristiques?.nombreEnfants ? `${search.caracteristiques.nombreEnfants} enfant(s)` : 'Aucun'}
                                     </p>
                                 </div>
                             </div>
