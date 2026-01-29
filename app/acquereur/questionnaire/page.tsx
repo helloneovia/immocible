@@ -116,8 +116,14 @@ function QuestionnaireContent() {
         const response = await fetch('/api/acquereur/questionnaire')
         if (response.ok) {
           const { data } = await response.json()
+          console.log('%c[LOAD] Data retrieved from DB:', 'color: green; font-weight: bold;', data);
+          console.log('%c[LOAD] Specific fields - nombrePieces:', 'color: blue;', data?.nombrePieces, 'financement:', data?.financement);
+
           if (data) {
-            setFormData(data)
+            setFormData(prev => ({
+              ...prev,
+              ...data
+            }))
             // If data exists, we can assume profile is somewhat active/previously filled
           }
         }
@@ -229,7 +235,8 @@ function QuestionnaireContent() {
                 Situation familiale *
               </Label>
               <Select
-                value={formData.situationFamiliale}
+                key={`situation-${formData.situationFamiliale}`}
+                value={formData.situationFamiliale?.toString() || ''}
                 onValueChange={(value) => updateFormData('situationFamiliale', value)}
               >
                 <SelectTrigger className="h-12">
@@ -251,7 +258,8 @@ function QuestionnaireContent() {
                 Nombre d&apos;enfants
               </Label>
               <Select
-                value={formData.nombreEnfants}
+                key={`enfants-${formData.nombreEnfants}`}
+                value={formData.nombreEnfants?.toString() || ''}
                 onValueChange={(value) => updateFormData('nombreEnfants', value)}
               >
                 <SelectTrigger className="h-12">
@@ -272,7 +280,8 @@ function QuestionnaireContent() {
                 Situation professionnelle *
               </Label>
               <Select
-                value={formData.situationProfessionnelle}
+                key={`pro-${formData.situationProfessionnelle}`}
+                value={formData.situationProfessionnelle?.toString() || ''}
                 onValueChange={(value) => updateFormData('situationProfessionnelle', value)}
               >
                 <SelectTrigger className="h-12">
@@ -382,7 +391,8 @@ function QuestionnaireContent() {
                 Nombre de pièces (min) *
               </Label>
               <Select
-                value={formData.nombrePieces}
+                key={`pieces-${formData.nombrePieces}`}
+                value={formData.nombrePieces?.toString() || ''}
                 onValueChange={(value) => updateFormData('nombrePieces', value)}
               >
                 <SelectTrigger className="h-12">
@@ -452,7 +462,8 @@ function QuestionnaireContent() {
                 Type de financement *
               </Label>
               <Select
-                value={formData.financement}
+                key={`financement-${formData.financement}`}
+                value={formData.financement?.toString() || ''}
                 onValueChange={(value) => updateFormData('financement', value)}
               >
                 <SelectTrigger className="h-12">
@@ -473,7 +484,8 @@ function QuestionnaireContent() {
                 Durée du prêt souhaitée (années)
               </Label>
               <Select
-                value={formData.dureePret}
+                key={`duree-${formData.dureePret}`}
+                value={formData.dureePret?.toString() || ''}
                 onValueChange={(value) => updateFormData('dureePret', value)}
               >
                 <SelectTrigger className="h-12">
@@ -572,7 +584,8 @@ function QuestionnaireContent() {
                 Délai de recherche souhaité *
               </Label>
               <Select
-                value={formData.delaiRecherche}
+                key={`delai-${formData.delaiRecherche}`}
+                value={formData.delaiRecherche?.toString() || ''}
                 onValueChange={(value) => updateFormData('delaiRecherche', value)}
               >
                 <SelectTrigger className="h-12">
@@ -593,7 +606,8 @@ function QuestionnaireContent() {
                 Flexibilité sur les critères *
               </Label>
               <Select
-                value={formData.flexibilite}
+                key={`flex-${formData.flexibilite}`}
+                value={formData.flexibilite?.toString() || ''}
                 onValueChange={(value) => updateFormData('flexibilite', value)}
               >
                 <SelectTrigger className="h-12">
