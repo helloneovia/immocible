@@ -68,7 +68,7 @@ function SettingsContent() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: formData.email,
-                    plan: 'monthly', // Coupon applies to monthly
+                    plan: 'yearly', // Coupon applies to yearly upgrade by default in this context
                     nomAgence: formData.nomAgence || 'Agence',
                     couponCode
                 })
