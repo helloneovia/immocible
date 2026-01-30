@@ -250,3 +250,25 @@ export async function sendSubscriptionReminderEmail(email: string, plan: string,
 
   return sendEmail({ to: email, subject, html, text });
 }
+
+/**
+ * Sends a verification token email
+ */
+export async function sendVerificationEmail(email: string, token: string): Promise<boolean> {
+  const subject = `Vérification de votre email - IMMOCIBLE`;
+  const html = `
+    <div style="font-family: sans-serif; color: #333;">
+      <h1>Vérifiez votre adresse email</h1>
+      <p>Merci de vous inscrire sur IMMOCIBLE.</p>
+      <p>Voici votre code de vérification :</p>
+      <div style="background: #f4f4f5; padding: 15px 25px; border-radius: 8px; display: inline-block; margin: 20px 0;">
+        <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #4F46E5;">${token}</span>
+      </div>
+      <p>Ce code expire dans 15 minutes.</p>
+      <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.</p>
+    </div>
+  `;
+  const text = `Votre code de vérification IMMOCIBLE est : ${token}`;
+
+  return sendEmail({ to: email, subject, html, text });
+}

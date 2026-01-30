@@ -296,3 +296,13 @@ model Coupon {
   @@index([code])
   @@index([isActive])
 }
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
