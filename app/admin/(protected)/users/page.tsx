@@ -1,5 +1,6 @@
 
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import {
     Table,
@@ -88,7 +89,9 @@ export default async function AdminUsersPage() {
                                     {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: fr })}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <button className="text-indigo-600 hover:underline text-sm font-medium">Gérer</button>
+                                    <Link href={`/admin/users/${user.id}`} className="text-indigo-600 hover:underline text-sm font-medium">
+                                        Gérer
+                                    </Link>
                                 </TableCell>
                             </TableRow>
                         ))}
