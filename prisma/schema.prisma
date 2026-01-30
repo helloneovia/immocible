@@ -306,3 +306,16 @@ model VerificationToken {
   @@unique([identifier, token])
   @@map("verification_tokens")
 }
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  type        String   @default("string") // string, number, json, boolean
+  label       String?
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+  @@index([key])
+}
