@@ -3,6 +3,7 @@ import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt } fro
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
+import { AdminLogoutButton } from '@/components/admin/AdminLogoutButton'
 
 export default async function AdminLayout({
     children,
@@ -53,19 +54,7 @@ export default async function AdminLayout({
                         <Home className="h-4 w-4" />
                         Retour au site
                     </Link>
-                    <form action="/api/auth/logout" method="POST">
-                        {/* We can use a real logout route or client component. For now, we will just use a button that hrefs to logout or use client logic. 
-                             But wait, this layout is server side. We can't use onClick. 
-                             Simple solution: make the logout button a link to a logout API route that redirects.
-                             Or use a Client Component wrapper for the sidebar. 
-                             For simplicity in this layout file, I'll keep the button visually but note it needs client logic or an API route. 
-                             Actually, I'll allow the existing button but since it doesn't do anything yet, I will leave it as is or change to Link.
-                         */}
-                        <button className="flex items-center gap-3 px-4 py-3 text-red-400 hover:text-red-300 transition-colors text-sm w-full text-left">
-                            <LogOut className="h-4 w-4" />
-                            Déconnexion
-                        </button>
-                    </form>
+                    <AdminLogoutButton />
                 </div>
             </aside>
 

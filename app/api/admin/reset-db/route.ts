@@ -16,6 +16,14 @@ export async function POST(request: Request) {
         // Or delete EVERYTHING? The request was "Reset all the database tables".
         // Usually we want to keep the Admin user.
 
+        // Explicitly clear relation tables first (good practice)
+        await prisma.message.deleteMany({})
+        await prisma.conversation.deleteMany({})
+        await prisma.match.deleteMany({})
+        await prisma.favorite.deleteMany({})
+        await prisma.unlockedProfile.deleteMany({})
+        await prisma.payment.deleteMany({})
+
         await prisma.user.deleteMany({
             where: {
                 role: {
@@ -24,7 +32,6 @@ export async function POST(request: Request) {
             }
         })
 
-        // Optionally reset other tables that might not be cascaded or strictly related to generic users
         await prisma.bien.deleteMany({})
         await prisma.recherche.deleteMany({})
 

@@ -46,8 +46,8 @@ export default function AdminLogin() {
                 return
             }
 
-            router.push('/admin/dashboard')
-            router.refresh()
+            // Force hard navigation to ensure cookies are fresh
+            window.location.href = '/admin/dashboard'
         } catch (err: any) {
             setError(err.message || 'Une erreur est survenue')
         } finally {

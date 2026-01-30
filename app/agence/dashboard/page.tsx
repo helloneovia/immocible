@@ -25,7 +25,9 @@ import {
   Filter,
   Plus,
   Star,
-  X
+  X,
+  Zap,
+  Crown
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -35,7 +37,7 @@ import { Navbar } from '@/components/layout/Navbar'
 
 function DashboardContent() {
   const router = useRouter()
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth() // Get user for email
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
@@ -45,6 +47,8 @@ function DashboardContent() {
     surfaceMin: '',
     typeBien: 'all'
   })
+
+  // ... (useEffect remains same) ...
 
   useEffect(() => {
     const fetchSearches = async () => {
@@ -112,6 +116,32 @@ function DashboardContent() {
     }
   }
 
+  const handleUpgrade = async () => {
+    if (!user) return
+    try {
+      const response = await fetch('/api/payment/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          plan: 'yearly', // Annual Plan
+          nomAgence: user.profile?.nomAgence || 'Agence'
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.url) {
+        window.location.href = data.url
+      } else {
+        alert("Erreur lors de l'initialisation du paiement.")
+      }
+    } catch (error) {
+      console.error("Payment init error", error)
+      alert("Erreur de connexion.")
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-100">
       {/* Navigation */}
@@ -127,6 +157,49 @@ function DashboardContent() {
             Acquéreurs vérifiés correspondant à vos biens
           </p>
         </div>
+
+        {/* Subscription Plan Banner */}
+        <Card className="mb-10 border-0 shadow-lg bg-gradient-to-r from-gray-900 to-slate-800 text-white overflow-hidden relative">
+          <div className="absolute top-0 right-0 p-32 bg-indigo-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
+          <CardContent className="p-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-4 max-w-2xl">
+              <div className="flex items-center gap-3">
+                <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white border-0 px-3 py-1 text-sm">
+                  Offre Actuelle : Découverte
+                </Badge>
+                <span className="text-gray-400 text-sm">Validité : Illimitée</span>
+              </div>
+              <h2 className="text-3xl font-bold flex items-center gap-3">
+                Passez à la vitesse supérieure <Zap className="h-8 w-8 text-yellow-400 fill-yellow-400" />
+              </h2>
+              <p className="text-gray-300 text-lg">
+                Débloquez l'accès illimité à tous les acquéreurs qualifiés et boostez la visibilité de vos biens avec l'offre Annuelle.
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-300">
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-400" /> Contacts illimités</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-400" /> Badge Agence Vérifiée</span>
+                <span className="flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-400" /> Support Prioritaire</span>
+              </div>
+            </div>
+
+            <div className="flex-shrink-0 bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center min-w-[280px]">
+              <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold mb-2">Offre Annuelle</p>
+              <div className="flex items-baseline justify-center gap-1 mb-6">
+                <span className="text-5xl font-extrabold text-white">290€</span>
+                <span className="text-gray-400">/an</span>
+              </div>
+              <Button
+                size="lg"
+                onClick={handleUpgrade}
+                className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold shadow-lg shadow-indigo-500/25 border-0 scale-100 hover:scale-105 transition-all"
+              >
+                <Crown className="mr-2 h-5 w-5 fill-yellow-200 text-yellow-100" />
+                Passer Premium
+              </Button>
+              <p className="mt-3 text-xs text-center text-gray-500">Paiement sécurisé via Stripe</p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
