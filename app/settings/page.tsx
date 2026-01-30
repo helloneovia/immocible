@@ -29,6 +29,7 @@ function SettingsContent() {
         confirmPassword: ''
     })
     const [plan, setPlan] = useState('')
+    const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
 
     const handleUpgrade = async () => {
         try {
@@ -71,6 +72,7 @@ function SettingsContent() {
                     }))
                     setRole(data.role)
                     setPlan(data.plan)
+                    setSubscriptionEndDate(data.subscriptionEndDate)
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error)
@@ -227,7 +229,12 @@ function SettingsContent() {
                                             <p className="font-semibold text-indigo-900">
                                                 Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : 'Mensuel'}
                                             </p>
-                                            <p className="text-sm text-indigo-700">
+                                            {subscriptionEndDate && (
+                                                <p className="text-sm font-medium text-indigo-800 mt-1">
+                                                    Valide jusqu'au : {new Date(subscriptionEndDate).toLocaleDateString()}
+                                                </p>
+                                            )}
+                                            <p className="text-sm text-indigo-700 mt-1">
                                                 {plan === 'yearly'
                                                     ? 'Vous bénéficiez de tous les avantages Premium.'
                                                     : 'Passez au plan annuel pour économiser 2 mois.'}

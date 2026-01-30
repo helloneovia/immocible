@@ -114,16 +114,28 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
 /**
  * Sends a payment success email
  */
-export async function sendPaymentSuccessEmail(email: string, amount: number, plan: string, name?: string): Promise<boolean> {
+export async function sendPaymentSuccessEmail(
+  email: string,
+  amount: number,
+  plan: string,
+  startDate: Date,
+  endDate: Date,
+  name?: string
+): Promise<boolean> {
   const subject = `Confirmation de paiement${name ? ` - ${name}` : ''} - IMMOCIBLE`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const dashboardUrl = `${baseUrl}/agence/dashboard`;
+
+  const startStr = startDate.toLocaleDateString();
+  const endStr = endDate.toLocaleDateString();
+  const planName = plan === 'yearly' ? 'Annuel' : 'Mensuel';
 
   const html = `
     <div style="font-family: sans-serif; color: #333;">
       <h1>Paiement reçu avec succès</h1>
       <p>Bonjour ${name || ''},</p>
-      <p>Nous vous confirmons la réception de votre paiement de <strong>${amount}€</strong> pour le forfait <strong>${plan === 'yearly' ? 'Annuel' : 'Mensuel'}</strong>.</p>
+      <p>Nous vous confirmons la réception de votre paiement de <strong>${amount}€</strong> pour le forfait <strong>${planName}</strong>.</p>
+      <p><strong>Période d'abonnement :</strong> du ${startStr} au ${endStr}.</p>
       <p>Votre abonnement est maintenant actif. Vous pouvez accéder à toutes les fonctionnalités de votre dashboard.</p>
       <div style="margin: 30px 0;">
         <a href="${dashboardUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
@@ -134,7 +146,7 @@ export async function sendPaymentSuccessEmail(email: string, amount: number, pla
     </div>
   `;
 
-  const text = `Paiement reçu de ${amount}€ pour le forfait ${plan}. Votre compte est actif. Accéder : ${dashboardUrl}`;
+  const text = `Paiement reçu de ${amount}€ pour le forfait ${planName}. Période : ${startStr} au ${endStr}. Accéder : ${dashboardUrl}`;
 
   return sendEmail({ to: email, subject, html, text });
 }

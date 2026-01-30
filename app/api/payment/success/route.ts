@@ -46,10 +46,13 @@ export async function GET(request: NextRequest) {
             if (user) {
                 // Calculate new subscription end date
                 const planType = session.metadata?.plan || user.profile?.plan || 'mensuel'
+
+                let startDate = new Date()
                 let newEndDate = new Date()
                 const currentEndDate = user.profile?.subscriptionEndDate
 
                 if (currentEndDate && currentEndDate > new Date()) {
+                    startDate = new Date(currentEndDate)
                     newEndDate = new Date(currentEndDate)
                 }
 
@@ -79,7 +82,7 @@ export async function GET(request: NextRequest) {
                         amount: session.amount_total ? session.amount_total / 100 : 0,
                         currency: session.currency || 'eur',
                         status: session.payment_status,
-                        plan: user.profile?.plan || session.metadata?.plan,
+                        plan: planType,
                     }
                 })
 
@@ -88,7 +91,9 @@ export async function GET(request: NextRequest) {
                     await sendPaymentSuccessEmail(
                         email,
                         (session.amount_total || 0) / 100,
-                        (user.profile?.plan || session.metadata?.plan || 'mensuel') as string,
+                        planType as string,
+                        startDate,
+                        newEndDate,
                         user.profile?.nomAgence || user.profile?.prenom || undefined
                     )
                 } catch (e) {
