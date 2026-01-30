@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { toast } from '@/components/ui/use-toast'
 import { format } from 'date-fns'
 
 interface UserEditFormProps {
@@ -52,18 +51,11 @@ export function UserEditForm({ user }: UserEditFormProps) {
 
             if (!res.ok) throw new Error('Failed to update')
 
-            toast({
-                title: "Succès",
-                description: "Utilisateur mis à jour",
-            })
+            alert("Succès: Utilisateur mis à jour")
             router.refresh()
         } catch (error) {
             console.error(error)
-            toast({
-                title: "Erreur",
-                description: "Impossible de mettre à jour l'utilisateur",
-                variant: 'destructive'
-            })
+            alert("Erreur: Impossible de mettre à jour l'utilisateur")
         } finally {
             setLoading(false)
         }

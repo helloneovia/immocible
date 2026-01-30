@@ -7,6 +7,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { UserEditForm } from './UserEditForm'
 import { ArrowLeft } from 'lucide-react'
 
 export default async function AdminUserDetailPage({ params }: { params: { id: string } }) {
@@ -15,7 +16,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
         include: {
             profile: true,
             sessions: true,
-            Payment: {
+            payments: {
                 orderBy: { createdAt: 'desc' },
                 take: 10
             }
