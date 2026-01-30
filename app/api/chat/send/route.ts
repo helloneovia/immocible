@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { sanitizeContent } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
     try {
@@ -28,11 +29,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
+        const sanitizedContent = sanitizeContent(content)
+
         const message = await prisma.message.create({
             data: {
                 conversationId,
                 senderId: currentUser.id,
-                content,
+                content: sanitizedContent,
             },
         })
 

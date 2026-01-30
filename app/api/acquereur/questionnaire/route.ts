@@ -13,7 +13,7 @@ interface QuestionnaireData {
     budgetMax: string
     surfaceMin: string
     surfaceMax: string
-    nombrePieces: string
+    nombrePieces: string[]
     localisation: string[]
     quartiers: string[]
 
@@ -88,7 +88,7 @@ export async function GET() {
             budgetMax: recherche.prixMax?.toString() || '',
             surfaceMin: recherche.surfaceMin?.toString() || '',
             surfaceMax: recherche.surfaceMax?.toString() || '',
-            nombrePieces: recherche.nombrePieces ?? getVal('nombrePieces'),
+            nombrePieces: recherche.nombrePieces || [],
 
             // Localisation
             localisation: recherche.localisation || [],
@@ -180,7 +180,7 @@ export async function POST(request: Request) {
             surfaceMax: parseFloat(body.surfaceMax) || null,
             typeBien: mappedTypes,
             localisation: body.localisation || [],
-            nombrePieces: body.nombrePieces || null,
+            nombrePieces: body.nombrePieces || [],
             financement: body.financement || null,
             caracteristiques: cleanCaracteristiques
         }

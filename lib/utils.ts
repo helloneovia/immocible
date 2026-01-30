@@ -46,3 +46,22 @@ export function calculateMatchScore(
     suggestions,
   }
 }
+
+export function sanitizeContent(content: string): string {
+  // Regex for Email
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
+
+  // Regex for French Phone Numbers (various formats: 06 12 34 56 78, 06.12.34.56.78, 0612345678, +33 6...)
+  const phoneRegex = /(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}/g
+
+  // Generic 10 digit loose match
+  const genericPhoneRegex = /\b\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}[\s.-]?\d{2}\b/g
+
+  let sanitized = content.replace(emailRegex, '[EMAIL MASQUÉ]')
+  sanitized = sanitized.replace(phoneRegex, '[TÉLÉPHONE MASQUÉ]')
+  // Apply generic phone check if not already caught (simple overlap check might be needed or just sequential)
+  // To avoid double masking, we can just run it. The above regex might already catch most.
+  // The generic one is safer if strictly 10 digits or pairs.
+
+  return sanitized
+}

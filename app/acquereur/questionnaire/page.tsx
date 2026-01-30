@@ -46,7 +46,7 @@ interface QuestionnaireData {
   budgetMax: string
   surfaceMin: string
   surfaceMax: string
-  nombrePieces: string
+  nombrePieces: string[]
   localisation: string[]
 
 
@@ -92,7 +92,7 @@ function QuestionnaireContent() {
     budgetMax: '',
     surfaceMin: '',
     surfaceMax: '',
-    nombrePieces: '',
+    nombrePieces: [],
 
     localisation: [],
     balcon: false,
@@ -111,31 +111,34 @@ function QuestionnaireContent() {
   })
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/acquereur/questionnaire')
-        if (response.ok) {
-          const { data } = await response.json()
-          console.log('%c[LOAD] Data retrieved from DB:', 'color: green; font-weight: bold;', data);
-          console.log('%c[LOAD] Specific fields - nombrePieces:', 'color: blue;', data?.nombrePieces, 'financement:', data?.financement);
-
-          if (data) {
-            setFormData(prev => ({
-              ...prev,
-              ...data
-            }))
-            // If data exists, we can assume profile is somewhat active/previously filled
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching questionnaire data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchData()
   }, [])
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch('/api/acquereur/questionnaire')
+      if (response.ok) {
+        const { data } = await response.json()
+        console.log('%c[LOAD] Data retrieved from DB:', 'color: green; font-weight: bold;', data);
+        console.log('%c[LOAD] Specific fields - nombrePieces:', 'color: blue;', data?.nombrePieces, 'financement:', data?.financement);
+
+        if (data) {
+          // Ensure arrays are initialized
+          setFormData({
+            ...data,
+            typeBien: data.typeBien || [],
+            localisation: data.localisation || [],
+            nombrePieces: Array.isArray(data.nombrePieces) ? data.nombrePieces : (data.nombrePieces ? [data.nombrePieces] : [])
+          })
+          // If data exists, we can assume profile is somewhat active/previously filled
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching questionnaire data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const progress = (currentStep / STEPS.length) * 100
 
@@ -152,32 +155,23 @@ function QuestionnaireContent() {
     }))
   }
 
+  const toggleNombrePieces = (pieces: string) => {
+    setFormData((prev) => {
+      const current = prev.nombrePieces || []
+      const updated = current.includes(pieces)
+        ? current.filter((p) => p !== pieces)
+        : [...current, pieces]
+      return { ...prev, nombrePieces: updated }
+    })
+  }
 
-
+  // Validation logic - Now all optional
   const validateStep = (step: number) => {
-    switch (step) {
-      case 1:
-        return !!(formData.situationFamiliale && formData.situationProfessionnelle && formData.salaire && formData.patrimoine)
-      case 2:
-        return !!(formData.typeBien.length > 0 && formData.surfaceMin && formData.nombrePieces)
-      case 3:
-        return !!(formData.budgetMin && formData.budgetMax && formData.apport && formData.financement)
-      case 4:
-        return !!(formData.localisation.length > 0)
-      case 5:
-        return formData.balcon || formData.terrasse || formData.jardin || formData.parking || formData.cave || formData.ascenseur
-      case 6: // Step 6
-        return !!(formData.delaiRecherche && formData.flexibilite)
-      default:
-        return true
-    }
+    return true
   }
 
   const handleNext = () => {
-    if (!validateStep(currentStep)) {
-      alert("Veuillez remplir les champs obligatoires (*) avant de continuer.")
-      return
-    }
+    // No validation check needed
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1)
     }
@@ -190,11 +184,7 @@ function QuestionnaireContent() {
   }
 
   const handleFinalize = async () => {
-    if (!validateStep(currentStep)) {
-      alert("Veuillez remplir les champs obligatoires (*) avant de finaliser.")
-      return
-    }
-
+    // No validation check needed
     try {
       const response = await fetch('/api/acquereur/questionnaire', {
         method: 'POST',
@@ -208,7 +198,7 @@ function QuestionnaireContent() {
         throw new Error('Failed to save questionnaire')
       }
 
-      // Update local storage for client-side immediate feedback (optional, since we now rely more on server state)
+      // Update local storage for client-side immediate feedback
       localStorage.setItem('profileCompleted', 'true')
 
       // Redirect
@@ -223,8 +213,6 @@ function QuestionnaireContent() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
   }
 
-
-
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
@@ -232,7 +220,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="situationFamiliale" className="text-base font-semibold">
-                Situation familiale *
+                Situation familiale
               </Label>
               <Select
                 key={`situation-${formData.situationFamiliale}`}
@@ -277,7 +265,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="situationProfessionnelle" className="text-base font-semibold">
-                Situation professionnelle *
+                Situation professionnelle
               </Label>
               <Select
                 key={`pro-${formData.situationProfessionnelle}`}
@@ -302,7 +290,7 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="salaire" className="text-base font-semibold">
-                  Revenus mensuels nets (€) *
+                  Revenus mensuels nets (€)
                 </Label>
                 <Input
                   id="salaire"
@@ -315,7 +303,7 @@ function QuestionnaireContent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="patrimoine" className="text-base font-semibold">
-                  Patrimoine total (€) *
+                  Patrimoine total (€)
                 </Label>
                 <Input
                   id="patrimoine"
@@ -335,7 +323,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-3">
               <Label className="text-base font-semibold">
-                Type de bien recherché * (plusieurs choix possibles)
+                Type de bien recherché (plusieurs choix possibles)
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 {['Appartement', 'Maison', 'Studio', 'Loft', 'Duplex', 'Penthouse'].map((type) => (
@@ -360,7 +348,7 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="surfaceMin" className="text-base font-semibold">
-                  Surface minimum (m²) *
+                  Surface minimum (m²)
                 </Label>
                 <Input
                   id="surfaceMin"
@@ -387,26 +375,29 @@ function QuestionnaireContent() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="nombrePieces" className="text-base font-semibold">
-                Nombre de pièces (min) *
+              <Label className="text-base font-semibold">
+                Nombre de pièces (plusieurs choix possibles)
               </Label>
-              <Select
-                key={`pieces-${formData.nombrePieces}`}
-                value={formData.nombrePieces?.toString() || ''}
-                onValueChange={(value) => updateFormData('nombrePieces', value)}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Nb pièces" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1 pièce</SelectItem>
-                  <SelectItem value="2">2 pièces</SelectItem>
-                  <SelectItem value="3">3 pièces</SelectItem>
-                  <SelectItem value="4">4 pièces</SelectItem>
-                  <SelectItem value="5">5 pièces</SelectItem>
-                  <SelectItem value="6">6 pièces+</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-3 gap-3">
+                {['1', '2', '3', '4', '5', '6+'].map((pieces) => (
+                  <div
+                    key={pieces}
+                    onClick={() => toggleNombrePieces(pieces)}
+                    className={`flex items-center justify-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.nombrePieces.includes(pieces)
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                  >
+                    <Checkbox
+                      checked={formData.nombrePieces.includes(pieces)}
+                      onChange={() => toggleNombrePieces(pieces)}
+                    />
+                    <Label className="cursor-pointer font-medium whitespace-nowrap">
+                      {pieces} {pieces === '1' ? 'pièce' : pieces === '6+' ? 'pièces' : 'pièces'}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )
@@ -417,7 +408,7 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="budgetMin" className="text-base font-semibold">
-                  Budget minimum (€) *
+                  Budget minimum (€)
                 </Label>
                 <Input
                   id="budgetMin"
@@ -430,7 +421,7 @@ function QuestionnaireContent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="budgetMax" className="text-base font-semibold">
-                  Budget maximum (€) *
+                  Budget maximum (€)
                 </Label>
                 <Input
                   id="budgetMax"
@@ -445,7 +436,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="apport" className="text-base font-semibold">
-                Apport personnel (€) *
+                Apport personnel (€)
               </Label>
               <Input
                 id="apport"
@@ -459,7 +450,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="financement" className="text-base font-semibold">
-                Type de financement *
+                Type de financement
               </Label>
               <Select
                 key={`financement-${formData.financement}`}
@@ -508,7 +499,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-4">
               <Label htmlFor="localisation" className="text-base font-semibold">
-                Villes ou régions recherchées *
+                Villes ou régions recherchées
               </Label>
 
               {/* Selected Locations */}
@@ -546,7 +537,7 @@ function QuestionnaireContent() {
         return (
           <div className="space-y-6">
             <Label className="text-base font-semibold">
-              Critères supplémentaires * (au moins un choix)
+              Critères supplémentaires (au moins un choix)
             </Label>
             <div className="grid grid-cols-2 gap-4">
               {[
@@ -581,7 +572,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="delaiRecherche" className="text-base font-semibold">
-                Délai de recherche souhaité *
+                Délai de recherche souhaité
               </Label>
               <Select
                 key={`delai-${formData.delaiRecherche}`}
@@ -603,7 +594,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="flexibilite" className="text-base font-semibold">
-                Flexibilité sur les critères *
+                Flexibilité sur les critères
               </Label>
               <Select
                 key={`flex-${formData.flexibilite}`}

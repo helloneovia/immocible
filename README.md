@@ -116,6 +116,7 @@ npm run db:generate  # Générer le client Prisma
 npm run db:push      # Pousser le schéma vers la DB
 npm run db:migrate   # Créer une migration
 npm run db:studio    # Ouvrir Prisma Studio
+npx prisma db push
 ```
 
 ## 🔐 Authentification
