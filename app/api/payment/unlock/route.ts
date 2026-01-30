@@ -30,66 +30,38 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true, message: 'Already unlocked' })
         }
 
-        // Check for Stripe
-        if (process.env.STRIPE_SECRET_KEY) {
-            try {
-                const Stripe = require('stripe')
-                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+        // Subscription & Quota Check
+        const plan = currentUser.profile?.plan
+        const subEndDate = currentUser.profile?.subscriptionEndDate
+        const subStartDate = currentUser.profile?.subscriptionStartDate
 
-                const session = await stripe.checkout.sessions.create({
-                    payment_method_types: ['card'],
-                    line_items: [
-                        {
-                            price_data: {
-                                currency: 'eur',
-                                product_data: {
-                                    name: 'Déblocage Contact Acquéreur',
-                                    description: `Accès aux coordonnées pour le dossier #${buyerId.slice(0, 8)}`,
-                                },
-                                unit_amount: Math.round((amount || 0) * 100), // Amount in cents
-                            },
-                            quantity: 1,
-                        },
-                    ],
-                    mode: 'payment',
-                    success_url: `${process.env.NEXTAUTH_URL || request.headers.get('origin')}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
-                    cancel_url: `${process.env.NEXTAUTH_URL || request.headers.get('origin')}/agence/buyer/${buyerId}`,
-                    metadata: {
-                        agencyId: currentUser.id,
-                        buyerId: buyerId,
-                        type: 'unlock_contact'
-                    },
-                })
+        // 1. Check Subscription Status
+        if (!subEndDate || new Date(subEndDate) < new Date()) {
+            return NextResponse.json({ error: 'Abonnement requis ou expiré pour accéder aux contacts.' }, { status: 403 })
+        }
 
-                return NextResponse.json({ url: session.url })
-            } catch (stripeError) {
-                console.error('Stripe Error:', stripeError)
-                return NextResponse.json({
-                    error: 'Payment Init Error',
-                    details: stripeError instanceof Error ? stripeError.message : String(stripeError)
-                }, { status: 500 })
+        // 2. Check Monthly Quota
+        if (plan === 'mensuel') {
+            const effectiveStartDate = subStartDate || new Date(new Date().setDate(new Date().getDate() - 30))
+
+            const count = await prisma.unlockedProfile.count({
+                where: {
+                    agencyId: currentUser.id,
+                    createdAt: { gte: effectiveStartDate }
+                }
+            })
+
+            if (count >= 100) {
+                return NextResponse.json({ error: 'Limite mensuelle de 100 profils atteinte.' }, { status: 403 })
             }
         }
 
-        // Fallback: Mock Unlock (Immediate) - Only if no Stripe Key
-        // 1. Create Unlock Record
+        // 3. Unlock (Plan Benefit)
         await prisma.unlockedProfile.create({
             data: {
                 agencyId: currentUser.id,
                 buyerId: buyerId,
-                amount: amount || 0
-            }
-        })
-
-        // 2. Record Payment (Mock)
-        await prisma.payment.create({
-            data: {
-                userId: currentUser.id,
-                amount: amount || 0,
-                status: 'succeeded',
-                currency: 'eur',
-                plan: 'unlock_contact', // Using plan field to store type
-                stripeSessionId: `mock_unlock_${Date.now()}`
+                amount: 0
             }
         })
 

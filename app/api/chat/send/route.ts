@@ -30,6 +30,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
         }
 
+        // Check subscription for agency
+        if (currentUser.role === 'agence') {
+            const endDate = currentUser.profile?.subscriptionEndDate
+            if (!endDate || new Date(endDate) < new Date()) {
+                return NextResponse.json({ error: 'Abonnement expiré ou inactif.' }, { status: 403 })
+            }
+        }
+
         const sanitizedContent = sanitizeContent(content)
 
         const message = await prisma.message.create({

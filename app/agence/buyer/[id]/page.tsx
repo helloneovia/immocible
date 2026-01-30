@@ -100,7 +100,7 @@ function BuyerProfileContent() {
                 const refreshRes = await fetch(`/api/agence/buyer/${id}`)
                 const refreshData = await refreshRes.json()
                 setBuyerData(refreshData)
-                alert('Contact débloqué avec succès ! (Mode Démonstration / Sans Stripe)')
+                alert('Contact débloqué avec succès !')
             } else {
                 const msg = responseData.details || 'Erreur inconnue'
                 alert(`Erreur lors du paiement: ${msg}\n\nSi le message indique que la table n'existe pas, veuillez redémarrer le serveur (npm run dev).`)

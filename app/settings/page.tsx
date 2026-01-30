@@ -233,7 +233,15 @@ function SettingsContent() {
                                             </p>
                                             {(subscriptionEndDate) && (
                                                 <div className="text-sm font-medium text-indigo-800 mt-1">
-                                                    <p>Période : Du {new Date(subscriptionStartDate).toLocaleDateString()} au {new Date(subscriptionEndDate).toLocaleDateString()}</p>
+                                                    <p>Période : Du {(() => {
+                                                        if (subscriptionStartDate) return new Date(subscriptionStartDate).toLocaleDateString();
+
+                                                        const end = new Date(subscriptionEndDate);
+                                                        const start = new Date(end);
+                                                        if (plan === 'yearly') start.setFullYear(start.getFullYear() - 1);
+                                                        else start.setMonth(start.getMonth() - 1);
+                                                        return start.toLocaleDateString();
+                                                    })()} au {new Date(subscriptionEndDate).toLocaleDateString()}</p>
                                                 </div>
                                             )}
                                             <p className="text-sm text-indigo-700 mt-1">
