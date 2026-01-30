@@ -47,16 +47,16 @@ export default function PaymentSuccess() {
                         {status === 'error' && <XCircle className="h-16 w-16 text-red-500" />}
                     </div>
                     <CardTitle>
-                        {status === 'loading' && 'Vérification du paiement...'}
-                        {status === 'success' && 'Paiement réussi !'}
-                        {status === 'error' && 'Erreur de paiement'}
+                        {status === 'loading' && <span>Vérification du paiement...</span>}
+                        {status === 'success' && <span>Paiement réussi !</span>}
+                        {status === 'error' && <span>Erreur de paiement</span>}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         <p className="text-gray-600">
-                            {status === 'success' && 'Votre compte agence est maintenant actif. Vous allez être redirigé...'}
-                            {status === 'error' && 'Impossible de vérifier le paiement. Veuillez contacter le support.'}
+                            {status === 'success' && <span>Votre compte agence est maintenant actif. Vous allez être redirigé...</span>}
+                            {status === 'error' && <span>Impossible de vérifier le paiement. Veuillez contacter le support.</span>}
                         </p>
 
                         {status !== 'loading' && (
