@@ -1,12 +1,12 @@
 ﻿import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { 
-  Home, 
-  Target, 
-  FileText, 
-  Sparkles, 
-  ArrowRight, 
+import {
+  Home,
+  Target,
+  FileText,
+  Sparkles,
+  ArrowRight,
   CheckCircle2,
   TrendingUp,
   Shield,
@@ -31,13 +31,13 @@ export default function HomePage() {
               <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Home className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 IMMOCIBLE
               </span>
             </Link>
             <div className="flex items-center space-x-4">
               <Link href="/acquereur/connexion">
-                <Button variant="ghost" className="font-medium">Connexion</Button>
+                <Button variant="ghost" className="hidden sm:inline-flex font-medium">Connexion</Button>
               </Link>
               <Link href="/acquereur/inscription">
                 <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300">
@@ -62,32 +62,32 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">
             <span className="block text-gray-900">Trouvez votre</span>
             <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
               bien idéal
             </span>
             <span className="block text-gray-900">avant qu&apos;il ne soit sur le marché</span>
           </h1>
-          <p className="mt-6 text-xl sm:text-2xl leading-8 text-gray-600 max-w-3xl mx-auto font-medium">
+          <p className="mt-6 text-lg sm:text-2xl leading-8 text-gray-600 max-w-3xl mx-auto font-medium">
             IMMOCIBLE connecte les acquéreurs qualifiés avec des opportunités immobilières
             <span className="text-indigo-600 font-semibold"> off-market</span>. Fini les recherches interminables, découvrez les meilleurs biens correspondant à votre profil.
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link href="/acquereur/inscription">
-              <Button 
-                size="lg" 
-                className="text-lg px-10 py-7 h-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 group"
+              <Button
+                size="lg"
+                className="w-full sm:w-auto text-lg px-10 py-7 h-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 group"
               >
                 Je suis acquéreur
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
             <Link href="/agence/inscription">
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-lg px-10 py-7 h-auto border-2 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg"
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto text-lg px-10 py-7 h-auto border-2 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105 transition-all duration-300 shadow-lg"
               >
                 Je suis une agence
               </Button>
@@ -95,7 +95,7 @@ export default function HomePage() {
           </div>
 
           {/* Trust indicators */}
-          <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-gray-600">
+          <div className="mt-16 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-500" />
               <span className="font-medium">100% Gratuit</span>
@@ -119,10 +119,10 @@ export default function HomePage() {
       {/* Features Section */}
       <section className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
         <div className="mx-auto max-w-3xl text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
             Comment ça fonctionne ?
           </h2>
-          <p className="text-xl text-gray-600 font-medium">
+          <p className="text-lg sm:text-xl text-gray-600 font-medium">
             Une plateforme simple et efficace pour transformer votre recherche immobilière
           </p>
         </div>
@@ -170,19 +170,19 @@ export default function HomePage() {
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 shadow-2xl">
           <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,transparent)]"></div>
           <CardHeader className="relative text-center pb-8">
-            <CardTitle className="text-4xl sm:text-5xl font-extrabold text-white mb-6">
+            <CardTitle className="text-3xl sm:text-5xl font-extrabold text-white mb-6">
               Prêt à trouver votre bien idéal ?
             </CardTitle>
-            <CardDescription className="text-blue-100 text-xl font-medium">
+            <CardDescription className="text-blue-100 text-lg sm:text-xl font-medium">
               Rejoignez des centaines d&apos;acquéreurs qui ont trouvé leur bien sur IMMOCIBLE
             </CardDescription>
           </CardHeader>
           <CardContent className="relative flex justify-center pb-8">
             <Link href="/acquereur/inscription">
-              <Button 
-                size="lg" 
-                variant="secondary" 
-                className="text-lg px-12 py-7 h-auto bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 font-bold group"
+              <Button
+                size="lg"
+                variant="secondary"
+                className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-7 h-auto bg-white text-indigo-600 hover:bg-gray-50 shadow-2xl hover:shadow-3xl hover:scale-105 transition-all duration-300 font-bold group"
               >
                 Créer mon compte gratuitement
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
