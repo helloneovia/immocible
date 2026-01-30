@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Crown, CreditCard, Check } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
@@ -28,6 +28,32 @@ function SettingsContent() {
         password: '',
         confirmPassword: ''
     })
+    const [plan, setPlan] = useState('')
+
+    const handleUpgrade = async () => {
+        try {
+            const response = await fetch('/api/payment/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    plan: 'yearly',
+                    nomAgence: formData.nomAgence || 'Agence'
+                })
+            })
+
+            const data = await response.json()
+
+            if (response.ok && data.url) {
+                window.location.href = data.url
+            } else {
+                alert("Erreur lors de l'initialisation du paiement.")
+            }
+        } catch (error) {
+            console.error("Payment init error", error)
+            alert("Erreur de connexion.")
+        }
+    }
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -44,6 +70,7 @@ function SettingsContent() {
                         nomAgence: data.nomAgence || ''
                     }))
                     setRole(data.role)
+                    setPlan(data.plan)
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error)
@@ -186,6 +213,37 @@ function SettingsContent() {
                                         onChange={handleChange}
                                         placeholder="Nom de votre agence"
                                     />
+                                </div>
+                            )}
+
+                            {role === 'agence' && (
+                                <div className="pt-6 border-t">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                                        <CreditCard className="h-5 w-5 text-gray-500" />
+                                        Abonnement
+                                    </h3>
+                                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div>
+                                            <p className="font-semibold text-indigo-900">
+                                                Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : plan === 'monthly' ? 'Mensuel' : 'Découverte / Inactif'}
+                                            </p>
+                                            <p className="text-sm text-indigo-700">
+                                                {plan === 'yearly'
+                                                    ? 'Vous bénéficiez de tous les avantages Premium.'
+                                                    : 'Passez au plan annuel pour économiser 2 mois.'}
+                                            </p>
+                                        </div>
+                                        {plan === 'monthly' && (
+                                            <Button
+                                                type="button"
+                                                onClick={handleUpgrade}
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap"
+                                            >
+                                                <Crown className="mr-2 h-4 w-4" />
+                                                Passer à l'annuel (290€/an)
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
