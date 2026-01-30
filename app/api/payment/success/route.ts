@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
                     where: { userId: user.id },
                     data: {
                         subscriptionStatus: 'ACTIVE',
-                        stripeCustomerId: session.customer as string
+                        stripeCustomerId: session.customer as string,
+                        plan: session.metadata?.plan || user.profile?.plan || 'mensuel'
                     }
                 })
 
