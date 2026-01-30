@@ -42,6 +42,46 @@ export async function POST(request: NextRequest) {
             )
         }
 
+        // Coupon Logic for 100% Off (Bypass Stripe)
+        // Only applies to monthly plan for now
+        const VALID_COUPON = "IMMO_START";
+        if (body.couponCode === VALID_COUPON && plan === 'monthly') {
+            const user = await prisma.user.findUnique({
+                where: { email },
+                include: { profile: true }
+            })
+
+            if (user) {
+                // Activate 30 days
+                const startDate = new Date()
+                const newEndDate = new Date(startDate)
+                newEndDate.setDate(newEndDate.getDate() + 30)
+
+                await prisma.profile.update({
+                    where: { userId: user.id },
+                    data: {
+                        subscriptionStatus: 'ACTIVE',
+                        plan: 'monthly',
+                        subscriptionStartDate: startDate,
+                        subscriptionEndDate: newEndDate
+                    }
+                })
+
+                await prisma.payment.create({
+                    data: {
+                        userId: user.id,
+                        stripeSessionId: `COUPON_${Math.random().toString(36).substring(7)}`,
+                        amount: 0,
+                        currency: 'eur',
+                        status: 'succeeded',
+                        plan: 'monthly_free_coupon',
+                    }
+                })
+
+                return NextResponse.json({ success: true, message: 'Free month applied!' })
+            }
+        }
+
         // Create Stripe Session
         // We pass the email to pre-fill content.
         // Metadata helps us identify the user later if needed, though we rely on client success for now or webhook using email.

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
-import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Crown, CreditCard, Check } from 'lucide-react'
+import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Crown, CreditCard, Check, Ticket } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
@@ -18,6 +18,8 @@ function SettingsContent() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [role, setRole] = useState('')
+    const [couponCode, setCouponCode] = useState('')
+    const [applyingCoupon, setApplyingCoupon] = useState(false)
 
     const [formData, setFormData] = useState({
         nom: '',
@@ -54,6 +56,39 @@ function SettingsContent() {
         } catch (error) {
             console.error("Payment init error", error)
             alert("Erreur de connexion.")
+        }
+    }
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode) return
+        setApplyingCoupon(true)
+        try {
+            const response = await fetch('/api/payment/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: formData.email,
+                    plan: 'monthly', // Coupon applies to monthly
+                    nomAgence: formData.nomAgence || 'Agence',
+                    couponCode
+                })
+            })
+
+            const data = await response.json()
+
+            if (response.ok && data.success) {
+                alert(data.message || "Coupon appliqué avec succès !")
+                window.location.reload()
+            } else if (response.ok && data.url) {
+                window.location.href = data.url
+            } else {
+                alert(data.error || "Code promo invalide")
+            }
+        } catch (error) {
+            console.error("Coupon error", error)
+            alert("Erreur lors de l'application du code promo")
+        } finally {
+            setApplyingCoupon(false)
         }
     }
 
@@ -250,16 +285,40 @@ function SettingsContent() {
                                                     : 'Passez au plan annuel pour économiser 2 mois.'}
                                             </p>
                                         </div>
-                                        {plan !== 'yearly' && (
-                                            <Button
-                                                type="button"
-                                                onClick={handleUpgrade}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap"
-                                            >
-                                                <Crown className="mr-2 h-4 w-4" />
-                                                Passer à l'annuel (290€/an)
-                                            </Button>
-                                        )}
+                                        <div className="flex flex-col gap-3 items-end w-full sm:w-auto">
+                                            {plan !== 'yearly' && (
+                                                <Button
+                                                    type="button"
+                                                    onClick={handleUpgrade}
+                                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap w-full"
+                                                >
+                                                    <Crown className="mr-2 h-4 w-4" />
+                                                    Passer à l'annuel (290€/an)
+                                                </Button>
+                                            )}
+                                            {plan !== 'yearly' && (
+                                                <div className="flex bg-white rounded-lg border border-indigo-100 p-1 w-full shadow-sm">
+                                                    <div className="relative flex-1">
+                                                        <Ticket className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+                                                        <Input
+                                                            placeholder="Code promo"
+                                                            value={couponCode}
+                                                            onChange={(e) => setCouponCode(e.target.value)}
+                                                            className="border-0 focus-visible:ring-0 h-9 bg-transparent pl-9 text-sm"
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={handleApplyCoupon}
+                                                        disabled={!couponCode || applyingCoupon}
+                                                        size="sm"
+                                                        className="bg-indigo-600 text-white hover:bg-indigo-700 h-9 px-3 shrink-0"
+                                                    >
+                                                        {applyingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Appliquer'}
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             )}
