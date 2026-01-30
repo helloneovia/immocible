@@ -52,11 +52,13 @@ export async function POST(request: NextRequest) {
 
         // Fetch recipient email
         const recipient = await prisma.user.findUnique({
-            where: { id: recipientId }
+            where: { id: recipientId },
+            include: { profile: true }
         })
 
         if (recipient?.email) {
             const senderName = currentUser.profile?.nomAgence || currentUser.profile?.prenom || 'Un utilisateur'
+            const recipientName = recipient.profile?.nomAgence || recipient.profile?.prenom || undefined
 
             try {
                 await sendNewMessageNotification(
@@ -64,7 +66,8 @@ export async function POST(request: NextRequest) {
                     senderName,
                     sanitizedContent,
                     conversationId,
-                    recipientRole
+                    recipientRole,
+                    recipientName
                 )
             } catch (emailError) {
                 console.error('Failed to send message notification:', emailError)

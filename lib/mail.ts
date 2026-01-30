@@ -59,7 +59,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
  * Sends a welcome email to a new user
  */
 export async function sendWelcomeEmail(email: string, role: string, name?: string): Promise<boolean> {
-  const subject = `Bienvenue sur IMMOCIBLE !`;
+  const subject = `Bienvenue sur IMMOCIBLE${name ? `, ${name}` : ''} !`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const loginPath = role === 'agence' ? '/agence/connexion' : '/acquereur/connexion';
   const loginUrl = `${baseUrl}${loginPath}`;
@@ -115,7 +115,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
  * Sends a payment success email
  */
 export async function sendPaymentSuccessEmail(email: string, amount: number, plan: string, name?: string): Promise<boolean> {
-  const subject = `Confirmation de votre paiement - IMMOCIBLE`;
+  const subject = `Confirmation de paiement${name ? ` - ${name}` : ''} - IMMOCIBLE`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const dashboardUrl = `${baseUrl}/agence/dashboard`;
 
@@ -147,9 +147,10 @@ export async function sendNewMessageNotification(
   senderName: string,
   messageContent: string,
   conversationId: string,
-  recipientRole: string
+  recipientRole: string,
+  recipientName?: string
 ): Promise<boolean> {
-  const subject = `Nouveau message de ${senderName}`;
+  const subject = `${recipientName ? `${recipientName}, ` : ''}Nouveau message de ${senderName}`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const messagesPath = recipientRole === 'agence' ? '/agence/messages' : '/acquereur/messages';
   const messageUrl = `${baseUrl}${messagesPath}?conversation=${conversationId}`;
@@ -176,6 +177,35 @@ export async function sendNewMessageNotification(
   `;
 
   const text = `Nouveau message de ${senderName}: "${preview}". Répondre ici : ${messageUrl}`;
+
+  return sendEmail({ to: email, subject, html, text });
+}
+
+/**
+ * Sends a payment failure email
+ */
+export async function sendPaymentFailureEmail(email: string, plan: string, name?: string): Promise<boolean> {
+  const subject = `Échec du paiement${name ? ` - ${name}` : ''} - IMMOCIBLE`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const settingsUrl = `${baseUrl}/settings`;
+
+  const html = `
+    <div style="font-family: sans-serif; color: #333;">
+      <h1>Échec du paiement</h1>
+      <p>Bonjour ${name || ''},</p>
+      <p>Nous n'avons pas pu traiter votre paiement pour le forfait <strong>${plan === 'yearly' ? 'Annuel' : 'Mensuel'}</strong>.</p>
+      <p>Ceci est probablement dû à une carte expirée ou à des fonds insuffisants. Merci de mettre à jour vos informations de paiement.</p>
+      <div style="margin: 30px 0;">
+        <a href="${settingsUrl}" style="background-color: #EF4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Mettre à jour le paiement
+        </a>
+      </div>
+      <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+      <p>L'équipe IMMOCIBLE</p>
+    </div>
+  `;
+
+  const text = `Échec du paiement pour le forfait ${plan}. Veuillez mettre à jour vos informations de paiement : ${settingsUrl}`;
 
   return sendEmail({ to: email, subject, html, text });
 }
