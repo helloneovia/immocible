@@ -6,9 +6,11 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function PaymentSuccess() {
     const router = useRouter()
+    const { refreshUser } = useAuth()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('session_id')
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -24,6 +26,7 @@ export default function PaymentSuccess() {
                 const res = await fetch(`/api/payment/success?session_id=${sessionId}`)
                 if (res.ok) {
                     setStatus('success')
+                    await refreshUser()
                     // Optional: Auto redirect after few seconds
                     setTimeout(() => router.push('/agence/dashboard'), 3000)
                 } else {
