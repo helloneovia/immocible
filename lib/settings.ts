@@ -15,7 +15,7 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS: AppSettings = {
     price_monthly: 29,
     price_yearly: 290,
-    price_unlock_profile_percentage: 0.01, // 1% of budget
+    price_unlock_profile_percentage: 1, // 1%
     feature_list_monthly: [
         "Accès aux profils acquéreurs",
         "Système de matching intelligent",

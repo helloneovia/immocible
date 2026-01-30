@@ -48,10 +48,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         const search = buyer.recherches[0]
 
-        // Calculate unlock price
+        // Calculate unlock price (percentage is stored as 0.01 = 0.01%, so divide by 100)
         const settings = await getAppSettings()
         const price = search?.prixMax
-            ? Math.max(1, Math.round(search.prixMax * settings.price_unlock_profile_percentage))
+            ? Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
             : 0
 
         // Prepare response

@@ -18,10 +18,10 @@ const DEFAULT_SETTINGS = [
     },
     {
         key: 'price_unlock_profile_percentage',
-        value: '0.01',
+        value: '1',
         type: 'number',
         label: 'Prix Déblocage Profil (%)',
-        description: 'Pourcentage du budget max de l\'acquéreur pour débloquer ses coordonnées (ex: 0.01 = 1%).'
+        description: 'Pourcentage du budget max de l\'acquéreur (ex: 1 = 1%, 0.5 = 0.5%).'
     },
     {
         key: 'feature_list_monthly',
