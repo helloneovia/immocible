@@ -55,7 +55,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                         <CardTitle>Historique Paiements (10 derniers)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {user.Payment.length > 0 ? (
+                        {user.payments.length > 0 ? (
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-gray-50 border-b">
                                     <tr>
@@ -67,7 +67,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {user.Payment.map(p => (
+                                    {user.payments.map(p => (
                                         <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
                                             <td className="py-2 px-3">{format(new Date(p.createdAt), 'dd/MM/yyyy HH:mm')}</td>
                                             <td className="py-2 px-3 font-medium">{p.amount} {p.currency}</td>
