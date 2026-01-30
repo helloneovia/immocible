@@ -17,11 +17,11 @@ const DEFAULT_SETTINGS = [
         description: 'Le prix de l\'abonnement annuel en euros.'
     },
     {
-        key: 'price_unlock_profile',
-        value: '0',
+        key: 'price_unlock_profile_percentage',
+        value: '0.01',
         type: 'number',
-        label: 'Prix Déblocage Profil',
-        description: 'Le prix pour débloquer les coordonnées d\'un acquéreur (en euros).'
+        label: 'Prix Déblocage Profil (%)',
+        description: 'Pourcentage du budget max de l\'acquéreur pour débloquer ses coordonnées (ex: 0.01 = 1%).'
     },
     {
         key: 'feature_list_monthly',
@@ -50,11 +50,18 @@ const DEFAULT_SETTINGS = [
         description: 'Liste des fonctionnalités affichées pour le plan annuel.'
     },
     {
+        key: 'stripe_secret_key',
+        value: process.env.STRIPE_SECRET_KEY || '',
+        type: 'string',
+        label: 'Clé Secrète Stripe',
+        description: 'Clé secrète Stripe utilisée pour les paiements (STRIPE_SECRET_KEY).'
+    },
+    {
         key: 'stripe_public_key',
         value: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
         type: 'string',
         label: 'Clé Publique Stripe',
-        description: 'Clé publique utilisée parle frontend.'
+        description: 'Clé publique Stripe utilisée par le frontend.'
     }
 ]
 

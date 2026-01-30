@@ -2,20 +2,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
-
-if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error('STRIPE_SECRET_KEY is missing in environment variables')
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
-})
-
 import { getAppSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
     try {
         const settings = await getAppSettings()
+
+        // Initialize Stripe with admin-configured secret key
+        if (!settings.stripe_secret_key) {
+            throw new Error('STRIPE_SECRET_KEY is not configured in admin settings')
+        }
+
+        const stripe = new Stripe(settings.stripe_secret_key, {
+            apiVersion: '2023-10-16',
+        })
+
         const PLANS = {
             monthly: {
                 price: Math.round(settings.price_monthly * 100), // Convert to cents

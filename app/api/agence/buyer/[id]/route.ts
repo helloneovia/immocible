@@ -50,7 +50,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         // Calculate unlock price
         const settings = await getAppSettings()
-        const price = settings.price_unlock_profile
+        const price = search?.prixMax
+            ? Math.max(1, Math.round(search.prixMax * settings.price_unlock_profile_percentage))
+            : 0
 
         // Prepare response
         const data = {
