@@ -110,3 +110,72 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
 
   return sendEmail({ to: email, subject, html });
 }
+
+/**
+ * Sends a payment success email
+ */
+export async function sendPaymentSuccessEmail(email: string, amount: number, plan: string, name?: string): Promise<boolean> {
+  const subject = `Confirmation de votre paiement - IMMOCIBLE`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const dashboardUrl = `${baseUrl}/agence/dashboard`;
+
+  const html = `
+    <div style="font-family: sans-serif; color: #333;">
+      <h1>Paiement reçu avec succès</h1>
+      <p>Bonjour ${name || ''},</p>
+      <p>Nous vous confirmons la réception de votre paiement de <strong>${amount}€</strong> pour le forfait <strong>${plan === 'yearly' ? 'Annuel' : 'Mensuel'}</strong>.</p>
+      <p>Votre abonnement est maintenant actif. Vous pouvez accéder à toutes les fonctionnalités de votre dashboard.</p>
+      <div style="margin: 30px 0;">
+        <a href="${dashboardUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Accéder à mon Dashboard
+        </a>
+      </div>
+      <p>Merci de votre confiance,<br/>L'équipe IMMOCIBLE</p>
+    </div>
+  `;
+
+  const text = `Paiement reçu de ${amount}€ pour le forfait ${plan}. Votre compte est actif. Accéder : ${dashboardUrl}`;
+
+  return sendEmail({ to: email, subject, html, text });
+}
+
+/**
+ * Sends a new message notification
+ */
+export async function sendNewMessageNotification(
+  email: string,
+  senderName: string,
+  messageContent: string,
+  conversationId: string,
+  recipientRole: string
+): Promise<boolean> {
+  const subject = `Nouveau message de ${senderName}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const messagesPath = recipientRole === 'agence' ? '/agence/messages' : '/acquereur/messages';
+  const messageUrl = `${baseUrl}${messagesPath}?conversation=${conversationId}`;
+
+  // Truncate content for privacy/brevity
+  const preview = messageContent.length > 50 ? messageContent.substring(0, 50) + '...' : messageContent;
+
+  const html = `
+    <div style="font-family: sans-serif; color: #333;">
+      <h2>Vous avez reçu un nouveau message</h2>
+      <p><strong>${senderName}</strong> vous a envoyé un message :</p>
+      <blockquote style="border-left: 4px solid #eee; padding-left: 15px; color: #555; font-style: italic;">
+        "${preview}"
+      </blockquote>
+      <div style="margin: 30px 0;">
+        <a href="${messageUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Répondre
+        </a>
+      </div>
+      <p style="font-size: 0.9em; color: #666;">
+        <a href="${messageUrl}">${messageUrl}</a>
+      </p>
+    </div>
+  `;
+
+  const text = `Nouveau message de ${senderName}: "${preview}". Répondre ici : ${messageUrl}`;
+
+  return sendEmail({ to: email, subject, html, text });
+}

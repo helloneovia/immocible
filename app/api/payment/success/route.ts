@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
+import { sendPaymentSuccessEmail } from '@/lib/mail'
 
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is missing in environment variables')
@@ -64,6 +65,18 @@ export async function GET(request: NextRequest) {
                         plan: user.profile?.plan || session.metadata?.plan,
                     }
                 })
+
+                // Send success email
+                try {
+                    await sendPaymentSuccessEmail(
+                        email,
+                        (session.amount_total || 0) / 100,
+                        (user.profile?.plan || session.metadata?.plan || 'mensuel') as string,
+                        user.profile?.nomAgence || user.profile?.prenom || undefined
+                    )
+                } catch (e) {
+                    console.error('Failed to send payment email', e)
+                }
             }
         }
 

@@ -159,8 +159,8 @@ function DashboardContent() {
         </div>
 
         {/* Subscription Plan Banner */}
-        {/* Subscription Plan Banner - Only for Monthly users to upgrade to Yearly */}
-        {((user?.profile as any)?.plan === 'monthly') && (
+        {/* Subscription Plan Banner - Show for anyone NOT on Yearly plan */}
+        {((user?.profile as any)?.plan !== 'yearly') && (
           <Card className="mb-10 border-0 shadow-lg bg-gradient-to-r from-gray-900 to-slate-800 text-white overflow-hidden relative">
             <div className="absolute top-0 right-0 p-32 bg-indigo-500/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
             <CardContent className="p-8 relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -206,7 +206,7 @@ function DashboardContent() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
             <CardHeader className="pb-3">
               <CardDescription className="text-indigo-100 flex items-center gap-2">
@@ -225,29 +225,10 @@ function DashboardContent() {
               <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
             </CardHeader>
           </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white">
-            <CardHeader className="pb-3">
-              <CardDescription className="text-pink-100 flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                Biens publiés
-              </CardDescription>
-              <CardTitle className="text-4xl font-extrabold text-white">0</CardTitle>
-            </CardHeader>
-          </Card>
         </div>
 
         {/* Actions */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <Link href="/agence/biens">
-            <Button
-              size="lg"
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 group"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Ajouter un bien
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
           <Button
             size="lg"
             variant="outline"

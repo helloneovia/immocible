@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { sanitizeContent } from '@/lib/utils'
+import { sendNewMessageNotification } from '@/lib/mail'
 
 export async function POST(request: NextRequest) {
     try {
@@ -44,6 +45,31 @@ export async function POST(request: NextRequest) {
             where: { id: conversationId },
             data: { updatedAt: new Date() },
         })
+
+        // Send email notification to recipient
+        const recipientId = currentUser.id === conversation.agencyId ? conversation.buyerId : conversation.agencyId
+        const recipientRole = currentUser.id === conversation.agencyId ? 'acquereur' : 'agence'
+
+        // Fetch recipient email
+        const recipient = await prisma.user.findUnique({
+            where: { id: recipientId }
+        })
+
+        if (recipient?.email) {
+            const senderName = currentUser.profile?.nomAgence || currentUser.profile?.prenom || 'Un utilisateur'
+
+            try {
+                await sendNewMessageNotification(
+                    recipient.email,
+                    senderName,
+                    sanitizedContent,
+                    conversationId,
+                    recipientRole
+                )
+            } catch (emailError) {
+                console.error('Failed to send message notification:', emailError)
+            }
+        }
 
         return NextResponse.json({ message })
     } catch (error) {

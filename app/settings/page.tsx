@@ -225,7 +225,7 @@ function SettingsContent() {
                                     <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                                         <div>
                                             <p className="font-semibold text-indigo-900">
-                                                Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : plan === 'monthly' ? 'Mensuel' : 'Découverte / Inactif'}
+                                                Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : 'Mensuel'}
                                             </p>
                                             <p className="text-sm text-indigo-700">
                                                 {plan === 'yearly'
@@ -233,7 +233,7 @@ function SettingsContent() {
                                                     : 'Passez au plan annuel pour économiser 2 mois.'}
                                             </p>
                                         </div>
-                                        {plan === 'monthly' && (
+                                        {plan !== 'yearly' && (
                                             <Button
                                                 type="button"
                                                 onClick={handleUpgrade}
