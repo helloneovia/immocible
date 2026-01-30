@@ -60,6 +60,9 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
  */
 export async function sendWelcomeEmail(email: string, role: string, name?: string): Promise<boolean> {
   const subject = `Bienvenue sur IMMOCIBLE !`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const loginPath = role === 'agence' ? '/agence/connexion' : '/acquereur/connexion';
+  const loginUrl = `${baseUrl}${loginPath}`;
 
   const html = `
     <div style="font-family: sans-serif; color: #333;">
@@ -67,12 +70,21 @@ export async function sendWelcomeEmail(email: string, role: string, name?: strin
       <p>Nous sommes ravis de vous compter parmi nous.</p>
       <p>Votre compte <strong>${role}</strong> a été créé avec succès.</p>
       <p>Vous pouvez dès maintenant accéder à votre tableau de bord et commencer à utiliser nos services.</p>
+      <div style="margin: 30px 0;">
+        <a href="${loginUrl}" style="background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Se connecter à mon compte
+        </a>
+      </div>
+      <p style="font-size: 0.9em; color: #666;">
+        Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :<br/>
+        <a href="${loginUrl}">${loginUrl}</a>
+      </p>
       <br />
       <p>À bientôt,<br/>L'équipe IMMOCIBLE</p>
     </div>
   `;
 
-  const text = `Bienvenue chez IMMOCIBLE ! Votre compte ${role} a été créé avec succès. Connectez-vous pour commencer.`;
+  const text = `Bienvenue chez IMMOCIBLE ! Votre compte ${role} a été créé avec succès. Connectez-vous pour commencer : ${loginUrl}`;
 
   return sendEmail({ to: email, subject, html, text });
 }
