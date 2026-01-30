@@ -1,18 +1,27 @@
 'use client'
 
 import { LogOut } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 
 export function AdminLogoutButton() {
-    const router = useRouter()
-
     const handleLogout = async () => {
         try {
-            await fetch('/api/auth/logout', { method: 'POST' })
-            // Force hard reload to login page
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+
+            // Clear any local storage/session storage
+            if (typeof window !== 'undefined') {
+                localStorage.clear()
+                sessionStorage.clear()
+            }
+
+            // Force hard redirect to login page
             window.location.href = '/admin/login'
         } catch (error) {
             console.error('Logout failed', error)
+            // Still redirect even if API fails
+            window.location.href = '/admin/login'
         }
     }
 
