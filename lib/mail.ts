@@ -40,7 +40,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
     });
 
     await transporter.sendMail({
-      from: SMTP_FROM || `"IMMOCIBLE" <${SMTP_USER}>`,
+      from: SMTP_FROM || `"IMMOCIBLE" <noreply@immocible.com}>`,
       to,
       subject,
       text,
