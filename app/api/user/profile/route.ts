@@ -22,7 +22,8 @@ export async function GET() {
             telephone: fullUser.profile?.telephone || '',
             nomAgence: fullUser.profile?.nomAgence || '', // Only for agencies
             role: fullUser.role,
-            plan: fullUser.profile?.plan
+            plan: fullUser.profile?.plan,
+            subscriptionEndDate: fullUser.profile?.subscriptionEndDate
         })
     } catch (error) {
         console.error('[Profile API] Error fetching profile:', error)
