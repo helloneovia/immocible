@@ -42,43 +42,90 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Coupon Logic for 100% Off (Bypass Stripe)
-        // Only applies to monthly plan for now
-        const VALID_COUPON = "FREETRIAL";
-        if (body.couponCode === VALID_COUPON && plan === 'monthly') {
-            const user = await prisma.user.findUnique({
-                where: { email },
-                include: { profile: true }
+        let stripeDiscounts = [];
+
+        // Database Coupon Logic
+        if (body.couponCode) {
+            const coupon = await prisma.coupon.findUnique({
+                where: { code: body.couponCode }
             })
 
-            if (user) {
-                // Activate 30 days
-                const startDate = new Date()
-                const newEndDate = new Date(startDate)
-                newEndDate.setDate(newEndDate.getDate() + 30)
+            if (!coupon || !coupon.isActive) {
+                return NextResponse.json({ error: 'Code promo invalide' }, { status: 400 })
+            }
+            if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
+                return NextResponse.json({ error: 'Ce code promo a atteint sa limite d\'utilisation' }, { status: 400 })
+            }
+            if (coupon.validUntil && new Date() > coupon.validUntil) {
+                return NextResponse.json({ error: 'Ce code promo a expiré' }, { status: 400 })
+            }
+            if (coupon.planType && coupon.planType !== 'all' && coupon.planType !== plan) {
+                return NextResponse.json({ error: `Ce code est valide uniquement pour le plan ${coupon.planType === 'monthly' ? 'Mensuel' : 'Annuel'}` }, { status: 400 })
+            }
 
-                await prisma.profile.update({
-                    where: { userId: user.id },
-                    data: {
-                        subscriptionStatus: 'ACTIVE',
-                        plan: 'monthly',
-                        subscriptionStartDate: startDate,
-                        subscriptionEndDate: newEndDate
-                    }
+            // Handle FREE_TRIAL (Bypass Stripe)
+            if (coupon.discountType === 'FREE_TRIAL') {
+                const user = await prisma.user.findUnique({
+                    where: { email },
+                    include: { profile: true }
                 })
 
-                await prisma.payment.create({
-                    data: {
-                        userId: user.id,
-                        stripeSessionId: `COUPON_${Math.random().toString(36).substring(7)}`,
-                        amount: 0,
+                if (user) {
+                    const days = Math.floor(coupon.discountValue);
+                    const startDate = new Date()
+                    const newEndDate = new Date(startDate)
+                    newEndDate.setDate(newEndDate.getDate() + days)
+
+                    await prisma.profile.update({
+                        where: { userId: user.id },
+                        data: {
+                            subscriptionStatus: 'ACTIVE',
+                            plan: plan,
+                            subscriptionStartDate: startDate,
+                            subscriptionEndDate: newEndDate
+                        }
+                    })
+
+                    await prisma.payment.create({
+                        data: {
+                            userId: user.id,
+                            stripeSessionId: `COUPON_${coupon.code}_${Math.random().toString(36).substring(7)}`,
+                            amount: 0,
+                            currency: 'eur',
+                            status: 'succeeded',
+                            plan: `${plan}_freetrial`,
+                        }
+                    })
+
+                    // Increment usage
+                    await prisma.coupon.update({
+                        where: { id: coupon.id },
+                        data: { usedCount: { increment: 1 } }
+                    })
+
+                    return NextResponse.json({ success: true, message: `Offre activée : ${days} jours offerts !` })
+                }
+            } else {
+                // Handle Percentage/Fixed via Stripe
+                try {
+                    const stripeCoupon = await stripe.coupons.create({
+                        name: coupon.code,
+                        amount_off: coupon.discountType === 'FIXED' ? Math.round(coupon.discountValue * 100) : undefined,
+                        percent_off: coupon.discountType === 'PERCENTAGE' ? coupon.discountValue : undefined,
                         currency: 'eur',
-                        status: 'succeeded',
-                        plan: 'monthly_free_coupon',
-                    }
-                })
+                        duration: 'once'
+                    })
+                    stripeDiscounts.push({ coupon: stripeCoupon.id });
 
-                return NextResponse.json({ success: true, message: 'Free month applied!' })
+                    // Increment usage
+                    await prisma.coupon.update({
+                        where: { id: coupon.id },
+                        data: { usedCount: { increment: 1 } }
+                    })
+                } catch (e) {
+                    console.error("Stripe coupon creation failed", e);
+                    return NextResponse.json({ error: 'Erreur lors de l\'application de la réduction' }, { status: 400 })
+                }
             }
         }
 
@@ -93,6 +140,7 @@ export async function POST(request: NextRequest) {
         const baseUrl = `${protocol}://${host}`
 
         const session = await stripe.checkout.sessions.create({
+            discounts: stripeDiscounts.length > 0 ? stripeDiscounts : undefined,
             payment_method_types: ['card'],
             line_items: [
                 {

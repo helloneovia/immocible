@@ -276,3 +276,23 @@ model UnlockedProfile {
   @@unique([agencyId, buyerId])
   @@map("unlocked_profiles")
 }
+
+model Coupon {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  discountType    String   // PERCENTAGE, FIXED, FREE_TRIAL
+  discountValue   Float
+  durationMonths  Int?
+  validFrom       DateTime?
+  validUntil      DateTime?
+  maxUses         Int?
+  usedCount       Int      @default(0)
+  planType        String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("coupons")
+  @@index([code])
+  @@index([isActive])
+}
