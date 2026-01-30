@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from 'lucide-react'
+import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { useEffect } from 'react'
 
 export default function InscriptionAgence() {
   const router = useRouter()
@@ -21,6 +23,16 @@ export default function InscriptionAgence() {
   const [plan, setPlan] = useState('monthly')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setSettings(data)
+      })
+      .catch(console.error)
+  }, [])
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -296,10 +308,11 @@ export default function InscriptionAgence() {
                         onClick={() => setPlan('monthly')}
                       >
                         <div className="font-bold text-gray-900">Mensuel</div>
-                        <div className="text-sm text-gray-500 mt-1">29€ / mois</div>
+                        <div className="text-sm text-gray-500 mt-1">{settings.price_monthly}€ / mois</div>
                         <ul className="mt-4 space-y-2 text-xs text-gray-600">
-                          <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> 100 profils acquéreurs</li>
-                          <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Matches illimités</li>
+                          {settings.feature_list_monthly.map((feature, i) => (
+                            <li key={i} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> {feature}</li>
+                          ))}
                         </ul>
                         {plan === 'monthly' && (
                           <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-indigo-600 flex items-center justify-center">
@@ -313,11 +326,12 @@ export default function InscriptionAgence() {
                         onClick={() => setPlan('yearly')}
                       >
                         <div className="font-bold text-gray-900">Annuel</div>
-                        <div className="text-sm text-gray-500 mt-1">290€ / an</div>
+                        <div className="text-sm text-gray-500 mt-1">{settings.price_yearly}€ / an</div>
                         <div className="text-[10px] text-indigo-600 font-semibold mb-1">2 mois offerts</div>
                         <ul className="space-y-2 text-xs text-gray-600">
-                          <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Profils illimités</li>
-                          <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> Badge "Agence Pro"</li>
+                          {settings.feature_list_yearly.map((feature, i) => (
+                            <li key={i} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-green-500" /> {feature}</li>
+                          ))}
                         </ul>
                         {plan === 'yearly' && (
                           <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-indigo-600 flex items-center justify-center">

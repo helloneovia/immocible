@@ -2,6 +2,7 @@
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Building2, UserCircle, CreditCard, TrendingUp } from 'lucide-react'
+import { getAppSettings } from '@/lib/settings'
 
 // Helper to fetch stats
 async function getStats() {
@@ -34,8 +35,10 @@ async function getStats() {
         }
     })
 
+    const settings = await getAppSettings()
+
     // Calculate MRR (Monthly Recurring Revenue)
-    const mrr = (monthlyActive * 29) + ((yearlyActive * 290) / 12)
+    const mrr = (monthlyActive * settings.price_monthly) + ((yearlyActive * settings.price_yearly) / 12)
 
     // Unlock Revenue
     const unlockPayments = await prisma.payment.aggregate({
@@ -67,7 +70,8 @@ async function getStats() {
         mrr,
         unlockRevenue,
         unlockNotionalRevenue: unlockPayments._sum.amount || 0, // Total lifetime
-        recentPayments
+        recentPayments,
+        settings
     }
 }
 
@@ -139,7 +143,7 @@ export default async function AdminDashboard() {
                                         <CreditCard className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <div className="font-semibold">Mensuel (29€/mois)</div>
+                                        <div className="font-semibold">Mensuel ({stats.settings.price_monthly}€/mois)</div>
                                         <div className="text-sm text-gray-500">Agences actives</div>
                                     </div>
                                 </div>
@@ -152,7 +156,7 @@ export default async function AdminDashboard() {
                                         <CreditCard className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <div className="font-semibold">Annuel (290€/an)</div>
+                                        <div className="font-semibold">Annuel ({stats.settings.price_yearly}€/an)</div>
                                         <div className="text-sm text-gray-500">Agences actives</div>
                                     </div>
                                 </div>

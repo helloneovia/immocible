@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Crown, Cred
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
+import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
 
 function SettingsContent() {
     const router = useRouter()
@@ -20,6 +21,7 @@ function SettingsContent() {
     const [role, setRole] = useState('')
     const [couponCode, setCouponCode] = useState('')
     const [applyingCoupon, setApplyingCoupon] = useState(false)
+    const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
 
     const [formData, setFormData] = useState({
         nom: '',
@@ -118,6 +120,13 @@ function SettingsContent() {
             }
         }
         fetchProfile()
+
+        fetch('/api/public/settings')
+            .then(res => res.json())
+            .then(data => {
+                if (data && !data.error) setSettings(data)
+            })
+            .catch(console.error)
     }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,7 +302,7 @@ function SettingsContent() {
                                                     className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap w-full"
                                                 >
                                                     <Crown className="mr-2 h-4 w-4" />
-                                                    Passer à l'annuel (290€/an)
+                                                    Passer à l'annuel ({settings.price_yearly}€/an)
                                                 </Button>
                                             )}
                                             {plan !== 'yearly' && (

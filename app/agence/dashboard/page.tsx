@@ -34,6 +34,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
+import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
 
 function DashboardContent() {
   const router = useRouter()
@@ -50,6 +51,11 @@ function DashboardContent() {
     surfaceMin: '',
     typeBien: 'all'
   })
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+
+  useEffect(() => {
+    fetch('/api/public/settings').then(r => r.json()).then(d => { if (d && !d.error) setSettings(d) }).catch(console.error)
+  }, [])
 
   // ... (useEffect remains same) ...
 
@@ -208,7 +214,7 @@ function DashboardContent() {
               <div className="flex-shrink-0 bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center min-w-[280px]">
                 <p className="text-sm text-gray-400 uppercase tracking-wider font-semibold mb-2">Offre Annuelle</p>
                 <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-5xl font-extrabold text-white">290€</span>
+                  <span className="text-5xl font-extrabold text-white">{settings.price_yearly}€</span>
                   <span className="text-gray-400">/an</span>
                 </div>
                 <p className="text-sm text-indigo-200 mb-6 font-medium">Validité : 1 an</p>

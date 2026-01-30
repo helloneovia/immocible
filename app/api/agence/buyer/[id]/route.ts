@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { getAppSettings } from '@/lib/settings'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {
@@ -47,8 +48,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         const search = buyer.recherches[0]
 
-        // Calculate unlock price (0.01% of budget)
-        const price = search?.prixMax ? Math.max(1, Math.round(search.prixMax * 0.0001)) : 0
+        // Calculate unlock price
+        const settings = await getAppSettings()
+        const price = settings.price_unlock_profile
 
         // Prepare response
         const data = {

@@ -11,19 +11,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2023-10-16',
 })
 
-const PLANS = {
-    monthly: {
-        price: 2900, // 29.00 EUR
-        name: 'Formule Mensuelle (Agence)',
-    },
-    yearly: {
-        price: 29000, // 290.00 EUR
-        name: 'Formule Annuelle (Agence)',
-    },
-}
+import { getAppSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
     try {
+        const settings = await getAppSettings()
+        const PLANS = {
+            monthly: {
+                price: Math.round(settings.price_monthly * 100), // Convert to cents
+                name: 'Formule Mensuelle (Agence)',
+            },
+            yearly: {
+                price: Math.round(settings.price_yearly * 100), // Convert to cents
+                name: 'Formule Annuelle (Agence)',
+            },
+        }
+
         const body = await request.json()
         const { email, plan, nomAgence } = body
 
