@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Home, ArrowRight, Building2, CheckCircle2, Shield, AlertCircle } from 'lucide-react'
+import { Home, ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from 'lucide-react'
 
 export default function InscriptionAgence() {
   const router = useRouter()
+  const [couponCode, setCouponCode] = useState('')
   const [nomAgence, setNomAgence] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -64,7 +65,8 @@ export default function InscriptionAgence() {
         body: JSON.stringify({
           email,
           plan,
-          nomAgence
+          nomAgence,
+          couponCode
         })
       })
 
@@ -222,6 +224,21 @@ export default function InscriptionAgence() {
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="coupon" className="text-sm font-semibold">Code Promo (Optionnel)</Label>
+                  <div className="relative">
+                    <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="coupon"
+                      type="text"
+                      placeholder="CODE PROMO"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="pl-10 h-10 border-2 focus:border-indigo-500 transition-colors uppercase font-mono tracking-wider text-sm"
+                    />
+                  </div>
+                </div>
+
                 <Button
                   type="submit"
                   disabled={loading}
@@ -267,6 +284,6 @@ export default function InscriptionAgence() {
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
