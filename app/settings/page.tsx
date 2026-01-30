@@ -297,25 +297,34 @@ function SettingsContent() {
                                                 </Button>
                                             )}
                                             {plan !== 'yearly' && (
-                                                <div className="flex bg-white rounded-lg border border-indigo-100 p-1 w-full shadow-sm">
-                                                    <div className="relative flex-1">
-                                                        <Ticket className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                                                        <Input
-                                                            placeholder="Code promo"
-                                                            value={couponCode}
-                                                            onChange={(e) => setCouponCode(e.target.value)}
-                                                            className="border-0 focus-visible:ring-0 h-9 bg-transparent pl-9 text-sm"
-                                                        />
+                                                <div className="relative group w-full pt-2">
+                                                    <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-xl opacity-30 group-hover:opacity-60 transition duration-500 blur-[2px]"></div>
+                                                    <div className="relative flex bg-white rounded-lg p-1.5 w-full items-center">
+                                                        <div className="relative flex-1">
+                                                            <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500/70" />
+                                                            <input
+                                                                type="text"
+                                                                placeholder="CODE PROMO"
+                                                                value={couponCode}
+                                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                                className="w-full pl-10 pr-3 py-2 bg-transparent text-sm font-bold text-gray-900 placeholder:text-gray-300 focus:outline-none uppercase tracking-widest font-mono"
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            onClick={handleApplyCoupon}
+                                                            disabled={!couponCode || applyingCoupon}
+                                                            size="sm"
+                                                            className={`
+                                                                h-9 px-5 rounded-md transition-all duration-300 font-semibold text-xs shadow-sm
+                                                                ${couponCode
+                                                                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-indigo-200 hover:shadow-indigo-300 hover:scale-105'
+                                                                    : 'bg-gray-100 text-gray-400'}
+                                                            `}
+                                                        >
+                                                            {applyingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'APPLIQUER'}
+                                                        </Button>
                                                     </div>
-                                                    <Button
-                                                        type="button"
-                                                        onClick={handleApplyCoupon}
-                                                        disabled={!couponCode || applyingCoupon}
-                                                        size="sm"
-                                                        className="bg-indigo-600 text-white hover:bg-indigo-700 h-9 px-3 shrink-0"
-                                                    >
-                                                        {applyingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Appliquer'}
-                                                    </Button>
                                                 </div>
                                             )}
                                         </div>
