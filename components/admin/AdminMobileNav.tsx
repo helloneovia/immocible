@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard, Users, CreditCard, Receipt, Trash2, Home, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, Receipt, Trash2, Home, LogOut, Menu, X, Settings, Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function AdminMobileNav() {
@@ -78,12 +78,20 @@ export function AdminMobileNav() {
                                 Transactions
                             </Link>
                             <Link
-                                href="/admin/settings"
-                                className="flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-lg transition-colors mt-8"
+                                href="/admin/coupons"
+                                className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
                                 onClick={() => setIsOpen(false)}
                             >
-                                <Trash2 className="h-5 w-5" />
-                                Reset Database
+                                <Ticket className="h-5 w-5" />
+                                Coupons
+                            </Link>
+                            <Link
+                                href="/admin/settings"
+                                className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Settings className="h-5 w-5" />
+                                Paramètres
                             </Link>
                         </nav>
 

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
@@ -47,9 +47,9 @@ export default async function AdminLayout({
                         <Ticket className="h-5 w-5" />
                         Coupons
                     </Link>
-                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-red-900/20 hover:text-red-200 rounded-lg transition-colors mt-8">
-                        <Trash2 className="h-5 w-5" />
-                        Reset Database
+                    <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <Settings className="h-5 w-5" />
+                        Paramètres
                     </Link>
                 </nav>
 
