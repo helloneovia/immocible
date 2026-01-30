@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
         // Coupon Logic for 100% Off (Bypass Stripe)
         // Only applies to monthly plan for now
-        const VALID_COUPON = "IMMO_START";
+        const VALID_COUPON = "FREETRIAL";
         if (body.couponCode === VALID_COUPON && plan === 'monthly') {
             const user = await prisma.user.findUnique({
                 where: { email },
