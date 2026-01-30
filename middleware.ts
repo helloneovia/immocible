@@ -11,7 +11,7 @@ export function middleware(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/admin') && !request.nextUrl.pathname.startsWith('/admin/login')) {
 
         // Get the session cookie
-        const sessionCookie = request.cookies.get('immocible_session_v2')
+        const sessionCookie = request.cookies.get('immocible_session_v3')
 
         // If no session, redirect to login
         if (!sessionCookie) {
