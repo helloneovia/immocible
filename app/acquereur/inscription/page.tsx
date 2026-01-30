@@ -24,13 +24,14 @@ export default function InscriptionAcquereur() {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/auth/verify-email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: email.trim().toLowerCase() })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -44,13 +45,14 @@ export default function InscriptionAcquereur() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/auth/verify-email/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code: otp })
+        body: JSON.stringify({ email: email.trim().toLowerCase(), code: otp })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -64,6 +66,7 @@ export default function InscriptionAcquereur() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (loading) return
     setError(null)
 
     if (password !== confirmPassword) {
@@ -86,7 +89,7 @@ export default function InscriptionAcquereur() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          email: email.trim().toLowerCase(),
           password,
           role: 'acquereur',
           firstName,
@@ -106,7 +109,12 @@ export default function InscriptionAcquereur() {
       router.push('/acquereur/questionnaire')
 
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue lors de l\'inscription')
+      if (err.message && (err.message.includes('existe déjà') || err.message.includes('already exists'))) {
+        setError('Ce compte existe déjà. Redirection vers la connexion...')
+        setTimeout(() => router.push('/acquereur/connexion'), 2000)
+      } else {
+        setError(err.message || 'Une erreur est survenue lors de l\'inscription')
+      }
       setLoading(false)
     }
   }

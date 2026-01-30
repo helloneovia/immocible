@@ -7,7 +7,9 @@ import { sendWelcomeEmail } from '@/lib/mail'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, role, nomAgence, plan, firstName, telephone } = body
+    console.log('[Register] Attempt for:', body.email)
+    const email = body.email?.trim().toLowerCase()
+    const { password, role, nomAgence, plan, firstName, telephone } = body
 
     // Validation
     if (!email || !password || !role) {
