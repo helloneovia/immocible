@@ -34,8 +34,8 @@ export default function CouponsClient({ initialCoupons }: { initialCoupons: Coup
     // Form State
     const [formData, setFormData] = useState({
         code: '',
-        discountType: 'FREE_TRIAL',
-        discountValue: '30', // Default 30 days
+        discountType: 'PERCENTAGE',
+        discountValue: '10',
         planType: 'monthly',
         maxUses: '',
         validUntil: ''
