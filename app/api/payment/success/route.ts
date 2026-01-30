@@ -44,13 +44,29 @@ export async function GET(request: NextRequest) {
             })
 
             if (user) {
+                // Calculate new subscription end date
+                const planType = session.metadata?.plan || user.profile?.plan || 'mensuel'
+                let newEndDate = new Date()
+                const currentEndDate = user.profile?.subscriptionEndDate
+
+                if (currentEndDate && currentEndDate > new Date()) {
+                    newEndDate = new Date(currentEndDate)
+                }
+
+                if (planType === 'yearly') {
+                    newEndDate.setFullYear(newEndDate.getFullYear() + 1)
+                } else {
+                    newEndDate.setMonth(newEndDate.getMonth() + 1)
+                }
+
                 // Activate user in DB
                 await prisma.profile.update({
                     where: { userId: user.id },
                     data: {
                         subscriptionStatus: 'ACTIVE',
                         stripeCustomerId: session.customer as string,
-                        plan: session.metadata?.plan || user.profile?.plan || 'mensuel'
+                        plan: planType,
+                        subscriptionEndDate: newEndDate
                     }
                 })
 

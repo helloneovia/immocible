@@ -209,3 +209,32 @@ export async function sendPaymentFailureEmail(email: string, plan: string, name?
 
   return sendEmail({ to: email, subject, html, text });
 }
+
+/**
+ * Sends a subscription ending reminder email
+ */
+export async function sendSubscriptionReminderEmail(email: string, plan: string, endDate: Date, name?: string): Promise<boolean> {
+  const subject = `Rappel : Votre abonnement expire bientôt${name ? ` - ${name}` : ''} - IMMOCIBLE`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const settingsUrl = `${baseUrl}/settings`;
+  const dateStr = endDate.toLocaleDateString();
+
+  const html = `
+    <div style="font-family: sans-serif; color: #333;">
+      <h1>Rappel d'abonnement</h1>
+      <p>Bonjour ${name || ''},</p>
+      <p>Votre abonnement <strong>${plan === 'yearly' ? 'Annuel' : 'Mensuel'}</strong> arrivera à expiration le <strong>${dateStr}</strong>.</p>
+      <p>Pour continuer à profiter de tous vos avantages sans interruption, pensez à vérifier vos informations de paiement ou à renouveler votre abonnement.</p>
+      <div style="margin: 30px 0;">
+        <a href="${settingsUrl}" style="background-color: #F59E0B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+          Gérer mon abonnement
+        </a>
+      </div>
+      <p>Merci de votre fidélité,<br/>L'équipe IMMOCIBLE</p>
+    </div>
+  `;
+
+  const text = `Rappel : Votre abonnement ${plan} expire le ${dateStr}. Gérer mon abonnement : ${settingsUrl}`;
+
+  return sendEmail({ to: email, subject, html, text });
+}

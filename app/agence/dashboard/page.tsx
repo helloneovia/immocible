@@ -38,6 +38,9 @@ import { Navbar } from '@/components/layout/Navbar'
 function DashboardContent() {
   const router = useRouter()
   const { signOut, user } = useAuth() // Get user for email
+
+  const subscriptionEndDate = (user?.profile as any)?.subscriptionEndDate
+  const showExpiryWarning = subscriptionEndDate && (new Date(subscriptionEndDate).getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000) && (new Date(subscriptionEndDate).getTime() > new Date().getTime())
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
   const [showFilters, setShowFilters] = useState(false)
@@ -157,6 +160,24 @@ function DashboardContent() {
             Acquéreurs vérifiés correspondant à vos biens
           </p>
         </div>
+
+        {/* Subscription Expiry Warning */}
+        {showExpiryWarning && (
+          <Card className="mb-10 border-l-4 border-yellow-500 shadow-md bg-yellow-50">
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Zap className="h-6 w-6 text-yellow-600 fill-yellow-100" />
+                <div>
+                  <p className="font-bold text-yellow-800">Votre abonnement expire dans moins de 7 jours !</p>
+                  <p className="text-sm text-yellow-700">Renouvelez maintenant pour éviter toute interruption de service.</p>
+                </div>
+              </div>
+              <Button variant="outline" className="border-yellow-600 text-yellow-800 hover:bg-yellow-100" onClick={() => router.push('/settings')}>
+                Gérer mon abonnement
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Subscription Plan Banner */}
         {/* Subscription Plan Banner - Show for anyone NOT on Yearly plan */}

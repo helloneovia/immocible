@@ -79,6 +79,7 @@ model Profile {
   plan        String?  // For agence subscription plan
   subscriptionStatus SubscriptionStatus @default(INACTIVE)
   stripeCustomerId String?
+  subscriptionEndDate DateTime?
   adresse     String?
   ville       String?
   codePostal  String?
