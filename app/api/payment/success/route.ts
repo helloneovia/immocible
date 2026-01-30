@@ -47,19 +47,15 @@ export async function GET(request: NextRequest) {
                 // Calculate new subscription end date
                 const planType = session.metadata?.plan || user.profile?.plan || 'mensuel'
 
-                let startDate = new Date()
-                let newEndDate = new Date()
-                const currentEndDate = user.profile?.subscriptionEndDate
+                const startDate = new Date()
+                const newEndDate = new Date(startDate)
 
-                if (currentEndDate && currentEndDate > new Date()) {
-                    startDate = new Date(currentEndDate)
-                    newEndDate = new Date(currentEndDate)
-                }
-
+                // User request: Start date = Payment Date. End date = Payment Date + 30 days (or 1 year).
                 if (planType === 'yearly') {
                     newEndDate.setFullYear(newEndDate.getFullYear() + 1)
                 } else {
-                    newEndDate.setMonth(newEndDate.getMonth() + 1)
+                    // Fixed 30 days for monthly
+                    newEndDate.setDate(newEndDate.getDate() + 30)
                 }
 
                 // Activate user in DB
@@ -69,6 +65,7 @@ export async function GET(request: NextRequest) {
                         subscriptionStatus: 'ACTIVE',
                         stripeCustomerId: session.customer as string,
                         plan: planType,
+                        subscriptionStartDate: startDate,
                         subscriptionEndDate: newEndDate
                     }
                 })

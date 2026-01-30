@@ -80,6 +80,7 @@ model Profile {
   subscriptionStatus SubscriptionStatus @default(INACTIVE)
   stripeCustomerId String?
   subscriptionEndDate DateTime?
+  subscriptionStartDate DateTime?
   adresse     String?
   ville       String?
   codePostal  String?

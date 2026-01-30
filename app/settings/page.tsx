@@ -30,6 +30,7 @@ function SettingsContent() {
     })
     const [plan, setPlan] = useState('')
     const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
+    const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null)
 
     const handleUpgrade = async () => {
         try {
@@ -73,6 +74,7 @@ function SettingsContent() {
                     setRole(data.role)
                     setPlan(data.plan)
                     setSubscriptionEndDate(data.subscriptionEndDate)
+                    setSubscriptionStartDate(data.subscriptionStartDate)
                 }
             } catch (error) {
                 console.error('Error fetching profile:', error)
@@ -229,9 +231,9 @@ function SettingsContent() {
                                             <p className="font-semibold text-indigo-900">
                                                 Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : 'Mensuel'}
                                             </p>
-                                            {subscriptionEndDate && (
+                                            {(subscriptionEndDate) && (
                                                 <div className="text-sm font-medium text-indigo-800 mt-1">
-                                                    <p>Période : Du {(() => {
+                                                    <p>Période : Du {subscriptionStartDate ? new Date(subscriptionStartDate).toLocaleDateString() : (() => {
                                                         const end = new Date(subscriptionEndDate);
                                                         const start = new Date(end);
                                                         if (plan === 'yearly') start.setFullYear(start.getFullYear() - 1);
