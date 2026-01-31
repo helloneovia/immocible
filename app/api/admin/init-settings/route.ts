@@ -62,6 +62,42 @@ const DEFAULT_SETTINGS = [
         type: 'string',
         label: 'Clé Publique Stripe',
         description: 'Clé publique Stripe utilisée par le frontend.'
+    },
+    // Marketing Texts
+    {
+        key: 'text_hero_title',
+        value: "Le moteur de recherche inverse de l'immobilier",
+        type: 'string',
+        label: 'Titre Principal (Hero)',
+        description: 'Titre principal affiché en haut de la page d\'accueil.'
+    },
+    {
+        key: 'text_signup_agency_title',
+        value: "Créer mon compte agence",
+        type: 'string',
+        label: 'Titre Inscription Agence',
+        description: 'Titre de la page d\'inscription agence.'
+    },
+    {
+        key: 'text_signup_agency_subtitle',
+        value: "Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.",
+        type: 'string',
+        label: 'Sous-titre Inscription Agence',
+        description: 'Sous-titre de la page d\'inscription agence.'
+    },
+    {
+        key: 'text_trust_payment',
+        value: "Paiement sécurisé",
+        type: 'string',
+        label: 'Texte Paiement Sécurisé',
+        description: 'Texte affiché à côté de l\'icône de sécurité.'
+    },
+    {
+        key: 'text_trust_trial',
+        value: "Essai gratuit 14 jours",
+        type: 'string',
+        label: 'Texte Essai Gratuit',
+        description: 'Texte affiché à côté de l\'icône d\'essai gratuit.'
     }
 ]
 

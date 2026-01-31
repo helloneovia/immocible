@@ -10,6 +10,12 @@ export interface AppSettings {
     feature_list_yearly: string[]
     stripe_secret_key: string
     stripe_public_key: string
+    // Marketing Texts
+    text_hero_title: string
+    text_signup_agency_title: string
+    text_signup_agency_subtitle: string
+    text_trust_payment: string
+    text_trust_trial: string
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -31,7 +37,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
         "Badge Agence Certifiée"
     ],
     stripe_secret_key: process.env.STRIPE_SECRET_KEY || '',
-    stripe_public_key: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+    stripe_public_key: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
+
+    // Marketing Texts Defaults
+    text_hero_title: "Le moteur de recherche inverse de l'immobilier",
+    text_signup_agency_title: "Créer mon compte agence",
+    text_signup_agency_subtitle: "Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.",
+    text_trust_payment: "Paiement sécurisé",
+    text_trust_trial: "Essai gratuit 14 jours"
 }
 
 // Cached function to get settings
@@ -54,6 +67,11 @@ export const getAppSettings = unstable_cache(
                 }
                 if (s.key === 'stripe_secret_key') config.stripe_secret_key = s.value
                 if (s.key === 'stripe_public_key') config.stripe_public_key = s.value
+
+                // Generic text mapping
+                if (s.key.startsWith('text_')) {
+                    config[s.key] = s.value
+                }
             })
 
             return config

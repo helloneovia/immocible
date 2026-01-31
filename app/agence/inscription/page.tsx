@@ -171,10 +171,10 @@ export default function InscriptionAgence() {
                 <Building2 className="h-8 w-8 text-white" />
               </div>
               <CardTitle className="text-3xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Créer mon compte agence
+                {settings.text_signup_agency_title || 'Créer mon compte agence'}
               </CardTitle>
               <CardDescription className="text-base pt-2">
-                Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.
+                {settings.text_signup_agency_subtitle || 'Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -363,7 +363,7 @@ export default function InscriptionAgence() {
                     className="w-full h-12 text-base font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
                     size="lg"
                   >
-                    {loading ? 'Création en cours...' : 'Créer mon compte agence'}
+                    {loading ? 'Création en cours...' : settings.text_signup_agency_title || 'Créer mon compte agence'}
                     {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                   </Button>
                 </form>
@@ -391,11 +391,11 @@ export default function InscriptionAgence() {
               <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Shield className="h-4 w-4 text-green-500" />
-                  <span>Paiement sécurisé</span>
+                  <span>{settings.text_trust_payment || 'Paiement sécurisé'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-indigo-500" />
-                  <span>Essai gratuit 14 jours</span>
+                  <span>{settings.text_trust_trial || 'Essai gratuit 14 jours'}</span>
                 </div>
               </div>
             </CardContent>

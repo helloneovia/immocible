@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertCircle, Trash2, CheckCircle2, Save, Settings, RefreshCw, DollarSign, List, Key, Sparkles, AlertTriangle } from 'lucide-react'
+import { AlertCircle, Trash2, CheckCircle2, Save, Settings, RefreshCw, DollarSign, List, Key, Sparkles, AlertTriangle, AlignLeft } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface SystemSetting {
@@ -121,11 +121,17 @@ export default function AdminSettingsPage() {
     // Group settings by category
     const priceSettings = settings.filter(s => s.key.startsWith('price_'))
     const featureSettings = settings.filter(s => s.key.startsWith('feature_'))
-    const otherSettings = settings.filter(s => !s.key.startsWith('price_') && !s.key.startsWith('feature_'))
+    const textSettings = settings.filter(s => s.key.startsWith('text_'))
+    const otherSettings = settings.filter(s =>
+        !s.key.startsWith('price_') &&
+        !s.key.startsWith('feature_') &&
+        !s.key.startsWith('text_')
+    )
 
     const getIcon = (key: string) => {
         if (key.startsWith('price_')) return <DollarSign className="h-5 w-5" />
         if (key.startsWith('feature_')) return <List className="h-5 w-5" />
+        if (key.startsWith('text_')) return <AlignLeft className="h-5 w-5" />
         if (key.includes('stripe')) return <Key className="h-5 w-5" />
         return <Settings className="h-5 w-5" />
     }
@@ -168,7 +174,7 @@ export default function AdminSettingsPage() {
                                         value={setting.value}
                                         onChange={(e) => handleSettingChange(setting.key, e.target.value)}
                                         className="font-mono text-sm bg-white border-gray-200 focus:border-indigo-500 ml-10"
-                                        rows={6}
+                                        rows={4}
                                     />
                                 ) : (
                                     <Input
@@ -232,6 +238,13 @@ export default function AdminSettingsPage() {
                 ) : (
                     <>
                         {/* Settings Groups */}
+                        {renderSettingGroup(
+                            "Contenu du Site",
+                            <AlignLeft className="h-6 w-6" />,
+                            textSettings,
+                            "bg-gradient-to-r from-pink-500 to-rose-600"
+                        )}
+
                         {renderSettingGroup(
                             "Tarification",
                             <DollarSign className="h-6 w-6" />,
