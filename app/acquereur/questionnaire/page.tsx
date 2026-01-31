@@ -68,6 +68,7 @@ interface QuestionnaireData {
   flexibilite: string
   salaire: string
   patrimoine: string
+  commentaires: string
 }
 
 const STEPS = [
@@ -108,6 +109,7 @@ function QuestionnaireContent() {
     flexibilite: '',
     salaire: '',
     patrimoine: '',
+    commentaires: '',
   })
 
   useEffect(() => {
@@ -326,7 +328,7 @@ function QuestionnaireContent() {
                 Type de bien recherché (plusieurs choix possibles)
               </Label>
               <div className="grid grid-cols-2 gap-3">
-                {['Appartement', 'Maison', 'Studio', 'Loft', 'Duplex', 'Penthouse'].map((type) => (
+                {['Appartement', 'Maison', 'Checkboxes', 'Terrain', 'Studio', 'Loft', 'Duplex', 'Penthouse'].filter(t => t !== 'Checkboxes').map((type) => (
                   <div
                     key={type}
                     onClick={() => toggleTypeBien(type.toLowerCase())}
@@ -337,9 +339,9 @@ function QuestionnaireContent() {
                   >
                     <Checkbox
                       checked={formData.typeBien.includes(type.toLowerCase())}
-                      onChange={() => toggleTypeBien(type.toLowerCase())}
+                      className="pointer-events-none"
                     />
-                    <Label className="cursor-pointer font-medium">{type}</Label>
+                    <Label className="cursor-pointer font-medium pointer-events-none">{type}</Label>
                   </div>
                 ))}
               </div>
@@ -390,9 +392,9 @@ function QuestionnaireContent() {
                   >
                     <Checkbox
                       checked={formData.nombrePieces.includes(pieces)}
-                      onChange={() => toggleNombrePieces(pieces)}
+                      className="pointer-events-none"
                     />
-                    <Label className="cursor-pointer font-medium whitespace-nowrap">
+                    <Label className="cursor-pointer font-medium whitespace-nowrap pointer-events-none">
                       {pieces} {pieces === '1' ? 'pièce' : pieces === '6+' ? 'pièces' : 'pièces'}
                     </Label>
                   </div>
@@ -470,27 +472,29 @@ function QuestionnaireContent() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="dureePret" className="text-base font-semibold">
-                Durée du prêt souhaitée (années)
-              </Label>
-              <Select
-                key={`duree-${formData.dureePret}`}
-                value={formData.dureePret?.toString() || ''}
-                onValueChange={(value) => updateFormData('dureePret', value)}
-              >
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Durée du prêt" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10 ans</SelectItem>
-                  <SelectItem value="15">15 ans</SelectItem>
-                  <SelectItem value="20">20 ans</SelectItem>
-                  <SelectItem value="25">25 ans</SelectItem>
-                  <SelectItem value="30">30 ans</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {formData.financement !== 'cash' && (
+              <div className="space-y-2">
+                <Label htmlFor="dureePret" className="text-base font-semibold">
+                  Durée du prêt souhaitée (années)
+                </Label>
+                <Select
+                  key={`duree-${formData.dureePret}`}
+                  value={formData.dureePret?.toString() || ''}
+                  onValueChange={(value) => updateFormData('dureePret', value)}
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Durée du prêt" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10 ans</SelectItem>
+                    <SelectItem value="15">15 ans</SelectItem>
+                    <SelectItem value="20">20 ans</SelectItem>
+                    <SelectItem value="25">25 ans</SelectItem>
+                    <SelectItem value="30">30 ans</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
         )
 
@@ -563,6 +567,21 @@ function QuestionnaireContent() {
                   <Label className="cursor-pointer font-medium">{label}</Label>
                 </div>
               ))}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="commentaires" className="text-base font-semibold">
+                Commentaires ou critères spécifiques
+              </Label>
+              <Input
+                id="commentaires"
+                placeholder="Ex: Rez-de-jardin souhaité, pas de vis-à-vis, exposition sud..."
+                value={formData.commentaires}
+                onChange={(e) => updateFormData('commentaires', e.target.value)}
+                className="h-24 py-3"
+              // Using Input but styled as Textarea or prefer Textarea component if available
+              />
+              <p className="text-xs text-gray-500">Précisez ici vos besoins particuliers.</p>
             </div>
           </div>
         )

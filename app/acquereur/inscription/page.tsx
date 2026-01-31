@@ -20,6 +20,7 @@ export default function InscriptionAcquereur() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [telephone, setTelephone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -105,6 +106,7 @@ export default function InscriptionAcquereur() {
           password,
           role: 'acquereur',
           firstName,
+          lastName,
           telephone,
         }),
       })
@@ -241,17 +243,33 @@ export default function InscriptionAcquereur() {
                       <span className="text-sm">{error}</span>
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-sm font-semibold">Prénom & Nom</Label>
-                    <Input
-                      id="firstName"
-                      type="text"
-                      placeholder="Jean Dupont"
-                      required
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="h-12 border-2 focus:border-blue-500 transition-colors"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName" className="text-sm font-semibold">Prénom</Label>
+                      <Input
+                        id="firstName"
+                        type="text"
+                        placeholder="Jean"
+                        required
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="h-12 border-2 focus:border-blue-500 transition-colors"
+                        autoComplete="given-name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName" className="text-sm font-semibold">Nom</Label>
+                      <Input
+                        id="lastName"
+                        type="text"
+                        placeholder="Dupont"
+                        required
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        className="h-12 border-2 focus:border-blue-500 transition-colors"
+                        autoComplete="family-name"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2 opacity-50 pointer-events-none">
                     <Label className="text-sm font-semibold">Email vérifié</Label>

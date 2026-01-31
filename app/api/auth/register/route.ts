@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     console.log('[Register] Attempt for:', body.email)
     const email = body.email?.trim().toLowerCase()
-    const { password, role, nomAgence, plan, firstName, telephone } = body
+    const { password, role, nomAgence, plan, firstName, lastName, telephone } = body
 
     // Validation
     if (!email || !password || !role) {
@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
       role === 'agence' ? nomAgence : undefined,
       role === 'agence' ? plan : undefined,
       firstName,
+      lastName,
       telephone
     )
 

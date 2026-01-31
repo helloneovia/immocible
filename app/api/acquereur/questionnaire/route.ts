@@ -29,7 +29,9 @@ interface QuestionnaireData {
     delaiRecherche: string
     flexibilite: string
     salaire: string
+
     patrimoine: string
+    commentaires: string
 }
 
 export async function GET() {
@@ -92,7 +94,7 @@ export async function GET() {
 
             // Localisation
             localisation: recherche.localisation || [],
-            quartiers: getVal('quartiers', []),
+            quartiers: getVal('quartiers', []) as string[],
 
             // Extra
             balcon: getVal('balcon', false),
@@ -110,6 +112,7 @@ export async function GET() {
             // Urgence
             delaiRecherche: getVal('delaiRecherche'),
             flexibilite: getVal('flexibilite'),
+            commentaires: getVal('commentaires'),
         }
 
         return NextResponse.json({ data })
@@ -158,6 +161,7 @@ export async function POST(request: Request) {
             dureePret: body.dureePret,
             delaiRecherche: body.delaiRecherche,
             flexibilite: body.flexibilite,
+            commentaires: body.commentaires,
         }
 
         // Sanitize object to remove undefined values and ensure pure JSON compatibility
@@ -189,7 +193,7 @@ export async function POST(request: Request) {
             // Update
             recherche = await prisma.recherche.update({
                 where: { id: existingRecherche.id },
-                data: commonData
+                data: commonData as any
             })
         } else {
             // Create
@@ -198,7 +202,7 @@ export async function POST(request: Request) {
                     ...commonData,
                     ownerId: user.id,
                     isActive: true
-                }
+                } as any
             })
         }
 

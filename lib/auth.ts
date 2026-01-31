@@ -17,6 +17,7 @@ export async function createUser(
   nomAgence?: string,
   plan?: string,
   firstName?: string,
+  lastName?: string,
   telephone?: string
 ) {
   const hashedPassword = await hashPassword(password)
@@ -42,6 +43,7 @@ export async function createUser(
           plan: role === 'agence' ? plan : null,
           subscriptionStatus: role === 'agence' ? 'PENDING' : 'ACTIVE', // Agencies start as PENDING until payment
           prenom: firstName, // Using prenom for buyer name
+          nom: lastName,
           telephone: telephone
         },
       },
