@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -573,13 +574,12 @@ function QuestionnaireContent() {
               <Label htmlFor="commentaires" className="text-base font-semibold">
                 Commentaires ou critères spécifiques
               </Label>
-              <Input
+              <Textarea
                 id="commentaires"
                 placeholder="Ex: Rez-de-jardin souhaité, pas de vis-à-vis, exposition sud..."
                 value={formData.commentaires}
                 onChange={(e) => updateFormData('commentaires', e.target.value)}
-                className="h-24 py-3"
-              // Using Input but styled as Textarea or prefer Textarea component if available
+                className="min-h-[100px]"
               />
               <p className="text-xs text-gray-500">Précisez ici vos besoins particuliers.</p>
             </div>
