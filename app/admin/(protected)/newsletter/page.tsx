@@ -203,17 +203,12 @@ export default function NewsletterPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="content">Contenu (HTML supporté)</Label>
-                                    <Textarea
-                                        id="content"
-                                        required
+                                    <Label>Contenu</Label>
+                                    <RichTextEditor
                                         value={formData.content}
-                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        placeholder="Bonjour,<br/>Voici les nouvelles..."
-                                        rows={6}
-                                        className="font-mono text-sm"
+                                        onChange={(val) => setFormData({ ...formData, content: val })}
+                                        placeholder="Rédigez votre newsletter ici..."
                                     />
-                                    <p className="text-xs text-gray-500">Vous pouvez utiliser des balises HTML simples.</p>
                                 </div>
 
                                 <div className="space-y-2">
