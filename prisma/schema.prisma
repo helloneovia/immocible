@@ -319,3 +319,33 @@ model SystemSetting {
   @@map("system_settings")
   @@index([key])
 }
+
+enum NewsletterStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+enum NewsletterRole {
+  ALL
+  ACQUEREUR
+  AGENCE
+}
+
+model Newsletter {
+  id          String           @id @default(uuid())
+  subject     String
+  content     String           @db.Text
+  targetRole  NewsletterRole   @default(ALL)
+  status      NewsletterStatus @default(DRAFT)
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  sentCount   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  error       String?          @db.Text
+  
+  @@map("newsletters")
+}

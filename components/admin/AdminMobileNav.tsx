@@ -86,6 +86,14 @@ export function AdminMobileNav() {
                                 Coupons
                             </Link>
                             <Link
+                                href="/admin/newsletter"
+                                className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Mail className="h-5 w-5" />
+                                Newsletter
+                            </Link>
+                            <Link
                                 href="/admin/settings"
                                 className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
                                 onClick={() => setIsOpen(false)}
