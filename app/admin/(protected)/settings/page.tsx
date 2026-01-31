@@ -168,14 +168,6 @@ export default function AdminSettingsPage() {
         <div className="min-h-screen bg-slate-50/50 -m-8">
             <div className="flex flex-col lg:flex-row min-h-screen">
 
-                {/* Sidebar Navigation */}
-                <aside className="w-full lg:w-72 bg-white border-r border-gray-100 lg:min-h-screen lg:fixed lg:left-[calc(256px)] z-30">
-                    {/* Note: In production layout, sidebar width might need adjustment depending on parent layout. 
-                        Assuming parent layout provides a main content area. This sidebar is internal to the page. 
-                        Actually, let's make it a normal flex sidebar in the content area. 
-                    */}
-                </aside>
-
                 {/* Refined Layout: 2 Columns */}
                 <div className="max-w-7xl mx-auto w-full p-6 lg:p-10">
 
@@ -208,8 +200,8 @@ export default function AdminSettingsPage() {
                                         key={item.id}
                                         onClick={() => setActiveTab(item.id as TabType)}
                                         className={`w-full text-left p-3 rounded-xl transition-all duration-200 group flex items-start gap-4 ${isActive
-                                                ? 'bg-indigo-600 shadow-md shadow-indigo-200'
-                                                : 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900'
+                                            ? 'bg-indigo-600 shadow-md shadow-indigo-200'
+                                            : 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900'
                                             }`}
                                     >
                                         <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-indigo-600'}`}>
