@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { MessageSquare, Settings, X, Search, User, Building, Trash2 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import { MessageSquare, Settings, X, Search, User, Building, Trash2, Pencil, Check, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -54,6 +55,11 @@ export default function AdminChatsPage() {
     const [loadingChats, setLoadingChats] = useState(true)
     const [loadingMessages, setLoadingMessages] = useState(false)
 
+    // Message Editing State
+    const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
+    const [editContent, setEditContent] = useState('')
+    const [updatingMessage, setUpdatingMessage] = useState(false)
+
     // Settings
     const [sensitiveWords, setSensitiveWords] = useState<string[]>([])
     const [newWord, setNewWord] = useState('')
@@ -68,6 +74,7 @@ export default function AdminChatsPage() {
     useEffect(() => {
         if (selectedConversationId) {
             fetchMessages(selectedConversationId)
+            setEditingMessageId(null) // Reset edit mode on chat switch
         }
     }, [selectedConversationId])
 
@@ -115,6 +122,60 @@ export default function AdminChatsPage() {
             setLoadingWords(false)
         }
     }
+
+    // --- Message Actions ---
+
+    const handleDeleteMessage = async (messageId: string) => {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer ce message définitivement ?")) return
+
+        try {
+            const res = await fetch(`/api/admin/chats/message/${messageId}`, { method: 'DELETE' })
+            if (res.ok) {
+                setMessages(messages.filter(m => m.id !== messageId))
+            } else {
+                alert("Erreur lors de la suppression")
+            }
+        } catch (e) {
+            console.error('Delete failed', e)
+        }
+    }
+
+    const handleStartEdit = (msg: Message) => {
+        setEditingMessageId(msg.id)
+        setEditContent(msg.content)
+    }
+
+    const handleCancelEdit = () => {
+        setEditingMessageId(null)
+        setEditContent('')
+    }
+
+    const handleSaveEdit = async () => {
+        if (!editingMessageId || !editContent.trim()) return
+
+        try {
+            setUpdatingMessage(true)
+            const res = await fetch(`/api/admin/chats/message/${editingMessageId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: editContent })
+            })
+
+            if (res.ok) {
+                setMessages(messages.map(m => m.id === editingMessageId ? { ...m, content: editContent } : m))
+                setEditingMessageId(null)
+                setEditContent('')
+            } else {
+                alert("Erreur lors de la modification")
+            }
+        } catch (e) {
+            console.error('Update failed', e)
+        } finally {
+            setUpdatingMessage(false)
+        }
+    }
+
+    // --- Settings Actions ---
 
     const handleAddWord = async () => {
         if (!newWord.trim()) return
@@ -249,17 +310,67 @@ export default function AdminChatsPage() {
                                             ) : (
                                                 messages.map(msg => {
                                                     const isAgency = msg.sender.role === 'agence'
+                                                    const isEditing = editingMessageId === msg.id
+
                                                     return (
-                                                        <div key={msg.id} className={`flex ${isAgency ? 'justify-start' : 'justify-end'}`}>
-                                                            <div className={`max-w-[70%] rounded-2xl px-4 py-2 shadow-sm text-sm ${isAgency
+                                                        <div key={msg.id} className={`flex ${isAgency ? 'justify-start' : 'justify-end'} group`}>
+                                                            <div className={`max-w-[80%] rounded-2xl p-0 shadow-sm text-sm relative transition-all ${isAgency
                                                                     ? 'bg-white border border-indigo-100 text-gray-800 rounded-tl-none'
                                                                     : 'bg-indigo-600 text-white rounded-tr-none'
-                                                                }`}>
-                                                                <div className="text-[10px] mb-1 opacity-70 flex justify-between gap-4">
-                                                                    <span>{isAgency ? 'Agence' : 'Acquéreur'}</span>
-                                                                    <span>{format(new Date(msg.createdAt), 'dd MMM HH:mm', { locale: fr })}</span>
+                                                                } ${isEditing ? 'w-full max-w-[90%] border-orange-300 ring-2 ring-orange-100 bg-white' : ''}`}>
+
+                                                                {/* Header in Bubble */}
+                                                                {!isEditing && (
+                                                                    <div className={`text-[10px] px-4 pt-2 mb-1 flex justify-between gap-4 ${isAgency ? 'opacity-70' : 'text-indigo-100'}`}>
+                                                                        <span>{isAgency ? 'Agence' : 'Acquéreur'}</span>
+                                                                        <span>{format(new Date(msg.createdAt), 'dd MMM HH:mm', { locale: fr })}</span>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Content */}
+                                                                <div className="px-4 pb-2">
+                                                                    {isEditing ? (
+                                                                        <div className="p-2 space-y-2">
+                                                                            <Textarea
+                                                                                value={editContent}
+                                                                                onChange={(e) => setEditContent(e.target.value)}
+                                                                                className="min-h-[80px] text-gray-900 bg-gray-50"
+                                                                            />
+                                                                            <div className="flex justify-end gap-2">
+                                                                                <Button size="sm" variant="outline" onClick={handleCancelEdit} disabled={updatingMessage}>
+                                                                                    <X className="h-3 w-3 mr-1" /> Annuler
+                                                                                </Button>
+                                                                                <Button size="sm" onClick={handleSaveEdit} disabled={updatingMessage}>
+                                                                                    {updatingMessage ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 mr-1" />}
+                                                                                    Sauvegarder
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                                                    )}
                                                                 </div>
-                                                                <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+
+                                                                {/* Hover Actions */}
+                                                                {!isEditing && (
+                                                                    <div className={`absolute opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 -top-3 ${isAgency ? '-right-2' : '-left-2'} bg-white shadow-md rounded-md p-0.5 border`}>
+                                                                        <button
+                                                                            onClick={() => handleStartEdit(msg)}
+                                                                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600"
+                                                                            title="Modifier"
+                                                                        >
+                                                                            <Pencil className="h-3 w-3" />
+                                                                        </button>
+                                                                        <div className="w-[1px] bg-gray-200" />
+                                                                        <button
+                                                                            onClick={() => handleDeleteMessage(msg.id)}
+                                                                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-red-600"
+                                                                            title="Supprimer"
+                                                                        >
+                                                                            <Trash2 className="h-3 w-3" />
+                                                                        </button>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     )
@@ -284,7 +395,7 @@ export default function AdminChatsPage() {
                     <CardHeader>
                         <CardTitle>Mots et Caractères Interdits</CardTitle>
                         <CardDescription>
-                            Ces mots seront surveillés ou bloqués dans les conversations. (La logique de blocage dépend de l'implémentation serveur).
+                            Ces mots seront surveillés ou bloqués dans les conversations.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
