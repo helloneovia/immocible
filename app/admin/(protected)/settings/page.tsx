@@ -92,32 +92,6 @@ export default function AdminSettingsPage() {
         }
     }
 
-    const handleReset = async () => {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer toutes les données ? Cette action est irréversible.')) {
-            return
-        }
-
-        setLoading(true)
-        setError(null)
-        setSuccess(false)
-
-        try {
-            const response = await fetch('/api/admin/reset-db', {
-                method: 'POST',
-            })
-
-            if (!response.ok) {
-                throw new Error('Erreur lors de la réinitialisation')
-            }
-
-            setSuccess(true)
-        } catch (err) {
-            setError('Impossible de réinitialiser la base de données')
-        } finally {
-            setLoading(false)
-        }
-    }
-
     // Group settings by category
     const priceSettings = settings.filter(s => s.key.startsWith('price_'))
     const featureSettings = settings.filter(s => s.key.startsWith('feature_'))
@@ -318,54 +292,6 @@ export default function AdminSettingsPage() {
                     </>
                 )}
 
-                {/* Danger Zone */}
-                <Card className="border-2 border-red-200 shadow-lg overflow-hidden">
-                    <CardHeader className="bg-gradient-to-r from-red-500 to-pink-600 text-white pb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                <Trash2 className="h-6 w-6" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-2xl">Zone de Danger</CardTitle>
-                                <CardDescription className="text-white/90 mt-1">
-                                    Actions destructrices et irréversibles
-                                </CardDescription>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="pt-6 bg-red-50/30">
-                        <div className="space-y-4">
-                            <Alert className="border-red-200 bg-red-50">
-                                <AlertTriangle className="h-5 w-5 text-red-600" />
-                                <AlertTitle className="text-red-900">Attention !</AlertTitle>
-                                <AlertDescription className="text-red-700">
-                                    Cette action supprimera définitivement toutes les données de l'application (Utilisateurs, Biens, Recherches, Matchs).
-                                    Seuls les comptes Administrateurs seront conservés. Cette action est <strong>irréversible</strong>.
-                                </AlertDescription>
-                            </Alert>
-
-                            <Button
-                                variant="destructive"
-                                onClick={handleReset}
-                                disabled={loading}
-                                size="lg"
-                                className="bg-red-600 hover:bg-red-700 shadow-lg"
-                            >
-                                {loading ? (
-                                    <>
-                                        <RefreshCw className="mr-2 h-5 w-5 animate-spin" />
-                                        Réinitialisation en cours...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Trash2 className="mr-2 h-5 w-5" />
-                                        Réinitialiser la base de données
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
             </div>
         </div>
     )

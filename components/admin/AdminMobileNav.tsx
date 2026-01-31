@@ -93,6 +93,14 @@ export function AdminMobileNav() {
                                 <Settings className="h-5 w-5" />
                                 Paramètres
                             </Link>
+                            <Link
+                                href="/admin/system"
+                                className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors"
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <Trash2 className="h-5 w-5 text-red-400" />
+                                Système
+                            </Link>
                         </nav>
 
                         <div className="pt-4 mt-4 border-t border-gray-800 space-y-2">
