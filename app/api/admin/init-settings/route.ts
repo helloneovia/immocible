@@ -203,8 +203,9 @@ export async function POST(req: Request) {
                     label: setting.label,
                     description: setting.description,
                     type: setting.type
+                },
                 create: setting
-                })
+            })
         }
 
         // Cleanup deprecated settings
