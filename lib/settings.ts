@@ -16,6 +16,22 @@ export interface AppSettings {
     text_signup_agency_subtitle: string
     text_trust_payment: string
     text_trust_trial: string
+    // Buyer Signup Texts
+    text_signup_buyer_title: string
+    text_signup_buyer_subtitle: string
+    text_trust_free: string
+    text_trust_secure: string
+
+    // Home Page Texts
+    text_home_hero_title_1: string
+    text_home_hero_title_highlight: string
+    text_home_hero_title_2: string
+    text_home_hero_subtitle: string
+    text_home_features_title: string
+    text_home_features_subtitle: string
+    text_home_cta_title: string
+    text_home_cta_subtitle: string
+    text_footer_copyright: string
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -44,7 +60,23 @@ export const DEFAULT_SETTINGS: AppSettings = {
     text_signup_agency_title: "Créer mon compte agence",
     text_signup_agency_subtitle: "Accédez à des acquéreurs vérifiés et sérieux. Choisissez votre plan.",
     text_trust_payment: "Paiement sécurisé",
-    text_trust_trial: "Essai gratuit 14 jours"
+    text_trust_trial: "Essai gratuit 14 jours",
+    // Buyer Signup Defaults
+    text_signup_buyer_title: "Créer mon compte acquéreur",
+    text_signup_buyer_subtitle: "Commencez votre recherche immobilière en quelques minutes",
+    text_trust_free: "100% Gratuit",
+    text_trust_secure: "Sécurisé",
+
+    // Home Page Defaults
+    text_home_hero_title_1: "Trouvez votre",
+    text_home_hero_title_highlight: "bien idéal",
+    text_home_hero_title_2: "avant qu'il ne soit sur le marché",
+    text_home_hero_subtitle: "IMMOCIBLE connecte les acquéreurs qualifiés avec des opportunités immobilières off-market. Fini les recherches interminables, découvrez les meilleurs biens correspondant à votre profil.",
+    text_home_features_title: "Comment ça fonctionne ?",
+    text_home_features_subtitle: "Une plateforme simple et efficace pour transformer votre recherche immobilière",
+    text_home_cta_title: "Prêt à trouver votre bien idéal ?",
+    text_home_cta_subtitle: "Rejoignez des centaines d'acquéreurs qui ont trouvé leur bien sur IMMOCIBLE",
+    text_footer_copyright: "© 2024 IMMOCIBLE. Tous droits réservés."
 }
 
 // Cached function to get settings

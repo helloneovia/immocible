@@ -12,8 +12,13 @@ import {
   Shield,
   Zap
 } from 'lucide-react'
+import { getAppSettings } from '@/lib/settings'
 
-export default function HomePage() {
+export const revalidate = 60 // Revalidate page every 60 seconds
+
+export default async function HomePage() {
+  const settings = await getAppSettings()
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
       {/* Animated background elements */}
@@ -63,15 +68,14 @@ export default function HomePage() {
             </div>
           </div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">
-            <span className="block text-gray-900">Trouvez votre</span>
+            <span className="block text-gray-900">{settings.text_home_hero_title_1 || 'Trouvez votre'}</span>
             <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
-              bien idéal
+              {settings.text_home_hero_title_highlight || 'bien idéal'}
             </span>
-            <span className="block text-gray-900">avant qu&apos;il ne soit sur le marché</span>
+            <span className="block text-gray-900">{settings.text_home_hero_title_2 || 'avant qu\'il ne soit sur le marché'}</span>
           </h1>
           <p className="mt-6 text-lg sm:text-2xl leading-8 text-gray-600 max-w-3xl mx-auto font-medium">
-            IMMOCIBLE connecte les acquéreurs qualifiés avec des opportunités immobilières
-            <span className="text-indigo-600 font-semibold"> off-market</span>. Fini les recherches interminables, découvrez les meilleurs biens correspondant à votre profil.
+            {settings.text_home_hero_subtitle || 'IMMOCIBLE connecte les acquéreurs qualifiés avec des opportunités immobilières off-market.'}
           </p>
           <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link href="/acquereur/inscription">
@@ -102,7 +106,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-blue-500" />
-              <span className="font-medium">Sécurisé</span>
+              <span className="font-medium">{settings.text_trust_payment || 'Sécurisé'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-yellow-500" />
@@ -120,10 +124,10 @@ export default function HomePage() {
       <section className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32">
         <div className="mx-auto max-w-3xl text-center mb-16">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
-            Comment ça fonctionne ?
+            {settings.text_home_features_title || 'Comment ça fonctionne ?'}
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 font-medium">
-            Une plateforme simple et efficace pour transformer votre recherche immobilière
+            {settings.text_home_features_subtitle || 'Une plateforme simple et efficace pour transformer votre recherche immobilière'}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 mt-12">
@@ -171,10 +175,10 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(0deg,white,transparent)]"></div>
           <CardHeader className="relative text-center pb-8">
             <CardTitle className="text-3xl sm:text-5xl font-extrabold text-white mb-6">
-              Prêt à trouver votre bien idéal ?
+              {settings.text_home_cta_title || 'Prêt à trouver votre bien idéal ?'}
             </CardTitle>
             <CardDescription className="text-blue-100 text-lg sm:text-xl font-medium">
-              Rejoignez des centaines d&apos;acquéreurs qui ont trouvé leur bien sur IMMOCIBLE
+              {settings.text_home_cta_subtitle || 'Rejoignez des centaines d\'acquéreurs qui ont trouvé leur bien sur IMMOCIBLE'}
             </CardDescription>
           </CardHeader>
           <CardContent className="relative flex justify-center pb-8">
@@ -205,7 +209,7 @@ export default function HomePage() {
               </span>
             </Link>
             <p className="text-sm text-gray-600">
-              © 2024 IMMOCIBLE. Tous droits réservés.
+              {settings.text_footer_copyright || '© 2024 IMMOCIBLE. Tous droits réservés.'}
             </p>
           </div>
         </div>

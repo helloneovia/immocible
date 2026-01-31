@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Home, ArrowRight, Sparkles, CheckCircle2, Shield, AlertCircle } from 'lucide-react'
+import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { useEffect } from 'react'
 
 export default function InscriptionAcquereur() {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -21,6 +23,16 @@ export default function InscriptionAcquereur() {
   const [telephone, setTelephone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+
+  useEffect(() => {
+    fetch('/api/public/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) setSettings(data)
+      })
+      .catch(console.error)
+  }, [])
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -147,10 +159,10 @@ export default function InscriptionAcquereur() {
                 <Sparkles className="h-8 w-8 text-white" />
               </div>
               <CardTitle className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Créer mon compte acquéreur
+                {settings.text_signup_buyer_title || 'Créer mon compte acquéreur'}
               </CardTitle>
               <CardDescription className="text-base pt-2">
-                Commencez votre recherche immobilière en quelques minutes
+                {settings.text_signup_buyer_subtitle || 'Commencez votre recherche immobilière en quelques minutes'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -323,11 +335,11 @@ export default function InscriptionAcquereur() {
               <div className="mt-6 pt-6 border-t flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Shield className="h-4 w-4 text-green-500" />
-                  <span>Sécurisé</span>
+                  <span>{settings.text_trust_secure || 'Sécurisé'}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="h-4 w-4 text-blue-500" />
-                  <span>100% Gratuit</span>
+                  <span>{settings.text_trust_free || '100% Gratuit'}</span>
                 </div>
               </div>
             </CardContent>
