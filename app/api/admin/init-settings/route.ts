@@ -203,10 +203,17 @@ export async function POST(req: Request) {
                     label: setting.label,
                     description: setting.description,
                     type: setting.type
-                },
                 create: setting
-            })
+                })
         }
+
+        // Cleanup deprecated settings
+        await prisma.systemSetting.deleteMany({
+            where: {
+                key: { in: ['price_unlock_profile'] }
+            }
+        })
+
         return Response.json({ success: true, message: 'Settings initialized' })
     } catch (e) {
         return Response.json({ error: e.message }, { status: 500 })
