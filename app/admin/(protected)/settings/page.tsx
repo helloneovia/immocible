@@ -93,7 +93,10 @@ export default function AdminSettingsPage() {
     }
 
     // Group settings by category
-    const priceSettings = settings.filter(s => s.key.startsWith('price_'))
+    const priceSettings = settings.filter(s => s.key.startsWith('price_')).sort((a, b) => {
+        const order = ['price_monthly', 'price_yearly', 'price_unlock_profile_percentage']
+        return order.indexOf(a.key) - order.indexOf(b.key)
+    })
     const featureSettings = settings.filter(s => s.key.startsWith('feature_'))
     const textSettings = settings.filter(s => s.key.startsWith('text_'))
     const otherSettings = settings.filter(s =>
