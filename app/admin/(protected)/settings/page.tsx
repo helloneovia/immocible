@@ -203,8 +203,20 @@ export default function AdminSettingsPage() {
                         </h1>
                         <p className="text-gray-600 text-lg">Gérez la configuration globale de votre application</p>
                     </div>
-                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-xl">
-                        <Settings className="h-8 w-8 text-white" />
+                    <div className="flex items-center gap-4">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={initSettings}
+                            disabled={settingsLoading}
+                            className="hidden md:flex gap-2"
+                        >
+                            <RefreshCw className={`h-4 w-4 ${settingsLoading ? 'animate-spin' : ''}`} />
+                            Mettre à jour les définitions
+                        </Button>
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center shadow-xl">
+                            <Settings className="h-8 w-8 text-white" />
+                        </div>
                     </div>
                 </div>
 

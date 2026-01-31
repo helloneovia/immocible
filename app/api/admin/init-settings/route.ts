@@ -199,7 +199,11 @@ export async function POST(req: Request) {
         for (const setting of DEFAULT_SETTINGS) {
             await prisma.systemSetting.upsert({
                 where: { key: setting.key },
-                update: {},
+                update: {
+                    label: setting.label,
+                    description: setting.description,
+                    type: setting.type
+                },
                 create: setting
             })
         }
