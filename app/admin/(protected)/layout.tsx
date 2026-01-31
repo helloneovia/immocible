@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings, Mail } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings, Mail, MessageSquare } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
@@ -50,6 +50,10 @@ export default async function AdminLayout({
                     <Link href="/admin/newsletter" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
                         <Mail className="h-5 w-5" />
                         Newsletter
+                    </Link>
+                    <Link href="/admin/chats" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
+                        <MessageSquare className="h-5 w-5" />
+                        Messagerie
                     </Link>
                     <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-800 hover:text-white rounded-lg transition-colors">
                         <Settings className="h-5 w-5" />

@@ -40,6 +40,26 @@ export async function POST(request: NextRequest) {
 
         const sanitizedContent = sanitizeContent(content)
 
+        // Filter Sensitive Words
+        let filteredContent = sanitizedContent
+        try {
+            const setting = await prisma.systemSetting.findUnique({ where: { key: 'chat_sensitive_words' } })
+            if (setting && setting.value) {
+                const words = JSON.parse(setting.value) as string[]
+                if (Array.isArray(words)) {
+                    words.forEach(word => {
+                        if (word && word.trim()) {
+                            const escapedWord = word.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                            const regex = new RegExp(escapedWord, 'gi')
+                            filteredContent = filteredContent.replace(regex, '*'.repeat(word.trim().length))
+                        }
+                    })
+                }
+            }
+        } catch (e) {
+            console.error("Error filtering content:", e)
+        }
+
         const message = await prisma.message.create({
             data: {
                 conversationId,
