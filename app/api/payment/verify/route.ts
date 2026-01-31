@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { getAppSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,12 +16,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 })
         }
 
-        if (!process.env.STRIPE_SECRET_KEY) {
+        const settings = await getAppSettings()
+        const apiKey = settings.stripe_secret_key || process.env.STRIPE_SECRET_KEY
+
+        if (!apiKey) {
             return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
         }
 
         const Stripe = require('stripe')
-        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+        const stripe = new Stripe(apiKey, { apiVersion: '2023-10-16' as any })
 
         const session = await stripe.checkout.sessions.retrieve(sessionId)
 

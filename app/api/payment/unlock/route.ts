@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { getAppSettings } from '@/lib/settings'
+import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
     try {
@@ -10,7 +12,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { buyerId, amount } = body
+        const { buyerId } = body
 
         if (!buyerId) {
             return NextResponse.json({ error: 'Missing buyerId' }, { status: 400 })
@@ -30,45 +32,80 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true, message: 'Already unlocked' })
         }
 
-        // Subscription & Quota Check
-        const plan = currentUser.profile?.plan
-        const subEndDate = currentUser.profile?.subscriptionEndDate
-        const subStartDate = currentUser.profile?.subscriptionStartDate
+        // Get unlock price from settings and buyer search data
+        const settings = await getAppSettings()
 
-        // 1. Check Subscription Status
-        if (!subEndDate || new Date(subEndDate) < new Date()) {
-            return NextResponse.json({ error: 'Abonnement requis ou expiré pour accéder aux contacts.' }, { status: 403 })
+        // Initialize Stripe
+        if (!settings.stripe_secret_key) {
+            console.error("Stripe key missing");
+            return NextResponse.json({ error: 'Configuration error: Missing Stripe Key' }, { status: 500 })
         }
 
-        // 2. Check Monthly Quota
-        if (plan === 'mensuel') {
-            const effectiveStartDate = subStartDate || new Date(new Date().setDate(new Date().getDate() - 30))
+        const stripe = new Stripe(settings.stripe_secret_key, {
+            apiVersion: '2023-10-16' as any,
+        })
 
-            const count = await prisma.unlockedProfile.count({
-                where: {
-                    agencyId: currentUser.id,
-                    createdAt: { gte: effectiveStartDate }
-                }
-            })
-
-            if (count >= 100) {
-                return NextResponse.json({ error: 'Limite mensuelle de 100 profils atteinte.' }, { status: 403 })
-            }
-        }
-
-        // 3. Unlock (Plan Benefit)
-        await prisma.unlockedProfile.create({
-            data: {
-                agencyId: currentUser.id,
-                buyerId: buyerId,
-                amount: 0
+        // Fetch buyer search to calculate price
+        const buyer = await prisma.user.findUnique({
+            where: { id: buyerId },
+            include: {
+                recherches: {
+                    where: { isActive: true },
+                    take: 1
+                },
+                profile: true
             }
         })
 
-        return NextResponse.json({ success: true })
+        if (!buyer) {
+            return NextResponse.json({ error: 'Buyer not found' }, { status: 404 })
+        }
+
+        const search = buyer.recherches[0]
+        // Calculate price: Max(1€, prixMax * percentage)
+        // Note: Percentage is like 0.01 (meaning 0.01%). Example: 300,000 * 0.0001 = 30€
+        const priceEur = search?.prixMax
+            ? Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
+            : 1 // Default 1€ if no budget
+
+        const priceCents = Math.round(priceEur * 100)
+
+        // URL construction
+        const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+        const host = request.headers.get('host') || 'localhost:3000'
+        const baseUrl = `${protocol}://${host}`
+
+        // Create Stripe Session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: `Déblocage Contact: ${buyer.profile?.prenom || 'Acquéreur'}`,
+                            description: `Accès aux coordonnées complètes (Réf: ${buyerId.substring(0, 8)})`,
+                        },
+                        unit_amount: priceCents,
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: `${baseUrl}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${baseUrl}/agence/buyer/${buyerId}`,
+            customer_email: currentUser.email, // Agency email
+            metadata: {
+                type: 'unlock_contact',
+                agencyId: currentUser.id,
+                buyerId: buyerId
+            }
+        })
+
+        return NextResponse.json({ url: session.url })
 
     } catch (e) {
-        console.error('Unlock error', e)
+        console.error('Unlock payment init error', e)
         return NextResponse.json({
             error: 'Internal Error',
             details: e instanceof Error ? e.message : String(e)
