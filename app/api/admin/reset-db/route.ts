@@ -1,45 +1,87 @@
-
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/session'
 
 export async function POST(request: Request) {
     try {
-        // Basic security check - in prod you should check admin session
-        // For now we assume the route is protected by middleware or the page
-        // calling this does the checking, but better to check header secret or session here.
+        const currentUser = await getCurrentUser()
+        if (!currentUser || currentUser.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
 
-        // We execute raw delete queries to bypass constraints if needed, 
-        // or just delete in order.
-        // Deleting User cascades to Profile, Session, etc.
+        const body = await request.json()
+        const { tables } = body
 
-        // 1. Delete all users except Admins? 
-        // Or delete EVERYTHING? The request was "Reset all the database tables".
-        // Usually we want to keep the Admin user.
+        if (!tables || !Array.isArray(tables)) {
+            return NextResponse.json({ error: 'Invalid selection' }, { status: 400 })
+        }
 
-        // Explicitly clear relation tables first (good practice)
-        await prisma.message.deleteMany({})
-        await prisma.conversation.deleteMany({})
-        await prisma.match.deleteMany({})
-        await prisma.favorite.deleteMany({})
-        await prisma.unlockedProfile.deleteMany({})
-        await prisma.payment.deleteMany({})
+        // Logic to clear tables in correct order to avoid FK constraints
 
-        await prisma.user.deleteMany({
-            where: {
-                role: {
-                    not: 'admin'
+        // 1. Messages (Dependent on User and Conversation)
+        // If we delete Users or Conversations, we must delete Messages first (unless cascade handles it, 
+        // but User->Message usually doesn't cascade on senderId in some schemas, better safe)
+        if (tables.includes('conversation') || tables.includes('user')) {
+            await prisma.message.deleteMany({})
+        }
+
+        // 2. Conversations (Dependent on User)
+        if (tables.includes('conversation') || tables.includes('user')) {
+            await prisma.conversation.deleteMany({})
+        }
+
+        // 3. Relations (Match, Favorite, UnlockedProfile, Payment)
+        if (tables.includes('match') || tables.includes('user')) {
+            await prisma.match.deleteMany({})
+        }
+
+        if (tables.includes('match') || tables.includes('favorite') || tables.includes('user')) {
+            // 'match' checkbox in UI covers 'Matchs & Favoris'
+            await prisma.favorite.deleteMany({})
+        }
+
+        if (tables.includes('unlockedProfile') || tables.includes('user')) {
+            await prisma.unlockedProfile.deleteMany({})
+        }
+
+        if (tables.includes('payment') || tables.includes('user')) {
+            await prisma.payment.deleteMany({})
+        }
+
+        // 4. Content (Bien, Recherche)
+        if (tables.includes('recherche') || tables.includes('user')) {
+            await prisma.recherche.deleteMany({})
+        }
+
+        if (tables.includes('bien') || tables.includes('user')) {
+            await prisma.bien.deleteMany({})
+        }
+
+        // 5. Standalone / Others
+        if (tables.includes('coupon')) {
+            await prisma.coupon.deleteMany({})
+        }
+
+        if (tables.includes('verificationToken')) {
+            await prisma.verificationToken.deleteMany({})
+        }
+
+        // 6. Users (Last)
+        if (tables.includes('user')) {
+            await prisma.user.deleteMany({
+                where: {
+                    role: {
+                        not: 'admin'
+                    }
                 }
-            }
-        })
+            })
+        }
 
-        await prisma.bien.deleteMany({})
-        await prisma.recherche.deleteMany({})
-
-        return NextResponse.json({ success: true, message: 'Database reset successfully (Admins preserved)' })
+        return NextResponse.json({ success: true })
     } catch (error: any) {
         console.error('Reset DB Error:', error)
         return NextResponse.json(
-            { error: 'Failed to reset database' },
+            { error: error.message || 'Failed to reset database' },
             { status: 500 }
         )
     }
