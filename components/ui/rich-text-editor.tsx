@@ -6,15 +6,8 @@ import 'react-quill/dist/quill.snow.css'
 import { Button } from '@/components/ui/button'
 
 // Dynamic import to avoid SSR issues with Quills
-const ReactQuill = dynamic(
-    async () => {
-        const { default: RQ } = await import('react-quill');
-        return function ReactQuillComp(props: any) {
-            return <RQ {...props} />;
-        }
-    },
-    { ssr: false }
-);
+// Dynamic import to avoid SSR issues with Quills
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false }) as any;
 
 interface RichTextEditorProps {
     value: string
