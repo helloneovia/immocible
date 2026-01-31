@@ -10,29 +10,43 @@ import {
     TableRow,
 } from '@/components/ui/table'
 
-async function getTransactions() {
-    return await prisma.payment.findMany({
-        orderBy: { createdAt: 'desc' },
-        include: {
-            user: {
-                include: { profile: true }
-            }
-        }
-    })
-}
+import { PaginationControls } from '@/components/ui/pagination-controls'
 
-export default async function TransactionsPage() {
-    const transactions = await getTransactions()
+export default async function TransactionsPage({
+    searchParams
+}: {
+    searchParams: { [key: string]: string | string[] | undefined }
+}) {
+    const page = Number(searchParams?.page ?? '1')
+    const limit = 10
+    const skip = (page - 1) * limit
+
+    const [transactions, totalCount] = await Promise.all([
+        prisma.payment.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    include: { profile: true }
+                }
+            },
+            skip,
+            take: limit
+        }),
+        prisma.payment.count()
+    ])
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900">Historique des Transactions</h1>
+                <div className="bg-white px-4 py-2 rounded-lg border text-sm text-gray-500">
+                    Total: {totalCount}
+                </div>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Transactions ({transactions.length})</CardTitle>
+                    <CardTitle>Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -94,6 +108,8 @@ export default async function TransactionsPage() {
                             )}
                         </TableBody>
                     </Table>
+
+                    <PaginationControls totalCount={totalCount} pageSize={limit} />
                 </CardContent>
             </Card>
         </div>
