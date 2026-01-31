@@ -55,8 +55,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             : 0
 
         // Prepare response
+        const isSubscribed = currentUser.profile?.subscriptionStatus === 'ACTIVE'
+        const isEffectiveUnlocked = !!unlocked || isSubscribed
+
+        // Prepare response
         const data = {
-            unlocked: !!unlocked,
+            unlocked: isEffectiveUnlocked,
             price,
             search: search || null,
             profile: {
@@ -65,8 +69,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
                 prenom: buyer.profile?.prenom,
                 ville: buyer.profile?.ville,
                 // Hide sensitive info if locked
-                email: unlocked ? buyer.email : '***@***.com',
-                telephone: unlocked ? buyer.profile?.telephone : '+33 * ** ** **'
+                email: isEffectiveUnlocked ? buyer.email : '***@***.com',
+                telephone: isEffectiveUnlocked ? buyer.profile?.telephone : '+33 * ** ** **'
             }
         }
 
