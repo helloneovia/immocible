@@ -1,5 +1,5 @@
-
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 
@@ -66,6 +66,10 @@ export async function PUT(req: Request) {
         }
 
         console.log(`Successfully updated ${results.length} settings`)
+
+        // Invalidate cache
+        revalidateTag('settings')
+
         return NextResponse.json({ success: true, settings: results })
     } catch (error: any) {
         console.error('Error updating settings:', error)

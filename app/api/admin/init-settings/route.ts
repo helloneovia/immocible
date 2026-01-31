@@ -1,5 +1,6 @@
 
 import { prisma } from '@/lib/prisma'
+import { revalidateTag } from 'next/cache'
 
 const DEFAULT_SETTINGS = [
     {
@@ -214,6 +215,8 @@ export async function POST(req: Request) {
                 key: { in: ['price_unlock_profile'] }
             }
         })
+
+        revalidateTag('settings')
 
         return Response.json({ success: true, message: 'Settings initialized' })
     } catch (e) {
