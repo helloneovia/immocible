@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
+import { LocationMapDraw, type DrawnAreaGeoJSON } from '@/components/ui/LocationMapDraw'
 import { Navbar } from '@/components/layout/Navbar'
 
 interface QuestionnaireData {
@@ -49,6 +50,7 @@ interface QuestionnaireData {
   surfaceMax: string
   nombrePieces: string[]
   localisation: string[]
+  drawnArea: DrawnAreaGeoJSON | null
 
 
   // Critères supplémentaires
@@ -97,6 +99,7 @@ function QuestionnaireContent() {
     nombrePieces: [],
 
     localisation: [],
+    drawnArea: null,
     balcon: false,
     terrasse: false,
     jardin: false,
@@ -131,6 +134,7 @@ function QuestionnaireContent() {
             ...data,
             typeBien: data.typeBien || [],
             localisation: data.localisation || [],
+            drawnArea: data.drawnArea ?? null,
             nombrePieces: Array.isArray(data.nombrePieces) ? data.nombrePieces : (data.nombrePieces ? [data.nombrePieces] : [])
           })
           // If data exists, we can assume profile is somewhat active/previously filled
@@ -534,6 +538,20 @@ function QuestionnaireContent() {
               <p className="text-sm text-gray-500">
                 {formData.localisation.length === 0 ? "Recherchez et sélectionnez une ville." : "Vous pouvez ajouter d'autres villes."}
               </p>
+
+              <div className="pt-4 border-t">
+                <Label className="text-base font-semibold block mb-2">
+                  Ou dessinez une zone précise sur la carte
+                </Label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Idéal pour cibler des quartiers ou rues précis. Cliquez sur la carte pour tracer un polygone, puis fermez la forme.
+                </p>
+                <LocationMapDraw
+                  value={formData.drawnArea}
+                  onChange={(v) => updateFormData('drawnArea', v)}
+                  height="380px"
+                />
+              </div>
             </div>
           </div>
         )

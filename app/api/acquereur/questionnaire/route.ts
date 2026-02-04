@@ -3,6 +3,12 @@ import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { BienType } from '@prisma/client'
 
+// Drawn area: GeoJSON Polygon
+interface DrawnAreaGeoJSON {
+    type: 'Polygon'
+    coordinates: [number, number][][]
+}
+
 // Interface matching the frontend state
 interface QuestionnaireData {
     situationFamiliale: string
@@ -15,6 +21,7 @@ interface QuestionnaireData {
     surfaceMax: string
     nombrePieces: string[]
     localisation: string[]
+    drawnArea: DrawnAreaGeoJSON | null
     quartiers: string[]
 
     balcon: boolean
@@ -94,6 +101,7 @@ export async function GET() {
 
             // Localisation
             localisation: recherche.localisation || [],
+            drawnArea: getVal('drawnArea', null) as DrawnAreaGeoJSON | null,
             quartiers: getVal('quartiers', []) as string[],
 
             // Extra
@@ -150,6 +158,7 @@ export async function POST(request: Request) {
             situationProfessionnelle: body.situationProfessionnelle,
             salaire: body.salaire,
             patrimoine: body.patrimoine,
+            drawnArea: body.drawnArea ?? null,
             quartiers: body.quartiers,
             balcon: body.balcon,
             terrasse: body.terrasse,
