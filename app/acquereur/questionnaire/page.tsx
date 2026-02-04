@@ -346,6 +346,7 @@ function QuestionnaireContent() {
                     <Checkbox
                       checked={formData.typeBien.includes(type.toLowerCase())}
                       className="pointer-events-none"
+                      readOnly
                     />
                     <Label className="cursor-pointer font-medium pointer-events-none">{type}</Label>
                   </div>
@@ -399,6 +400,7 @@ function QuestionnaireContent() {
                     <Checkbox
                       checked={formData.nombrePieces.includes(pieces)}
                       className="pointer-events-none"
+                      readOnly
                     />
                     <Label className="cursor-pointer font-medium whitespace-nowrap pointer-events-none">
                       {pieces} {pieces === '1' ? 'pièce' : pieces === '6+' ? 'pièces' : 'pièces'}

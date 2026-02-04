@@ -1,16 +1,26 @@
 'use client'
 
 import React, { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
-import * as ReactLeaflet from 'react-leaflet'
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import { Button } from '@/components/ui/button'
-import { Eraser2 } from 'lucide-react'
+import { Eraser } from 'lucide-react'
 import type { DrawnAreaGeoJSON } from './LocationMapDraw'
+
+// Static imports for Leaflet and Geoman
+// This component must be loaded via dynamic import with ssr: false in the parent (LocationMapDraw.tsx)
+import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import '@geoman-io/leaflet-geoman-free'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
 
-const MapContainer = ReactLeaflet.MapContainer
-const TileLayer = ReactLeaflet.TileLayer
-const useMap = ReactLeaflet.useMap
+// Fix for default marker icons in Leaflet with Webpack
+// @ts-ignore
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+})
 
 interface LocationMapDrawClientProps {
   value: DrawnAreaGeoJSON | null
@@ -26,104 +36,147 @@ const MapDrawCore = forwardRef<
   }
 >(function MapDrawCore({ onChange, initialGeoJSON }, ref) {
   const map = useMap()
-  const layerGroupRef = useRef<any>(null)
+  const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const initialized = useRef(false)
 
   useEffect(() => {
     if (!map) return
 
-    let L: any
-    const setup = async () => {
-      L = (await import('leaflet')).default
-      await import('@geoman-io/leaflet-geoman-free')
-      if (!map.pm) return
-      if (initialized.current) return
-      initialized.current = true
+    // Ensure L is attached to window for Geoman if needed (some plugins rely on it)
+    if (typeof window !== 'undefined' && !(window as any).L) {
+      (window as any).L = L
+    }
 
-      if (!layerGroupRef.current && L) {
-        layerGroupRef.current = L.layerGroup().addTo(map)
-      }
+    console.log('MapDrawCore: Checking Geoman support', {
+      pmAvailable: !!map.pm,
+      globalPm: !!(L as any).PM
+    })
 
-      map.pm.addControls({
-        position: 'topright',
-        drawMarker: false,
-        drawCircleMarker: false,
-        drawPolyline: false,
-        drawRectangle: false,
-        drawCircle: false,
-        drawPolygon: true,
-        editMode: true,
-        dragMode: true,
-        cutPolygon: false,
-        removalMode: true,
-        rotateMode: false,
-      })
+    if (!map.pm) {
+      console.error('MapDrawCore: map.pm is missing even after static import')
+      // Fallback: if global L.PM exists, the map might need manual init if not patched automatically
+      return
+    }
 
-      map.pm.setPathOptions({
-        color: '#2563eb',
-        fillColor: '#3b82f6',
-        fillOpacity: 0.25,
-        weight: 2,
-      })
+    if (initialized.current) return
+    initialized.current = true
 
-      const getGeoJSON = (layer: any): DrawnAreaGeoJSON | null => {
-        try {
-          const geo = layer.toGeoJSON()
-          if (geo.type === 'Polygon' && geo.coordinates?.[0]?.length >= 3) {
-            return { type: 'Polygon', coordinates: geo.coordinates }
-          }
-        } catch (_) {}
-        return null
-      }
+    if (!layerGroupRef.current) {
+      layerGroupRef.current = L.layerGroup().addTo(map)
+    }
 
-      const syncToParent = () => {
-        const layers = map.pm.getGeomanLayers(true)
-        if (layers.length === 0) {
-          onChange(null)
-          return
+    // Initialize Geoman controls
+    map.pm.addControls({
+      position: 'topright',
+      drawMarker: false,
+      drawCircleMarker: false,
+      drawPolyline: false,
+      drawRectangle: false,
+      drawCircle: false,
+      drawPolygon: true,
+      editMode: true,
+      dragMode: true,
+      cutPolygon: false,
+      removalMode: true,
+      rotateMode: false,
+    })
+
+    map.pm.setPathOptions({
+      color: '#2563eb',
+      fillColor: '#3b82f6',
+      fillOpacity: 0.25,
+      weight: 2,
+    })
+
+    const getGeoJSON = (layer: any): DrawnAreaGeoJSON | null => {
+      try {
+        const geo = layer.toGeoJSON()
+        if (geo.type === 'Polygon' && geo.coordinates?.[0]?.length >= 3) {
+          return { type: 'Polygon', coordinates: geo.coordinates }
         }
-        const last = layers[layers.length - 1]
-        const geo = getGeoJSON(last)
-        if (geo) onChange(geo)
+      } catch (_) { }
+      return null
+    }
+
+    const getLayersSafe = () => {
+      if (!map?.pm) return []
+      const result = map.pm.getGeomanLayers()
+      if (Array.isArray(result)) return result
+      if (result && typeof result === 'object') return Object.values(result)
+      return []
+    }
+
+    const syncToParent = () => {
+      const layers = getLayersSafe()
+      if (layers.length === 0) {
+        onChange(null)
+        return
       }
+      // Get the last drawn layer
+      const last = layers[layers.length - 1]
+      const geo = getGeoJSON(last)
+      if (geo) onChange(geo)
+    }
 
-      map.on('pm:create', (e: any) => {
-        e.layer.addTo(layerGroupRef.current)
-        syncToParent()
+    map.on('pm:create', (e: any) => {
+      console.log('MapDrawCore: pm:create', e)
+      // Enforce single polygon: remove others
+      const layers = getLayersSafe()
+
+      console.log('MapDrawCore: allLayers', layers)
+
+      layers.forEach((layer: any) => {
+        if (layer !== e.layer && layer._leaflet_id !== e.layer._leaflet_id) {
+          try { layer.remove() } catch (_) { }
+        }
       })
-      map.on('pm:edit', () => syncToParent())
-      map.on('pm:remove', () => syncToParent())
 
-      if (initialGeoJSON?.coordinates?.[0]?.length >= 3) {
-        try {
-          const latlngs = initialGeoJSON.coordinates[0].map((c) => [c[1], c[0]] as [number, number])
-          const poly = L.polygon(latlngs, {
-            color: '#2563eb',
-            fillColor: '#3b82f6',
-            fillOpacity: 0.25,
-            weight: 2,
-          }).addTo(layerGroupRef.current)
-          if (poly.pm) poly.pm.enable({ drag: true, edit: true })
-        } catch (_) {}
+      e.layer.addTo(layerGroupRef.current!)
+      syncToParent()
+    })
+
+    map.on('pm:edit', () => syncToParent())
+    map.on('pm:remove', () => syncToParent())
+
+    // Hydrate initial value
+    if (initialGeoJSON?.coordinates?.[0]?.length >= 3) {
+      try {
+        const latlngs = initialGeoJSON.coordinates[0].map((c) => [c[1], c[0]] as [number, number])
+        const poly = L.polygon(latlngs, {
+          color: '#2563eb',
+          fillColor: '#3b82f6',
+          fillOpacity: 0.25,
+          weight: 2,
+        }).addTo(layerGroupRef.current)
+
+        // No need for manual enable, Geoman detects layers on the map or we can register it
+        // L.PM.reInitLayer(poly) might be needed if added after controls init?
+        // Usually simply adding to map is enough for editMode to pick it up.
+      } catch (err) {
+        console.error('Error hydrating initial geojson', err)
       }
     }
-    setup()
 
     return () => {
+      // Cleanup
       if (map.pm) {
-        map.pm.disable()
+        map.pm.disableGlobalEditMode()
+        map.pm.disableDraw()
         try {
           map.pm.removeControls()
-        } catch (_) {}
+        } catch (_) { }
       }
-      layerGroupRef.current?.clearLayers?.()
+      layerGroupRef.current?.clearLayers()
       initialized.current = false
     }
   }, [map, onChange, initialGeoJSON])
 
   const clear = useCallback(() => {
     if (!map?.pm) return
-    map.pm.getGeomanLayers(true).forEach((layer: any) => layer.remove())
+    const result = map.pm.getGeomanLayers()
+    const allLayers = Array.isArray(result) ? result : (result ? Object.values(result) : [])
+
+    allLayers.forEach((layer: any) => layer.remove())
     onChange(null)
   }, [map, onChange])
 
@@ -142,7 +195,8 @@ const MAP_FALLBACK = (
 
 function LocationMapDrawClientInner({ value, onChange, height = '400px' }: LocationMapDrawClientProps) {
   const clearRef = useRef<{ clear: () => void }>(null)
-  const canRenderMap = typeof MapContainer === 'function' && typeof TileLayer === 'function'
+  // Check if MapContainer is available (it is, since we import statically)
+  const canRenderMap = true
 
   if (!canRenderMap) {
     return (
@@ -180,7 +234,7 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px' }: Locat
           className="absolute bottom-3 left-3 z-[1000] bg-white shadow"
           onClick={() => clearRef.current?.clear()}
         >
-          <Eraser2 className="h-4 w-4 mr-1" />
+          <Eraser className="h-4 w-4 mr-1" />
           Effacer la zone
         </Button>
       </div>
