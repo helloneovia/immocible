@@ -3,6 +3,8 @@ import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { BienType } from '@prisma/client'
 
+export const dynamic = 'force-dynamic';
+
 // Drawn area: GeoJSON Polygon
 interface DrawnAreaGeoJSON {
     type: 'Polygon'
