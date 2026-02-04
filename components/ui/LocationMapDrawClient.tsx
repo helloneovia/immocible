@@ -47,13 +47,7 @@ const MapDrawCore = forwardRef<
       (window as any).L = L
     }
 
-    console.log('MapDrawCore: Checking Geoman support', {
-      pmAvailable: !!map.pm,
-      globalPm: !!(L as any).PM
-    })
-
     if (!map.pm) {
-      console.error('MapDrawCore: map.pm is missing even after static import')
       // Fallback: if global L.PM exists, the map might need manual init if not patched automatically
       return
     }
@@ -119,11 +113,8 @@ const MapDrawCore = forwardRef<
     }
 
     map.on('pm:create', (e: any) => {
-      console.log('MapDrawCore: pm:create', e)
       // Enforce single polygon: remove others
       const layers = getLayersSafe()
-
-      console.log('MapDrawCore: allLayers', layers)
 
       layers.forEach((layer: any) => {
         if (layer !== e.layer && layer._leaflet_id !== e.layer._leaflet_id) {
@@ -138,25 +129,6 @@ const MapDrawCore = forwardRef<
     map.on('pm:edit', () => syncToParent())
     map.on('pm:remove', () => syncToParent())
 
-    // Hydrate initial value
-    if (initialGeoJSON?.coordinates?.[0]?.length >= 3) {
-      try {
-        const latlngs = initialGeoJSON.coordinates[0].map((c) => [c[1], c[0]] as [number, number])
-        const poly = L.polygon(latlngs, {
-          color: '#2563eb',
-          fillColor: '#3b82f6',
-          fillOpacity: 0.25,
-          weight: 2,
-        }).addTo(layerGroupRef.current)
-
-        // No need for manual enable, Geoman detects layers on the map or we can register it
-        // L.PM.reInitLayer(poly) might be needed if added after controls init?
-        // Usually simply adding to map is enough for editMode to pick it up.
-      } catch (err) {
-        console.error('Error hydrating initial geojson', err)
-      }
-    }
-
     return () => {
       // Cleanup
       if (map.pm) {
@@ -169,7 +141,41 @@ const MapDrawCore = forwardRef<
       layerGroupRef.current?.clearLayers()
       initialized.current = false
     }
-  }, [map, onChange, initialGeoJSON])
+  }, [map, onChange])
+
+  // Separate effect for hydration
+  // This listens for changes in initialGeoJSON and updates the map accordingly
+  useEffect(() => {
+    if (!map || !layerGroupRef.current || !initialGeoJSON) return
+
+    // Only hydrate if the map is empty to avoid overwriting user's current work
+    const currentLayers = layerGroupRef.current.getLayers()
+    if (currentLayers.length > 0) return
+
+    if (initialGeoJSON?.coordinates?.[0]?.length >= 3) {
+      try {
+        const latlngs = initialGeoJSON.coordinates[0].map((c) => [c[1], c[0]] as [number, number])
+
+        // Clear just in case
+        layerGroupRef.current.clearLayers()
+
+        const poly = L.polygon(latlngs, {
+          color: '#2563eb',
+          fillColor: '#3b82f6',
+          fillOpacity: 0.25,
+          weight: 2,
+        }).addTo(layerGroupRef.current)
+
+        // Fit bounds to show the saved area
+        try {
+          map.fitBounds(poly.getBounds(), { padding: [50, 50] })
+        } catch (_) { }
+
+      } catch (err) {
+        console.error('Error hydrating initial geojson', err)
+      }
+    }
+  }, [map, initialGeoJSON])
 
   const clear = useCallback(() => {
     if (!map?.pm) return

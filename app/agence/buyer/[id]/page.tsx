@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCircle2, BedDouble, LayoutGrid, Briefcase, Wallet, Banknote, Users, Clock, Calendar } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Navbar } from '@/components/layout/Navbar'
+import { LocationMapDraw } from '@/components/ui/LocationMapDraw'
 
 function BuyerProfileContent() {
     const params = useParams()
@@ -208,13 +209,32 @@ function BuyerProfileContent() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500">Secteur(s)</p>
-                                        <div className="flex flex-wrap gap-2 mt-1">
+                                        <div className="flex flex-wrap gap-2 mt-1 mb-3">
                                             {search?.localisation?.map((zone: string, i: number) => (
                                                 <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     {zone}
                                                 </span>
                                             )) || <span className="text-gray-900">Non spécifié</span>}
                                         </div>
+
+                                        {/* Display Drawn Area if available */}
+                                        {search?.caracteristiques?.drawnArea && (
+                                            <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
+                                                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                                                    <p className="text-xs font-medium text-gray-500 flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3" /> Zone de recherche précise
+                                                    </p>
+                                                </div>
+                                                <div className="h-[300px] w-full relative pointer-events-none">
+                                                    {/* We use pointer-events-none to make it "read-only" roughly for now */}
+                                                    <LocationMapDraw
+                                                        value={search.caracteristiques.drawnArea}
+                                                        onChange={() => { }}
+                                                        height="300px"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
