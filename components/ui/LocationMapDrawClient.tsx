@@ -1,12 +1,16 @@
 'use client'
 
 import React, { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import * as ReactLeaflet from 'react-leaflet'
 import { Button } from '@/components/ui/button'
 import { Eraser2 } from 'lucide-react'
 import type { DrawnAreaGeoJSON } from './LocationMapDraw'
 import 'leaflet/dist/leaflet.css'
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css'
+
+const MapContainer = ReactLeaflet.MapContainer
+const TileLayer = ReactLeaflet.TileLayer
+const useMap = ReactLeaflet.useMap
 
 interface LocationMapDrawClientProps {
   value: DrawnAreaGeoJSON | null
@@ -128,8 +132,28 @@ const MapDrawCore = forwardRef<
   return null
 })
 
+const MAP_FALLBACK = (
+  <div className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-6" style={{ minHeight: 280 }}>
+    <p className="text-sm text-gray-500 text-center">
+      La carte n&apos;est pas disponible ici. Utilisez la recherche de villes ci-dessus pour préciser vos zones.
+    </p>
+  </div>
+)
+
 function LocationMapDrawClientInner({ value, onChange, height = '400px' }: LocationMapDrawClientProps) {
   const clearRef = useRef<{ clear: () => void }>(null)
+  const canRenderMap = typeof MapContainer === 'function' && typeof TileLayer === 'function'
+
+  if (!canRenderMap) {
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-gray-600">
+          Dessinez une zone sur la carte (optionnel).
+        </p>
+        {MAP_FALLBACK}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-2">

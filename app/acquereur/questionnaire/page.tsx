@@ -34,6 +34,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
 import { LocationMapDraw, type DrawnAreaGeoJSON } from '@/components/ui/LocationMapDraw'
+import { MapErrorBoundary } from '@/components/ui/MapErrorBoundary'
 import { Navbar } from '@/components/layout/Navbar'
 
 interface QuestionnaireData {
@@ -546,11 +547,21 @@ function QuestionnaireContent() {
                 <p className="text-sm text-gray-500 mb-2">
                   Idéal pour cibler des quartiers ou rues précis. Cliquez sur la carte pour tracer un polygone, puis fermez la forme.
                 </p>
-                <LocationMapDraw
-                  value={formData.drawnArea}
-                  onChange={(v) => updateFormData('drawnArea', v)}
-                  height="380px"
-                />
+                <MapErrorBoundary
+                  fallback={
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-6 min-h-[280px]">
+                      <p className="text-sm text-gray-500 text-center">
+                        La carte n&apos;est pas disponible. Utilisez la recherche de villes ci-dessus.
+                      </p>
+                    </div>
+                  }
+                >
+                  <LocationMapDraw
+                    value={formData.drawnArea}
+                    onChange={(v) => updateFormData('drawnArea', v)}
+                    height="380px"
+                  />
+                </MapErrorBoundary>
               </div>
             </div>
           </div>
