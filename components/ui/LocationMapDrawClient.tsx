@@ -75,6 +75,9 @@ const MapDrawCore = forwardRef<
       rotateMode: false,
     })
 
+    // Set language to French
+    map.pm.setLang('fr')
+
     map.pm.setPathOptions({
       color: '#2563eb',
       fillColor: '#3b82f6',
