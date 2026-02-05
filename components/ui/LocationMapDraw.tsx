@@ -14,6 +14,7 @@ interface LocationMapDrawProps {
   onChange: (value: DrawnAreaGeoJSON | null) => void
   className?: string
   height?: string
+  readOnly?: boolean
 }
 
 // Load map in a separate chunk with static react-leaflet imports so production bundle has valid components
@@ -52,6 +53,7 @@ export function LocationMapDraw(props: LocationMapDrawProps) {
       value={props.value}
       onChange={props.onChange}
       height={props.height}
+      readOnly={props.readOnly}
     />
   )
 }

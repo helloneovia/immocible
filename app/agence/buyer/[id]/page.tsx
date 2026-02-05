@@ -225,12 +225,12 @@ function BuyerProfileContent() {
                                                         <MapPin className="h-3 w-3" /> Zone de recherche précise
                                                     </p>
                                                 </div>
-                                                <div className="h-[300px] w-full relative pointer-events-none">
-                                                    {/* We use pointer-events-none to make it "read-only" roughly for now */}
+                                                <div className="h-[300px] w-full relative">
                                                     <LocationMapDraw
                                                         value={search.caracteristiques.drawnArea}
                                                         onChange={() => { }}
                                                         height="300px"
+                                                        readOnly={true}
                                                     />
                                                 </div>
                                             </div>

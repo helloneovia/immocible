@@ -26,6 +26,7 @@ interface LocationMapDrawClientProps {
   value: DrawnAreaGeoJSON | null
   onChange: (value: DrawnAreaGeoJSON | null) => void
   height?: string
+  readOnly?: boolean
 }
 
 const MapDrawCore = forwardRef<
@@ -33,8 +34,9 @@ const MapDrawCore = forwardRef<
   {
     onChange: (v: DrawnAreaGeoJSON | null) => void
     initialGeoJSON: DrawnAreaGeoJSON | null
+    readOnly?: boolean
   }
->(function MapDrawCore({ onChange, initialGeoJSON }, ref) {
+>(function MapDrawCore({ onChange, initialGeoJSON, readOnly }, ref) {
   const map = useMap()
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const initialized = useRef(false)
@@ -60,20 +62,22 @@ const MapDrawCore = forwardRef<
     }
 
     // Initialize Geoman controls
-    map.pm.addControls({
-      position: 'topright',
-      drawMarker: false,
-      drawCircleMarker: false,
-      drawPolyline: false,
-      drawRectangle: false,
-      drawCircle: false,
-      drawPolygon: true,
-      editMode: true,
-      dragMode: true,
-      cutPolygon: false,
-      removalMode: true,
-      rotateMode: false,
-    })
+    if (!readOnly) {
+      map.pm.addControls({
+        position: 'topright',
+        drawMarker: false,
+        drawCircleMarker: false,
+        drawPolyline: false,
+        drawRectangle: false,
+        drawCircle: false,
+        drawPolygon: true,
+        editMode: true,
+        dragMode: true,
+        cutPolygon: false,
+        removalMode: true,
+        rotateMode: false,
+      })
+    }
 
     // Set language to French
     map.pm.setLang('fr')
@@ -251,7 +255,7 @@ const MAP_FALLBACK = (
   </div>
 )
 
-function LocationMapDrawClientInner({ value, onChange, height = '400px' }: LocationMapDrawClientProps) {
+function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnly }: LocationMapDrawClientProps) {
   const clearRef = useRef<{ clear: () => void }>(null)
   // Check if MapContainer is available (it is, since we import statically)
   const canRenderMap = true
@@ -282,21 +286,22 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px' }: Locat
         >
           <AttributionControl prefix={false} position="bottomright" />
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapDrawCore ref={clearRef} onChange={onChange} initialGeoJSON={value} />
+          <MapDrawCore ref={clearRef} onChange={onChange} initialGeoJSON={value} readOnly={readOnly} />
         </MapContainer>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="absolute bottom-3 left-3 z-[1000] bg-white shadow"
-          onClick={() => clearRef.current?.clear()}
-        >
-          <Eraser className="h-4 w-4 mr-1" />
-          Effacer la zone
-        </Button>
+        {!readOnly && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="absolute bottom-3 left-3 z-[1000] bg-white shadow"
+            onClick={() => clearRef.current?.clear()}
+          >
+            <Eraser className="h-4 w-4 mr-1" />
+            Effacer la zone
+          </Button>
+        )}
       </div>
     </div>
   )
