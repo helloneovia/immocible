@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, AttributionControl } from 'react-leaflet'
 import { Button } from '@/components/ui/button'
 import { Eraser } from 'lucide-react'
 import type { DrawnAreaGeoJSON } from './LocationMapDraw'
@@ -278,7 +278,9 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px' }: Locat
           zoom={6}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={true}
+          attributionControl={false}
         >
+          <AttributionControl prefix={false} position="bottomright" />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
