@@ -85,10 +85,21 @@ const MapDrawCore = forwardRef<
     const getGeoJSON = (layer: any): DrawnAreaGeoJSON | null => {
       try {
         const geo = layer.toGeoJSON()
-        if (geo.type === 'Polygon' && geo.coordinates?.[0]?.length >= 3) {
-          return { type: 'Polygon', coordinates: geo.coordinates }
+        console.log('[getGeoJSON] Raw GeoJSON from layer:', JSON.stringify(geo))
+
+        // layer.toGeoJSON() returns a Feature, not a Geometry
+        // So we need to access geo.geometry for the actual polygon data
+        const geometry = geo.geometry || geo
+
+        if (geometry.type === 'Polygon' && geometry.coordinates?.[0]?.length >= 3) {
+          const result = { type: 'Polygon' as const, coordinates: geometry.coordinates }
+          console.log('[getGeoJSON] Extracted polygon:', JSON.stringify(result))
+          return result
         }
-      } catch (_) { }
+        console.log('[getGeoJSON] Not a valid polygon, geometry type:', geometry?.type)
+      } catch (e) {
+        console.error('[getGeoJSON] Error:', e)
+      }
       return null
     }
 
@@ -139,22 +150,45 @@ const MapDrawCore = forwardRef<
         } catch (_) { }
       }
       layerGroupRef.current?.clearLayers()
+      layerGroupRef.current = null  // Reset so new map gets a fresh layer group
       initialized.current = false
     }
   }, [map, onChange])
 
   // Separate effect for hydration
   // This listens for changes in initialGeoJSON and updates the map accordingly
+  // Using a serialized key to ensure effect runs when data changes
+  const geoJSONKey = initialGeoJSON ? JSON.stringify(initialGeoJSON) : null
+
   useEffect(() => {
-    if (!map || !layerGroupRef.current || !initialGeoJSON) return
+    console.log('[Hydration] Effect triggered', { hasMap: !!map, hasGeoJSON: !!initialGeoJSON })
+    if (!map || !initialGeoJSON) return
+    if (!initialGeoJSON?.coordinates?.[0]?.length || initialGeoJSON.coordinates[0].length < 3) {
+      console.log('[Hydration] Invalid coordinates, skipping')
+      return
+    }
 
-    // Only hydrate if the map is empty to avoid overwriting user's current work
-    const currentLayers = layerGroupRef.current.getLayers()
-    if (currentLayers.length > 0) return
+    // Wait for map to be ready
+    const hydrate = () => {
+      console.log('[Hydration] Hydrating polygon...')
 
-    if (initialGeoJSON?.coordinates?.[0]?.length >= 3) {
+      // Create layer group if it doesn't exist yet
+      if (!layerGroupRef.current) {
+        console.log('[Hydration] Creating new layer group')
+        layerGroupRef.current = L.layerGroup().addTo(map)
+      }
+
+      // Only hydrate if the map is empty to avoid overwriting user's current work
+      const currentLayers = layerGroupRef.current.getLayers()
+      console.log('[Hydration] Current layers count:', currentLayers.length)
+      if (currentLayers.length > 0) {
+        console.log('[Hydration] Layers already present, skipping')
+        return
+      }
+
       try {
         const latlngs = initialGeoJSON.coordinates[0].map((c) => [c[1], c[0]] as [number, number])
+        console.log('[Hydration] Creating polygon with', latlngs.length, 'points')
 
         // Clear just in case
         layerGroupRef.current.clearLayers()
@@ -164,18 +198,33 @@ const MapDrawCore = forwardRef<
           fillColor: '#3b82f6',
           fillOpacity: 0.25,
           weight: 2,
-        }).addTo(layerGroupRef.current)
+        })
+
+        poly.addTo(layerGroupRef.current)
+        console.log('[Hydration] Polygon added to layer group')
+
+        // Also add directly to map as a backup
+        poly.addTo(map)
+        console.log('[Hydration] Polygon added directly to map')
 
         // Fit bounds to show the saved area
         try {
-          map.fitBounds(poly.getBounds(), { padding: [50, 50] })
-        } catch (_) { }
+          const bounds = poly.getBounds()
+          console.log('[Hydration] Fitting to bounds:', bounds)
+          map.fitBounds(bounds, { padding: [50, 50] })
+        } catch (e) {
+          console.error('[Hydration] fitBounds error:', e)
+        }
 
       } catch (err) {
-        console.error('Error hydrating initial geojson', err)
+        console.error('[Hydration] Error hydrating initial geojson', err)
       }
     }
-  }, [map, initialGeoJSON])
+
+    // Delay to ensure map is fully ready
+    const timer = setTimeout(hydrate, 200)
+    return () => clearTimeout(timer)
+  }, [map, geoJSONKey])
 
   const clear = useCallback(() => {
     if (!map?.pm) return
