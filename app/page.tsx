@@ -13,6 +13,7 @@ import {
   Zap
 } from 'lucide-react'
 import { getAppSettings } from '@/lib/settings'
+import { HomeAboutDialog } from '@/components/HomeAboutDialog'
 
 export const revalidate = 60 // Revalidate page every 60 seconds
 
@@ -61,10 +62,7 @@ export default async function HomePage() {
             <div className="group relative rounded-full px-4 py-2 text-sm leading-6 bg-white/90 backdrop-blur-sm ring-1 ring-gray-900/10 hover:ring-gray-900/20 shadow-sm">
               <Sparkles className="inline h-4 w-4 mr-2 text-indigo-600 animate-pulse" />
               Nouveau : Recherche inversée pour l&apos;immobilier{' '}
-              <a href="#" className="font-semibold text-indigo-600">
-                <span className="absolute inset-0" aria-hidden="true" />
-                En savoir plus <ArrowRight className="inline h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-              </a>
+              <HomeAboutDialog content={settings.text_home_about_content || ''} />
             </div>
           </div>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">

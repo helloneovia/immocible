@@ -187,6 +187,26 @@ const DEFAULT_SETTINGS = [
         description: 'Sous-titre de la section finale.'
     },
     {
+        key: 'text_home_about_content',
+        value: `IMMOCIBLE transforme la recherche immobilière grâce à la recherche inversée.
+
+Les acquéreurs décrivent leur projet,
+les biens et opportunités off-market viennent à eux.
+
+IMMOCIBLE met en relation des acquéreurs qualifiés avec des agences disposant de biens ciblés ou à venir.
+
+Pourquoi IMMOCIBLE ?
+•  Accès à des opportunités avant leur mise sur le marché
+•  Recherches précises, projets sérieux
+•  Gain de temps pour les acquéreurs et les agences
+•  Moins de concurrence, plus d’efficacité
+
+IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
+        type: 'string', // Use 'string' but render as textarea in admin because value is long
+        label: 'Contenu "En Savoir Plus"',
+        description: 'Texte affiché dans la modale "En savoir plus".'
+    },
+    {
         key: 'text_footer_copyright',
         value: "© 2024 IMMOCIBLE. Tous droits réservés.",
         type: 'string',

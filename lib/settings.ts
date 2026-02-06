@@ -31,6 +31,7 @@ export interface AppSettings {
     text_home_features_subtitle: string
     text_home_cta_title: string
     text_home_cta_subtitle: string
+    text_home_about_content: string
     text_footer_copyright: string
 }
 
@@ -76,6 +77,20 @@ export const DEFAULT_SETTINGS: AppSettings = {
     text_home_features_subtitle: "Une plateforme simple et efficace pour transformer votre recherche immobilière",
     text_home_cta_title: "Prêt à trouver votre bien idéal ?",
     text_home_cta_subtitle: "Rejoignez des centaines d'acquéreurs qui ont trouvé leur bien sur IMMOCIBLE",
+    text_home_about_content: `IMMOCIBLE transforme la recherche immobilière grâce à la recherche inversée.
+
+Les acquéreurs décrivent leur projet,
+les biens et opportunités off-market viennent à eux.
+
+IMMOCIBLE met en relation des acquéreurs qualifiés avec des agences disposant de biens ciblés ou à venir.
+
+Pourquoi IMMOCIBLE ?
+•  Accès à des opportunités avant leur mise sur le marché
+•  Recherches précises, projets sérieux
+•  Gain de temps pour les acquéreurs et les agences
+•  Moins de concurrence, plus d’efficacité
+
+IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
     text_footer_copyright: "© 2024 IMMOCIBLE. Tous droits réservés."
 }
 
