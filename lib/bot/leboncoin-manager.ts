@@ -95,8 +95,20 @@ export class LeboncoinBot {
         const width = 1920 + Math.floor(Math.random() * 100) - 50; // 1870-1970
         const height = 1080 + Math.floor(Math.random() * 100) - 50; // 1030-1130
 
+        // Detect System Chrome (MacOS)
+        const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+        const executablePath = fs.existsSync(chromePath) ? chromePath : undefined;
+
+        if (executablePath) {
+            this.log('🖥️ Using System Google Chrome for maximum stealth', 'info');
+        } else {
+            this.log('⚠️ System Chrome not found, using bundled Chromium (less stealthy)', 'info');
+        }
+
         // Launch puppeteer-extra
         this.browser = await puppeteer.launch({
+            executablePath, // Use real Chrome if found
+            userDataDir: path.join(process.cwd(), 'chrome-data'), // Persist profile (cookies, cache, etc.)
             headless: false, // Run visible for local testing
             ignoreDefaultArgs: ['--enable-automation'], // Hide "Chrome is being controlled..."
             args: [
