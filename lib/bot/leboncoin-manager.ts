@@ -6,7 +6,7 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { faker } from '@faker-js/faker';
 import fs from 'fs';
 import path from 'path';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '../../lib/prisma'; // Relative path for script execution stability
 
 // Use Stealth Plugin
 puppeteer.use(StealthPlugin());
@@ -366,6 +366,52 @@ export class LeboncoinBot {
 
         } catch (error: any) {
             this.log(`❌ Error: ${error.message}`, 'error');
+        }
+    }
+
+    async postAd(ad: { title: string, description: string, price: string, category: string, location: string }) {
+        try {
+            this.log('📢 Navigating to Post Ad...', 'info');
+            await this.lbcPage.goto('https://www.leboncoin.fr/deposer-une-annonce', { waitUntil: 'domcontentloaded' });
+
+            // Wait for form
+            await this.waitForHumanVerification(this.lbcPage, 'input[name="subject"]', 'Post Ad Page');
+            await this.realisticInteraction(this.lbcPage);
+
+            // Title
+            this.log('✍️ Filling Title...', 'info');
+            await this.humanType(this.lbcPage, 'input[name="subject"]', ad.title);
+
+            // Note: Leboncoin often requires selecting a category from a list that appears after typing title or finding "Continuer".
+            // Since this flow heavily relies on dynamic JS and specific categories, automation is fragile.
+            // We fill what we can.
+
+            // Description
+            this.log('✍️ Filling Description...', 'info');
+            // Check if textarea exists or is in a next step
+            try {
+                await this.humanType(this.lbcPage, 'textarea[name="body"]', ad.description);
+            } catch (e) { this.log('Description field not found yet (might be multi-step)', 'info'); }
+
+            // Price
+            this.log('✍️ Filling Price...', 'info');
+            try {
+                await this.humanType(this.lbcPage, 'input[name="price"]', ad.price);
+            } catch (e) { this.log('Price field not found yet', 'info'); }
+
+            // Location
+            this.log('✍️ Filling Location...', 'info');
+            try {
+                await this.humanType(this.lbcPage, '[id*="location"]', ad.location); // Generic selector for location
+                await this.randomDelay(1000, 2000);
+                await this.lbcPage.keyboard.press('ArrowDown');
+                await this.lbcPage.keyboard.press('Enter');
+            } catch (e) { this.log('Location field not found yet', 'info'); }
+
+            this.log('✅ Ad details filled. Please finish submission manually if needed.', 'success', 'lbc', await this.takeScreenshot(this.lbcPage, 'lbc'));
+
+        } catch (e: any) {
+            this.log(`❌ Error posting ad: ${e.message}`, 'error');
         }
     }
 
