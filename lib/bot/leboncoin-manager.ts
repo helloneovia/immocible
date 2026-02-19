@@ -17,6 +17,15 @@ if (!fs.existsSync(SCREENSHOT_DIR)) {
     fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
+// User Agent Rotation
+const USER_AGENTS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:123.0) Gecko/20100101 Firefox/123.0',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15'
+];
+
 type LogType = 'info' | 'error' | 'success';
 
 interface LogCallback {
@@ -82,6 +91,10 @@ export class LeboncoinBot {
     async start() {
         this.log('🚀 Starting browser with Stealth Mode...', 'info');
 
+        // Randomize Window Size slightly
+        const width = 1920 + Math.floor(Math.random() * 100) - 50; // 1870-1970
+        const height = 1080 + Math.floor(Math.random() * 100) - 50; // 1030-1130
+
         // Launch puppeteer-extra
         this.browser = await puppeteer.launch({
             headless: false, // Run visible for local testing
@@ -91,8 +104,9 @@ export class LeboncoinBot {
                 '--disable-setuid-sandbox',
                 '--no-sandbox',
                 '--disable-blink-features=AutomationControlled', // Hide automation
-                '--window-size=1920,1080',
+                `--window-size=${width},${height}`,
                 '--disable-infobars',
+                '--disable-features=IsolateOrigins,site-per-process',
             ],
             defaultViewport: null,
         });
@@ -100,12 +114,46 @@ export class LeboncoinBot {
         const pages = await this.browser.pages();
         this.lbcPage = pages[0];
 
-        // Set User Agent to a real browser string
-        const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
+        // Randomize User Agent
+        const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+        this.log(`🕵️ Using User-Agent: ${userAgent}`, 'info');
         await this.lbcPage.setUserAgent(userAgent);
+
+        // Set Headers for realism
+        await this.lbcPage.setExtraHTTPHeaders({
+            'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        });
+
+        // Load cookies if available to maintain session
+        await this.loadCookies();
 
         this.mailPage = await this.browser.newPage();
         await this.mailPage.setUserAgent(userAgent);
+    }
+
+    private async saveCookies() {
+        try {
+            const cookies = await this.lbcPage.cookies();
+            const cookiePath = path.join(process.cwd(), 'lbc_cookies.json');
+            fs.writeFileSync(cookiePath, JSON.stringify(cookies, null, 2));
+            this.log('🍪 Cookies saved.', 'info');
+        } catch (e) {
+            this.log('⚠️ Failed to save cookies', 'error');
+        }
+    }
+
+    private async loadCookies() {
+        try {
+            const cookiePath = path.join(process.cwd(), 'lbc_cookies.json');
+            if (fs.existsSync(cookiePath)) {
+                const cookies = JSON.parse(fs.readFileSync(cookiePath, 'utf-8'));
+                await this.lbcPage.setCookie(...cookies);
+                this.log('🍪 Previous session cookies loaded.', 'info');
+            }
+        } catch (e) {
+            this.log('⚠️ Failed to load cookies', 'error');
+        }
     }
 
     async createAccount() {
@@ -277,6 +325,9 @@ export class LeboncoinBot {
                 await this.lbcPage.goto(verificationLink, { waitUntil: 'networkidle2' });
                 this.log('✅ Account verified successfully!', 'success');
                 this.log('Verified', 'success', 'lbc', await this.takeScreenshot(this.lbcPage, 'lbc'));
+
+                // Save cookies for future sessions
+                await this.saveCookies();
 
                 // 7. Save to DB
                 await prisma.botAccount.create({
