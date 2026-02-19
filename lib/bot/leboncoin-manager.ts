@@ -107,12 +107,26 @@ export class LeboncoinBot {
                 `--window-size=${width},${height}`,
                 '--disable-infobars',
                 '--disable-features=IsolateOrigins,site-per-process',
+                '--enable-webgl',
+                '--use-gl=swiftshader',
             ],
             defaultViewport: null,
         });
 
         const pages = await this.browser.pages();
         this.lbcPage = pages[0];
+
+        // Spoof Navigator Properties (Plugins & Languages)
+        await this.lbcPage.evaluateOnNewDocument(() => {
+            // Emulate plugins presence
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+            // Match our French locale
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['fr-FR', 'fr', 'en-US', 'en'],
+            });
+        });
 
         // Randomize User Agent
         const userAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
@@ -130,6 +144,14 @@ export class LeboncoinBot {
 
         this.mailPage = await this.browser.newPage();
         await this.mailPage.setUserAgent(userAgent);
+        await this.mailPage.evaluateOnNewDocument(() => {
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['fr-FR', 'fr', 'en-US', 'en'],
+            });
+        });
     }
 
     private async saveCookies() {
