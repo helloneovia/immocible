@@ -51,3 +51,34 @@ export async function PATCH(
         return new NextResponse("Internal Error", { status: 500 })
     }
 }
+
+export async function DELETE(
+    _req: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        const currentUser = await getCurrentUser()
+        if (!currentUser || currentUser.role !== 'admin') {
+            return new NextResponse("Unauthorized", { status: 403 })
+        }
+
+        const { id } = params
+
+        // Vérifier que l'utilisateur existe et n'est pas admin
+        const user = await prisma.user.findUnique({ where: { id } })
+        if (!user) {
+            return new NextResponse("Utilisateur introuvable", { status: 404 })
+        }
+        if (user.role === 'admin') {
+            return new NextResponse("Impossible de supprimer un administrateur", { status: 403 })
+        }
+
+        // Suppression de l'utilisateur (les relations sont supprimées en cascade via Prisma)
+        await prisma.user.delete({ where: { id } })
+
+        return NextResponse.json({ success: true })
+    } catch (error) {
+        console.error('[Admin Delete User]', error)
+        return new NextResponse("Internal Error", { status: 500 })
+    }
+}
