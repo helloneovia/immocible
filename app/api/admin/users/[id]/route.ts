@@ -73,8 +73,23 @@ export async function DELETE(
             return new NextResponse("Impossible de supprimer un administrateur", { status: 403 })
         }
 
-        // Suppression de l'utilisateur (les relations sont supprimées en cascade via Prisma)
-        await prisma.user.delete({ where: { id } })
+        // Suppression dans une transaction pour garantir l'intégrité
+        await prisma.$transaction(async (tx) => {
+            // 1. Supprimer les UnlockedProfile où l'utilisateur est agence ou acheteur
+            //    (ces relations n'ont pas de onDelete: Cascade dans le schema)
+            await tx.unlockedProfile.deleteMany({
+                where: { OR: [{ agencyId: id }, { buyerId: id }] }
+            })
+
+            // 2. Supprimer les messages envoyés par cet utilisateur
+            //    (Message.sender n'a pas de onDelete: Cascade)
+            await tx.message.deleteMany({
+                where: { senderId: id }
+            })
+
+            // 3. Supprimer l'utilisateur (les autres relations ont onDelete: Cascade)
+            await tx.user.delete({ where: { id } })
+        })
 
         return NextResponse.json({ success: true })
     } catch (error) {
@@ -82,3 +97,4 @@ export async function DELETE(
         return new NextResponse("Internal Error", { status: 500 })
     }
 }
+
