@@ -1,10 +1,21 @@
-
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Users, Building2, CreditCard, TrendingUp, ArrowRight, Home, MapPin, Wallet, PieChart } from 'lucide-react'
+import { Users, Building2, CreditCard, TrendingUp, ArrowRight, Home, MapPin, Wallet, PieChart, Briefcase, Heart, Banknote, Car, Euro, Clock, HelpCircle } from 'lucide-react'
 import { getAppSettings } from '@/lib/settings'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+
+// Helper to process JSON characteristics safely
+const parseCaracteristiques = (data: any) => {
+    if (typeof data === 'string') {
+        try {
+            return JSON.parse(data)
+        } catch {
+            return {}
+        }
+    }
+    return data || {}
+}
 
 // Helper to fetch stats
 async function getStats() {
@@ -60,60 +71,129 @@ async function getStats() {
         }
     })
 
-    // Questionnaire Statistics (Recherche model)
+    // --- Comprehensive Questionnaire Statistics ---
     const recherches = await prisma.recherche.findMany({
         where: { isActive: true },
         select: {
             typeBien: true,
             localisation: true,
-            financement: true
+            financement: true,
+            prixMax: true,
+            caracteristiques: true,
         }
     })
 
     const totalRecherches = recherches.length
 
-    // Aggregate typeBien
+    // Aggregators
     const typeBienCounts: Record<string, number> = {}
+    const localisationCounts: Record<string, number> = {}
+    const financementCounts: Record<string, number> = {}
+
+    // Demographics
+    const situationFamilialeCounts: Record<string, number> = {}
+    const situationProCounts: Record<string, number> = {}
+
+    // Finances
+    const salaireCounts: Record<string, number> = {}
+    const patrimoineCounts: Record<string, number> = {}
+    const apportCounts: Record<string, number> = {}
+    let totalPrixMax = 0
+    let prixMaxCount = 0
+
+    // Features
+    const ammenities = {
+        balcon: 0,
+        terrasse: 0,
+        jardin: 0,
+        parking: 0,
+        cave: 0,
+        ascenseur: 0
+    }
+
+    // Urgency
+    const delaiCounts: Record<string, number> = {}
+
+    // Process all active searches
     recherches.forEach(r => {
+        // Core Criteria
         r.typeBien.forEach(type => {
             typeBienCounts[type] = (typeBienCounts[type] || 0) + 1
         })
-    })
 
-    // Aggregate localisation
-    const localisationCounts: Record<string, number> = {}
-    recherches.forEach(r => {
         r.localisation.forEach(loc => {
             localisationCounts[loc] = (localisationCounts[loc] || 0) + 1
         })
-    })
 
-    // Aggregate financement
-    const financementCounts: Record<string, number> = {}
-    recherches.forEach(r => {
         if (r.financement) {
             financementCounts[r.financement] = (financementCounts[r.financement] || 0) + 1
         }
+
+        if (r.prixMax && r.prixMax > 0) {
+            totalPrixMax += r.prixMax
+            prixMaxCount++
+        }
+
+        // Characteristics (JSON parsing)
+        const car = parseCaracteristiques(r.caracteristiques)
+
+        // Demographics
+        if (car.situationFamiliale) situationFamilialeCounts[car.situationFamiliale] = (situationFamilialeCounts[car.situationFamiliale] || 0) + 1
+        if (car.situationProfessionnelle) situationProCounts[car.situationProfessionnelle] = (situationProCounts[car.situationProfessionnelle] || 0) + 1
+
+        // Finances
+        if (car.salaire) salaireCounts[car.salaire] = (salaireCounts[car.salaire] || 0) + 1
+        if (car.patrimoine) patrimoineCounts[car.patrimoine] = (patrimoineCounts[car.patrimoine] || 0) + 1
+        if (car.apport) apportCounts[car.apport] = (apportCounts[car.apport] || 0) + 1
+
+        // Features
+        if (car.balcon) ammenities.balcon++
+        if (car.terrasse) ammenities.terrasse++
+        if (car.jardin) ammenities.jardin++
+        if (car.parking) ammenities.parking++
+        if (car.cave) ammenities.cave++
+        if (car.ascenseur) ammenities.ascenseur++
+
+        // Urgency
+        if (car.delaiRecherche) delaiCounts[car.delaiRecherche] = (delaiCounts[car.delaiRecherche] || 0) + 1
     })
 
-    // Sort to get top results
-    const topTypesBien = Object.entries(typeBienCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
+    // Sorters
+    const sortObject = (obj: Record<string, number>, limit = 5) =>
+        Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, limit)
 
-    const topLocalisations = Object.entries(localisationCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
+    const topTypesBien = sortObject(typeBienCounts)
+    const topLocalisations = sortObject(localisationCounts)
+    const topFinancements = sortObject(financementCounts)
 
-    const topFinancements = Object.entries(financementCounts)
+    const topSituationsFam = sortObject(situationFamilialeCounts)
+    const topSituationsPro = sortObject(situationProCounts)
+
+    const topSalaires = sortObject(salaireCounts)
+    const topPatrimoines = sortObject(patrimoineCounts)
+    const topApports = sortObject(apportCounts)
+
+    const topDelais = sortObject(delaiCounts)
+
+    const avgBudget = prixMaxCount > 0 ? Math.round(totalPrixMax / prixMaxCount) : 0
+
+    // Feature array for progress bars
+    const topFeatures = Object.entries(ammenities)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
 
     const questionnaireStats = {
         totalRecherches,
         topTypesBien,
         topLocalisations,
-        topFinancements
+        topFinancements,
+        topSituationsFam,
+        topSituationsPro,
+        topSalaires,
+        topPatrimoines,
+        topApports,
+        avgBudget,
+        topFeatures,
+        topDelais
     }
 
     return {
@@ -128,6 +208,30 @@ async function getStats() {
         settings,
         questionnaireStats
     }
+}
+
+// Progress Bar Shared Component
+function StatBar({ label, count, total }: { label: string, count: number, total: number }) {
+    if (!label || count === 0) return null
+    const percentage = ((count / total) * 100).toFixed(0)
+
+    // Clean up label if it contains underscores or dashes
+    const cleanLabel = label.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+
+    return (
+        <div className="space-y-1">
+            <div className="flex justify-between text-xs sm:text-sm">
+                <span className="font-medium text-gray-700 truncate pr-2" title={cleanLabel}>{cleanLabel}</span>
+                <span className="text-gray-500 shrink-0 font-mono">{percentage}% ({count})</span>
+            </div>
+            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${percentage}%` }}
+                />
+            </div>
+        </div>
+    )
 }
 
 export default async function AdminDashboard() {
@@ -279,11 +383,16 @@ export default async function AdminDashboard() {
                 </Card>
             </div>
 
-            {/* Buyer Intelligence / Questionnaire Stats */}
-            <div className="mt-8 space-y-6">
-                <div className="flex items-center gap-2 mb-4">
-                    <PieChart className="h-6 w-6 text-amber-500" />
-                    <h2 className="text-2xl font-bold text-gray-900">Intelligence Acquéreurs (Demande)</h2>
+            {/* --- COMPREHENSIVE INTELLIGENCE ACQUEREURS --- */}
+            <div className="mt-12 space-y-8 border-t pt-8">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <PieChart className="h-8 w-8 text-amber-500" />
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Intelligence Globale Acquéreurs</h2>
+                            <p className="text-gray-500 text-sm mt-1">Analyse détaillée de l'ensemble de la base de données ({stats.questionnaireStats.totalRecherches} recherches actives)</p>
+                        </div>
+                    </div>
                 </div>
 
                 {stats.questionnaireStats.totalRecherches === 0 ? (
@@ -293,93 +402,173 @@ export default async function AdminDashboard() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Types de Biens */}
-                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Home className="h-4 w-4 text-indigo-500" />
-                                    Types de Biens
-                                </CardTitle>
-                                <CardDescription>Les plus recherchés</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 mt-2">
-                                    {stats.questionnaireStats.topTypesBien.map(([type, count]) => (
-                                        <div key={type} className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="font-medium capitalize text-gray-700">{type}</span>
-                                                <span className="text-gray-500">{count} rech.</span>
-                                            </div>
-                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-indigo-500 rounded-full"
-                                                    style={{ width: `${(count / stats.questionnaireStats.totalRecherches) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                    <div className="space-y-6">
 
-                        {/* Localisations */}
-                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <MapPin className="h-4 w-4 text-emerald-500" />
-                                    Localisations
-                                </CardTitle>
-                                <CardDescription>Villes / Quartiers favoris</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 mt-2">
-                                    {stats.questionnaireStats.topLocalisations.map(([loc, count]) => (
-                                        <div key={loc} className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="font-medium capitalize text-gray-700 truncate pr-2">{loc}</span>
-                                                <span className="text-gray-500 shrink-0">{count} rech.</span>
-                                            </div>
-                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-emerald-500 rounded-full"
-                                                    style={{ width: `${Math.min((count / stats.questionnaireStats.totalRecherches) * 100, 100)}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                        {/* Row 1: Finances & Budget */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {/* Budget summary block */}
+                            <Card className="shadow-sm border border-amber-100 bg-amber-50/30">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg text-amber-700">
+                                        <Euro className="h-5 w-5" /> Budgets
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold text-gray-900 mt-2">
+                                        {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(stats.questionnaireStats.avgBudget)}
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-1">Budget moyen maximum</p>
+                                    <div className="mt-4 pt-4 border-t border-amber-100 space-y-3">
+                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Sources de Financement</h4>
+                                        {stats.questionnaireStats.topFinancements.map(([fin, count]) => (
+                                            <StatBar key={fin} label={fin} count={count} total={stats.questionnaireStats.totalRecherches} />
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
 
-                        {/* Financements */}
-                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
-                            <CardHeader className="pb-2">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <Wallet className="h-4 w-4 text-amber-500" />
-                                    Financements
-                                </CardTitle>
-                                <CardDescription>Statut du budget</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 mt-2">
-                                    {stats.questionnaireStats.topFinancements.map(([fin, count]) => (
-                                        <div key={fin} className="space-y-1">
-                                            <div className="flex justify-between text-sm">
-                                                <span className="font-medium capitalize text-gray-700 truncate pr-2">{fin}</span>
-                                                <span className="text-gray-500 shrink-0">{count} rech.</span>
-                                            </div>
-                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-amber-500 rounded-full"
-                                                    style={{ width: `${(count / stats.questionnaireStats.totalRecherches) * 100}%` }}
-                                                />
-                                            </div>
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-md">
+                                        <Banknote className="h-4 w-4 text-emerald-600" /> Salaires
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 mt-2">
+                                    {stats.questionnaireStats.topSalaires.length > 0
+                                        ? stats.questionnaireStats.topSalaires.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-md">
+                                        <Wallet className="h-4 w-4 text-purple-600" /> Apports Personnels
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 mt-2">
+                                    {stats.questionnaireStats.topApports.length > 0
+                                        ? stats.questionnaireStats.topApports.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                </CardContent>
+                            </Card>
+
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-md">
+                                        <Building2 className="h-4 w-4 text-indigo-600" /> Patrimoine
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3 mt-2">
+                                    {stats.questionnaireStats.topPatrimoines.length > 0
+                                        ? stats.questionnaireStats.topPatrimoines.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Row 2: Demographics, Localisations, Types */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                            {/* Démographie */}
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Users className="h-5 w-5 text-blue-500" />
+                                        Profils Démographiques
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6 mt-2">
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <Heart className="h-4 w-4 text-rose-500" /> Situation Familiale
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topSituationsFam.length > 0
+                                                ? stats.questionnaireStats.topSituationsFam.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <Briefcase className="h-4 w-4 text-blue-700" /> Profession
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topSituationsPro.length > 0
+                                                ? stats.questionnaireStats.topSituationsPro.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Core Search Criteria */}
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <Home className="h-5 w-5 text-indigo-500" />
+                                        Critères Phares
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6 mt-2">
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <Building2 className="h-4 w-4 text-gray-500" /> Types de Biens
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topTypesBien.map(([type, count]) => (
+                                                <StatBar key={type} label={type} count={count} total={stats.questionnaireStats.totalRecherches} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <MapPin className="h-4 w-4 text-emerald-500" /> Localisations
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topLocalisations.map(([loc, count]) => (
+                                                <StatBar key={loc} label={loc} count={count} total={stats.questionnaireStats.totalRecherches} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Features & Urgency */}
+                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <HelpCircle className="h-5 w-5 text-slate-500" />
+                                        Besoins Spécifiques
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-6 mt-2">
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <Car className="h-4 w-4 text-gray-500" /> Prestations
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topFeatures
+                                                .filter(([_, count]) => count > 0)
+                                                .map(([feat, count]) => (
+                                                    <StatBar key={feat} label={feat} count={count} total={stats.questionnaireStats.totalRecherches} />
+                                                ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                                            <Clock className="h-4 w-4 text-orange-500" /> Urgence de la recherche
+                                        </h4>
+                                        <div className="space-y-3">
+                                            {stats.questionnaireStats.topDelais.length > 0
+                                                ? stats.questionnaireStats.topDelais.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
+                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                        </div>
                     </div>
                 )}
             </div>
