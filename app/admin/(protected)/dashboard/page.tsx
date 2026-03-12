@@ -1,7 +1,7 @@
 
 import { prisma } from '@/lib/prisma'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Building2, CreditCard, TrendingUp, ArrowRight, UserCheck } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Users, Building2, CreditCard, TrendingUp, ArrowRight, Home, MapPin, Wallet, PieChart } from 'lucide-react'
 import { getAppSettings } from '@/lib/settings'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -60,6 +60,62 @@ async function getStats() {
         }
     })
 
+    // Questionnaire Statistics (Recherche model)
+    const recherches = await prisma.recherche.findMany({
+        where: { isActive: true },
+        select: {
+            typeBien: true,
+            localisation: true,
+            financement: true
+        }
+    })
+
+    const totalRecherches = recherches.length
+
+    // Aggregate typeBien
+    const typeBienCounts: Record<string, number> = {}
+    recherches.forEach(r => {
+        r.typeBien.forEach(type => {
+            typeBienCounts[type] = (typeBienCounts[type] || 0) + 1
+        })
+    })
+
+    // Aggregate localisation
+    const localisationCounts: Record<string, number> = {}
+    recherches.forEach(r => {
+        r.localisation.forEach(loc => {
+            localisationCounts[loc] = (localisationCounts[loc] || 0) + 1
+        })
+    })
+
+    // Aggregate financement
+    const financementCounts: Record<string, number> = {}
+    recherches.forEach(r => {
+        if (r.financement) {
+            financementCounts[r.financement] = (financementCounts[r.financement] || 0) + 1
+        }
+    })
+
+    // Sort to get top results
+    const topTypesBien = Object.entries(typeBienCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+
+    const topLocalisations = Object.entries(localisationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+
+    const topFinancements = Object.entries(financementCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+
+    const questionnaireStats = {
+        totalRecherches,
+        topTypesBien,
+        topLocalisations,
+        topFinancements
+    }
+
     return {
         totalUsers,
         acquereurs,
@@ -69,7 +125,8 @@ async function getStats() {
         mrr,
         unlockRevenue,
         recentPayments,
-        settings
+        settings,
+        questionnaireStats
     }
 }
 
@@ -220,6 +277,111 @@ export default async function AdminDashboard() {
                         </div>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Buyer Intelligence / Questionnaire Stats */}
+            <div className="mt-8 space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                    <PieChart className="h-6 w-6 text-amber-500" />
+                    <h2 className="text-2xl font-bold text-gray-900">Intelligence Acquéreurs (Demande)</h2>
+                </div>
+
+                {stats.questionnaireStats.totalRecherches === 0 ? (
+                    <Card className="bg-white/50 backdrop-blur-sm border-dashed">
+                        <CardContent className="py-12 text-center text-muted-foreground">
+                            Aucune donnée de recherche encore disponible.
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Types de Biens */}
+                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Home className="h-4 w-4 text-indigo-500" />
+                                    Types de Biens
+                                </CardTitle>
+                                <CardDescription>Les plus recherchés</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4 mt-2">
+                                    {stats.questionnaireStats.topTypesBien.map(([type, count]) => (
+                                        <div key={type} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium capitalize text-gray-700">{type}</span>
+                                                <span className="text-gray-500">{count} rech.</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-indigo-500 rounded-full"
+                                                    style={{ width: `${(count / stats.questionnaireStats.totalRecherches) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Localisations */}
+                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <MapPin className="h-4 w-4 text-emerald-500" />
+                                    Localisations
+                                </CardTitle>
+                                <CardDescription>Villes / Quartiers favoris</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4 mt-2">
+                                    {stats.questionnaireStats.topLocalisations.map(([loc, count]) => (
+                                        <div key={loc} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium capitalize text-gray-700 truncate pr-2">{loc}</span>
+                                                <span className="text-gray-500 shrink-0">{count} rech.</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-emerald-500 rounded-full"
+                                                    style={{ width: `${Math.min((count / stats.questionnaireStats.totalRecherches) * 100, 100)}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Financements */}
+                        <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Wallet className="h-4 w-4 text-amber-500" />
+                                    Financements
+                                </CardTitle>
+                                <CardDescription>Statut du budget</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4 mt-2">
+                                    {stats.questionnaireStats.topFinancements.map(([fin, count]) => (
+                                        <div key={fin} className="space-y-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="font-medium capitalize text-gray-700 truncate pr-2">{fin}</span>
+                                                <span className="text-gray-500 shrink-0">{count} rech.</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                <div
+                                                    className="h-full bg-amber-500 rounded-full"
+                                                    style={{ width: `${(count / stats.questionnaireStats.totalRecherches) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
             </div>
         </div>
     )
