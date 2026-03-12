@@ -143,13 +143,13 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                                 <div
                                     key={message.id}
                                     className={cn(
-                                        "flex w-max max-w-[80%] flex-col gap-1 rounded-2xl px-4 py-2.5 text-sm shadow-sm",
+                                        "flex w-fit max-w-[85%] sm:max-w-[75%] flex-col gap-1 rounded-2xl px-4 py-2.5 text-sm shadow-sm",
                                         isMe
                                             ? "ml-auto bg-slate-900 text-white rounded-br-none"
                                             : "bg-white border text-gray-900 rounded-bl-none"
                                     )}
                                 >
-                                    <p>{message.content}</p>
+                                    <p className="whitespace-pre-wrap break-words">{message.content}</p>
                                     <span className={cn("text-[10px] opacity-70 block text-right", isMe ? "text-blue-100" : "text-gray-400")}>
                                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
