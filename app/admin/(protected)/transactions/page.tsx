@@ -85,7 +85,7 @@ export default async function TransactionsPage({
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant="outline" className={tx.plan === 'unlock_contact' ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-blue-200 bg-blue-50 text-blue-700'}>
+                                            <Badge variant="outline" className={tx.plan === 'unlock_contact' ? 'border-orange-200 bg-orange-50 text-orange-700' : 'border-blue-200 bg-amber-50 text-blue-700'}>
                                                 {tx.plan === 'unlock_contact' ? 'Déblocage Contact' : tx.plan || 'Abonnement'}
                                             </Badge>
                                         </TableCell>

@@ -98,7 +98,7 @@ function MessagesContent() {
                                                 <div
                                                     key={conv.id}
                                                     onClick={() => setSelectedConversation(conv)}
-                                                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedConversation?.id === conv.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''}`}
+                                                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedConversation?.id === conv.id ? 'bg-amber-50 border-l-4 border-slate-900' : ''}`}
                                                 >
                                                     <div className="flex items-center gap-3">
                                                         <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
@@ -139,8 +139,8 @@ function MessagesContent() {
                             />
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center bg-white rounded-xl border border-dashed text-center p-8 text-muted-foreground">
-                                <div className="h-16 w-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                                    <MessageSquare className="h-8 w-8 text-blue-500" />
+                                <div className="h-16 w-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+                                    <MessageSquare className="h-8 w-8 text-amber-500" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-gray-900">Vos messages</h3>
                                 <p>Sélectionnez une conversation pour commencer à discuter.</p>

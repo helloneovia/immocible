@@ -99,7 +99,7 @@ export default function CouponsClient({ initialCoupons }: { initialCoupons: Coup
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900">Gestion des Coupons</h1>
-                <Button onClick={() => setIsCreating(!isCreating)} className={isCreating ? "bg-gray-500" : "bg-indigo-600"}>
+                <Button onClick={() => setIsCreating(!isCreating)} className={isCreating ? "bg-gray-500" : "bg-slate-900"}>
                     {isCreating ? 'Annuler' : <><Plus className="mr-2 h-4 w-4" /> Nouveau Coupon</>}
                 </Button>
             </div>

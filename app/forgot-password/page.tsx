@@ -126,7 +126,7 @@ export default function ForgotPassword() {
                                     </Button>
 
                                     <div className="text-center text-sm pt-2">
-                                        <Link href="/agence/connexion" className="text-indigo-600 hover:text-indigo-700 underline font-semibold">
+                                        <Link href="/agence/connexion" className="text-amber-500 hover:text-indigo-700 underline font-semibold">
                                             Retour à la connexion
                                         </Link>
                                     </div>

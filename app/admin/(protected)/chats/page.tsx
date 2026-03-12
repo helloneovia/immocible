@@ -293,7 +293,7 @@ export default function AdminChatsPage() {
                                             Discussion
                                         </CardTitle>
                                         <CardDescription className="text-xs mt-1">
-                                            Entre <span className="font-semibold text-indigo-600">{selectedConversation.agency.profile.nomAgence || 'Agence'}</span> et <span className="font-semibold text-green-600">{selectedConversation.buyer.profile.prenom || 'Acquéreur'}</span>
+                                            Entre <span className="font-semibold text-amber-500">{selectedConversation.agency.profile.nomAgence || 'Agence'}</span> et <span className="font-semibold text-green-600">{selectedConversation.buyer.profile.prenom || 'Acquéreur'}</span>
                                         </CardDescription>
                                     </div>
                                     <div className="text-xs text-gray-400">
@@ -316,7 +316,7 @@ export default function AdminChatsPage() {
                                                         <div key={msg.id} className={`flex ${isAgency ? 'justify-start' : 'justify-end'} group`}>
                                                             <div className={`max-w-[80%] rounded-2xl p-0 shadow-sm text-sm relative transition-all ${isAgency
                                                                     ? 'bg-white border border-indigo-100 text-gray-800 rounded-tl-none'
-                                                                    : 'bg-indigo-600 text-white rounded-tr-none'
+                                                                    : 'bg-slate-900 text-white rounded-tr-none'
                                                                 } ${isEditing ? 'w-full max-w-[90%] border-orange-300 ring-2 ring-orange-100 bg-white' : ''}`}>
 
                                                                 {/* Header in Bubble */}
@@ -356,7 +356,7 @@ export default function AdminChatsPage() {
                                                                     <div className={`absolute opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 -top-3 ${isAgency ? '-right-2' : '-left-2'} bg-white shadow-md rounded-md p-0.5 border`}>
                                                                         <button
                                                                             onClick={() => handleStartEdit(msg)}
-                                                                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600"
+                                                                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-amber-500"
                                                                             title="Modifier"
                                                                         >
                                                                             <Pencil className="h-3 w-3" />

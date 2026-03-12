@@ -60,7 +60,7 @@ export default function AdminLogin() {
             <div className="w-full max-w-md">
                 <Card className="shadow-2xl border-gray-800 bg-gray-800/50 backdrop-blur-xl text-white">
                     <CardHeader className="space-y-1 text-center pb-6">
-                        <div className="mx-auto h-16 w-16 rounded-2xl bg-indigo-600 flex items-center justify-center mb-4 shadow-lg ring-4 ring-indigo-500/20">
+                        <div className="mx-auto h-16 w-16 rounded-2xl bg-slate-900 flex items-center justify-center mb-4 shadow-lg ring-4 ring-indigo-500/20">
                             <ShieldCheck className="h-8 w-8 text-white" />
                         </div>
                         <CardTitle className="text-2xl font-bold text-white">
@@ -111,7 +111,7 @@ export default function AdminLogin() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white transition-all font-medium"
+                                className="w-full h-11 bg-slate-900 hover:bg-indigo-700 text-white transition-all font-medium"
                             >
                                 {loading ? 'Connexion...' : 'Accéder au panel'}
                                 {!loading && <ArrowRight className="ml-2 h-4 w-4" />}

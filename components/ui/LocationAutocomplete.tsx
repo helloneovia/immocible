@@ -123,7 +123,7 @@ export function LocationAutocomplete({
 
             {loading && (
                 <div className="absolute right-3 top-3">
-                    <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="h-5 w-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
                 </div>
             )}
         </div>

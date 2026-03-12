@@ -106,7 +106,7 @@ export default async function AdminUsersPage({
                                     {format(new Date(user.createdAt), 'dd MMM yyyy', { locale: fr })}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <Link href={`/admin/users/${user.id}`} className="text-indigo-600 hover:underline text-sm font-medium">
+                                    <Link href={`/admin/users/${user.id}`} className="text-amber-500 hover:underline text-sm font-medium">
                                         Gérer
                                     </Link>
                                 </TableCell>

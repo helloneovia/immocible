@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
@@ -48,7 +50,7 @@ export async function GET(request: NextRequest) {
     for (const recherche of recherches) {
       for (const bien of biens) {
         const matchResult = calculateMatchScore(recherche, bien)
-        
+
         if (matchResult.score > 0) {
           // Check if match already exists
           const existingMatch = await prisma.match.findUnique({

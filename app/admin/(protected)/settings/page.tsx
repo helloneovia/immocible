@@ -200,11 +200,11 @@ export default function AdminSettingsPage() {
                                         key={item.id}
                                         onClick={() => setActiveTab(item.id as TabType)}
                                         className={`w-full text-left p-3 rounded-xl transition-all duration-200 group flex items-start gap-4 ${isActive
-                                            ? 'bg-indigo-600 shadow-md shadow-indigo-200'
+                                            ? 'bg-slate-900 shadow-md shadow-indigo-200'
                                             : 'bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900'
                                             }`}
                                     >
-                                        <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-indigo-600'}`}>
+                                        <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500 group-hover:bg-white group-hover:text-amber-500'}`}>
                                             <Icon className="h-5 w-5" />
                                         </div>
                                         <div>
@@ -259,7 +259,7 @@ export default function AdminSettingsPage() {
                                         <div className="h-10 w-10 rounded-full bg-indigo-50 flex items-center justify-center">
                                             {(() => {
                                                 const Icon = menuItems.find(i => i.id === activeTab)?.icon || Settings2
-                                                return <Icon className="h-5 w-5 text-indigo-600" />
+                                                return <Icon className="h-5 w-5 text-amber-500" />
                                             })()}
                                         </div>
                                     </div>
@@ -303,7 +303,7 @@ export default function AdminSettingsPage() {
                             <Button
                                 onClick={saveSettings}
                                 disabled={loading}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[150px] shadow-lg shadow-indigo-200"
+                                className="bg-slate-900 hover:bg-indigo-700 text-white min-w-[150px] shadow-lg shadow-indigo-200"
                             >
                                 {loading ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                                 Sauvegarder

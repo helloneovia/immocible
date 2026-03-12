@@ -145,7 +145,7 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                                     className={cn(
                                         "flex w-max max-w-[80%] flex-col gap-1 rounded-2xl px-4 py-2.5 text-sm shadow-sm",
                                         isMe
-                                            ? "ml-auto bg-blue-600 text-white rounded-br-none"
+                                            ? "ml-auto bg-slate-900 text-white rounded-br-none"
                                             : "bg-white border text-gray-900 rounded-bl-none"
                                     )}
                                 >
@@ -171,7 +171,7 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                         className="flex-1"
                         disabled={sending}
                     />
-                    <Button type="submit" disabled={sending || !newMessage.trim()} size="icon" className="bg-blue-600 hover:bg-blue-700">
+                    <Button type="submit" disabled={sending || !newMessage.trim()} size="icon" className="bg-slate-900 hover:bg-blue-700">
                         {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                         <span className="sr-only">Envoyer</span>
                     </Button>

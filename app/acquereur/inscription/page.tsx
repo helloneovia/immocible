@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Home, ArrowRight, Sparkles, CheckCircle2, Shield, AlertCircle } from 'lucide-react'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function InscriptionAcquereur() {
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const router = useRouter()
+  const { refreshUser } = useAuth()
   const [step, setStep] = useState(1)
   const [otp, setOtp] = useState('')
   const [email, setEmail] = useState('')
@@ -88,6 +90,7 @@ export default function InscriptionAcquereur() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
+      await refreshUser()
       router.refresh()
       router.push('/acquereur/questionnaire')
     } catch (err: any) {

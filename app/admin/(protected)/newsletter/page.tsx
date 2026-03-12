@@ -105,7 +105,7 @@ export default function NewsletterPage() {
                         <h1 className="text-3xl font-bold text-gray-900">Newsletter</h1>
                         <p className="text-gray-500 mt-1">Gérez vos campagnes d'emails et communications.</p>
                     </div>
-                    <Button onClick={() => setShowModal(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
+                    <Button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
                         <Plus className="mr-2 h-4 w-4" />
                         Nouvelle Campagne
                     </Button>
@@ -134,7 +134,7 @@ export default function NewsletterPage() {
                                                 <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {news.targetRole === 'ALL' ? 'Tous' : news.targetRole}</span>
                                                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(news.createdAt).toLocaleDateString()}</span>
                                                 {news.scheduledAt && (
-                                                    <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full text-xs font-medium">
+                                                    <span className="flex items-center gap-1 text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full text-xs font-medium">
                                                         <Clock className="h-3 w-3" /> Prévu le {new Date(news.scheduledAt).toLocaleDateString()} à {new Date(news.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 )}
@@ -147,12 +147,12 @@ export default function NewsletterPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {news.status === 'DRAFT' && (
-                                                <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                                <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-slate-900 hover:bg-indigo-700 text-white">
                                                     <Send className="h-3 w-3 mr-1" /> Envoyer maintenant
                                                 </Button>
                                             )}
                                             {news.status === 'SCHEDULED' && (
-                                                <Button size="sm" variant="outline" disabled className="text-blue-600 border-blue-200 bg-blue-50">
+                                                <Button size="sm" variant="outline" disabled className="text-amber-500 border-blue-200 bg-amber-50">
                                                     En attente
                                                 </Button>
                                             )}
@@ -225,7 +225,7 @@ export default function NewsletterPage() {
 
                                 <div className="pt-4 flex justify-end gap-3">
                                     <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Annuler</Button>
-                                    <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                                    <Button type="submit" disabled={submitting} className="bg-slate-900 hover:bg-indigo-700 text-white">
                                         {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         {formData.scheduledAt ? 'Planifier' : 'Enregistrer le brouillon'}
                                     </Button>

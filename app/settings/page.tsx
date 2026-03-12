@@ -167,7 +167,7 @@ function SettingsContent() {
     }
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>
+        return <div className="min-h-screen flex items-center justify-center bg-gray-50"><Loader2 className="h-8 w-8 animate-spin text-amber-500" /></div>
     }
 
     const backLink = role === 'agence' ? '/agence/dashboard' : (role === 'admin' ? '/admin/dashboard' : '/acquereur/dashboard')
@@ -374,7 +374,7 @@ function SettingsContent() {
 
                         </CardContent>
                         <CardFooter className="flex justify-end bg-gray-50/50 p-6">
-                            <Button type="submit" disabled={saving} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+                            <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-blue-700 w-full sm:w-auto">
                                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Enregistrer les modifications
                             </Button>

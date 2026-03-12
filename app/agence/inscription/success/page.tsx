@@ -45,7 +45,7 @@ export default function PaymentSuccess() {
             <Card className="w-full max-w-md text-center shadow-lg">
                 <CardHeader>
                     <div className="mx-auto mb-4">
-                        {status === 'loading' && <Loader2 className="h-16 w-16 text-indigo-600 animate-spin" />}
+                        {status === 'loading' && <Loader2 className="h-16 w-16 text-amber-500 animate-spin" />}
                         {status === 'success' && <CheckCircle2 className="h-16 w-16 text-green-500" />}
                         {status === 'error' && <XCircle className="h-16 w-16 text-red-500" />}
                     </div>

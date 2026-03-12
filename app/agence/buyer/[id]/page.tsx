@@ -149,7 +149,7 @@ function BuyerProfileContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* Requirements Card */}
                     <Card className="border-none shadow-lg bg-white overflow-hidden">
-                        <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
+                        <CardHeader className="bg-slate-900 text-white p-6">
                             <CardTitle className="text-2xl flex items-center gap-2">
                                 <Home className="h-6 w-6" />
                                 Critères de recherche
@@ -192,7 +192,7 @@ function BuyerProfileContent() {
 
                             <div className="space-y-4">
                                 <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="mt-1 bg-blue-100 p-2 rounded-full text-blue-600">
+                                    <div className="mt-1 bg-blue-100 p-2 rounded-full text-amber-500">
                                         <Home className="h-4 w-4" />
                                     </div>
                                     <div>
@@ -278,7 +278,7 @@ function BuyerProfileContent() {
 
                                 {/* Project Urgency Section */}
                                 <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="mt-1 bg-indigo-100 p-2 rounded-full text-indigo-600">
+                                    <div className="mt-1 bg-indigo-100 p-2 rounded-full text-amber-500">
                                         <Clock className="h-4 w-4" />
                                     </div>
                                     <div>

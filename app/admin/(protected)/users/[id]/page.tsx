@@ -82,7 +82,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                                                     {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: p.currency }).format(p.amount)}
                                                 </td>
                                                 <td className="py-3 px-4">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 capitalize">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-blue-700 capitalize">
                                                         {p.plan}
                                                     </span>
                                                 </td>

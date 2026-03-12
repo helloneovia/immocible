@@ -17,7 +17,7 @@ export function HomeAboutDialog({ content }: HomeAboutDialogProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <button className="font-semibold text-indigo-600 hover:text-indigo-700 inline-flex items-center text-left">
+                <button className="font-semibold text-amber-500 hover:text-indigo-700 inline-flex items-center text-left">
                     {/* This span makes the parent clickable if parent has relative class */}
                     <span className="absolute inset-0" aria-hidden="true" />
                     En savoir plus <ArrowRight className="inline h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
@@ -25,7 +25,7 @@ export function HomeAboutDialog({ content }: HomeAboutDialogProps) {
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent pb-2 border-b">
+                    <DialogTitle className="text-2xl font-bold bg-slate-900 bg-clip-text text-transparent pb-2 border-b">
                         À propos d&apos;IMMOCIBLE
                     </DialogTitle>
                 </DialogHeader>

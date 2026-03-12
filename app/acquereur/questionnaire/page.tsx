@@ -235,7 +235,7 @@ function QuestionnaireContent() {
                 value={formData.situationFamiliale?.toString() || ''}
                 onValueChange={(value) => updateFormData('situationFamiliale', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Sélectionnez votre situation" />
                 </SelectTrigger>
                 <SelectContent>
@@ -258,7 +258,7 @@ function QuestionnaireContent() {
                 value={formData.nombreEnfants?.toString() || ''}
                 onValueChange={(value) => updateFormData('nombreEnfants', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Nombre d'enfants" />
                 </SelectTrigger>
                 <SelectContent>
@@ -280,7 +280,7 @@ function QuestionnaireContent() {
                 value={formData.situationProfessionnelle?.toString() || ''}
                 onValueChange={(value) => updateFormData('situationProfessionnelle', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Sélectionnez votre situation" />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,7 +306,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 4500"
                   value={formData.salaire}
                   onChange={(e) => updateFormData('salaire', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
               <div className="space-y-2">
@@ -319,7 +319,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 150000"
                   value={formData.patrimoine}
                   onChange={(e) => updateFormData('patrimoine', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
             </div>
@@ -339,7 +339,7 @@ function QuestionnaireContent() {
                     key={type}
                     onClick={() => toggleTypeBien(type.toLowerCase())}
                     className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.typeBien.includes(type.toLowerCase())
-                      ? 'border-blue-600 bg-blue-50'
+                      ? 'border-amber-500 bg-amber-50'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
@@ -365,7 +365,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 50"
                   value={formData.surfaceMin}
                   onChange={(e) => updateFormData('surfaceMin', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
               <div className="space-y-2">
@@ -378,7 +378,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 120"
                   value={formData.surfaceMax}
                   onChange={(e) => updateFormData('surfaceMax', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
             </div>
@@ -393,7 +393,7 @@ function QuestionnaireContent() {
                     key={pieces}
                     onClick={() => toggleNombrePieces(pieces)}
                     className={`flex items-center justify-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.nombrePieces.includes(pieces)
-                      ? 'border-blue-600 bg-blue-50'
+                      ? 'border-amber-500 bg-amber-50'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
@@ -426,7 +426,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 300000"
                   value={formData.budgetMin}
                   onChange={(e) => updateFormData('budgetMin', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
               <div className="space-y-2">
@@ -439,7 +439,7 @@ function QuestionnaireContent() {
                   placeholder="Ex: 600000"
                   value={formData.budgetMax}
                   onChange={(e) => updateFormData('budgetMax', e.target.value)}
-                  className="h-12"
+                  className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
                 />
               </div>
             </div>
@@ -454,7 +454,7 @@ function QuestionnaireContent() {
                 placeholder="Ex: 100000"
                 value={formData.apport}
                 onChange={(e) => updateFormData('apport', e.target.value)}
-                className="h-12"
+                className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
               />
             </div>
 
@@ -467,7 +467,7 @@ function QuestionnaireContent() {
                 value={formData.financement?.toString() || ''}
                 onValueChange={(value) => updateFormData('financement', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Type de financement" />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,7 +490,7 @@ function QuestionnaireContent() {
                   value={formData.dureePret?.toString() || ''}
                   onValueChange={(value) => updateFormData('dureePret', value)}
                 >
-                  <SelectTrigger className="h-12">
+                  <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                     <SelectValue placeholder="Durée du prêt" />
                   </SelectTrigger>
                   <SelectContent>
@@ -588,7 +588,7 @@ function QuestionnaireContent() {
                   key={key}
                   onClick={() => updateFormData(key as keyof QuestionnaireData, !formData[key as keyof QuestionnaireData])}
                   className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData[key as keyof QuestionnaireData]
-                    ? 'border-blue-600 bg-blue-50'
+                    ? 'border-amber-500 bg-amber-50'
                     : 'border-gray-200 hover:border-gray-300'
                     }`}
                 >
@@ -629,7 +629,7 @@ function QuestionnaireContent() {
                 value={formData.delaiRecherche?.toString() || ''}
                 onValueChange={(value) => updateFormData('delaiRecherche', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Délai de recherche" />
                 </SelectTrigger>
                 <SelectContent>
@@ -651,7 +651,7 @@ function QuestionnaireContent() {
                 value={formData.flexibilite?.toString() || ''}
                 onValueChange={(value) => updateFormData('flexibilite', value)}
               >
-                <SelectTrigger className="h-12">
+                <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
                   <SelectValue placeholder="Niveau de flexibilité" />
                 </SelectTrigger>
                 <SelectContent>
@@ -662,8 +662,8 @@ function QuestionnaireContent() {
               </Select>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-900">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl rounded-lg p-4">
+              <p className="text-sm text-slate-800">
                 <strong>💡 Astuce :</strong> Plus vous êtes flexible, plus nous pourrons vous proposer de biens correspondant à votre profil.
               </p>
             </div>
@@ -676,20 +676,20 @@ function QuestionnaireContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-stone-50 relative overflow-hidden flex flex-col items-center">
       {/* Navigation */}
       <Navbar role="acquereur" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="max-w-4xl mx-auto">
-          <Card className="shadow-xl border-2">
+          <Card className="bg-white/95 backdrop-blur-xl shadow-2xl border border-white/30 rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-6">
-              <CardTitle className="text-3xl mb-2">Questionnaire intelligent</CardTitle>
+              <CardTitle className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "\'Playfair Display\', serif" }}>Questionnaire intelligent</CardTitle>
               <CardDescription className="text-base">
                 Créez votre profil en quelques minutes pour recevoir des matches personnalisés
               </CardDescription>
               <div className="mt-6">
-                <Progress value={progress} className="h-3" />
+                <Progress value={progress} className="h-2 bg-slate-100 [&>div]:bg-amber-400" />
                 <p className="text-sm text-muted-foreground mt-2">
                   Étape {currentStep} sur {STEPS.length} - {Math.round(progress)}% complété
                 </p>
@@ -709,21 +709,21 @@ function QuestionnaireContent() {
                       <div className="flex flex-col items-center flex-1">
                         <div
                           className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isActive
-                            ? 'bg-blue-600 text-white scale-110'
+                            ? 'bg-slate-900 text-white scale-110'
                             : isCompleted
-                              ? 'bg-green-500 text-white'
+                              ? 'bg-amber-500 text-white'
                               : 'bg-gray-200 text-gray-500'
                             }`}
                         >
                           <Icon className="h-6 w-6" />
                         </div>
-                        <p className={`text-xs mt-2 text-center font-medium ${isActive ? 'text-blue-600' : 'text-gray-500'
+                        <p className={`text-xs mt-2 text-center font-medium ${isActive ? 'text-amber-500' : 'text-gray-500'
                           }`}>
                           {step.title}
                         </p>
                       </div>
                       {index < STEPS.length - 1 && (
-                        <div className={`h-1 flex-1 mx-2 rounded ${isCompleted ? 'bg-green-500' : 'bg-gray-200'
+                        <div className={`h-1 flex-1 mx-2 rounded ${isCompleted ? 'bg-amber-500' : 'bg-gray-200'
                           }`} />
                       )}
                     </div>
@@ -753,7 +753,7 @@ function QuestionnaireContent() {
                   <Button
                     type="button"
                     onClick={handleNext}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center gap-2"
+                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
                   >
                     Suivant
                     <ArrowRight className="h-4 w-4" />
@@ -762,7 +762,7 @@ function QuestionnaireContent() {
                   <Button
                     type="button"
                     onClick={handleFinalize}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 flex items-center gap-2"
+                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
                   >
                     Finaliser mon profil
                     <CheckCircle2 className="h-4 w-4" />

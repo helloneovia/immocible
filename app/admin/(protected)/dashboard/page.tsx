@@ -85,7 +85,7 @@ export default async function AdminDashboard() {
                 <Link href="/admin/users?role=all" className="block group">
                     <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-indigo-500 h-full">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-indigo-600 transition-colors">Utilisateurs Total</CardTitle>
+                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-amber-500 transition-colors">Utilisateurs Total</CardTitle>
                             <Users className="h-4 w-4 text-indigo-200 group-hover:text-indigo-500 transition-colors" />
                         </CardHeader>
                         <CardContent>
@@ -140,7 +140,7 @@ export default async function AdminDashboard() {
                 <Card className="col-span-1 shadow-sm border bg-white/50 backdrop-blur-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Répartition des Abonnements</CardTitle>
-                        <Button variant="ghost" size="sm" asChild className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-indigo-700 hover:bg-indigo-50">
                             <Link href="/admin/subscriptions">
                                 Voir détails <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
@@ -150,7 +150,7 @@ export default async function AdminDashboard() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:border-indigo-100 transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 ring-4 ring-indigo-50/50">
+                                    <div className="h-12 w-12 bg-indigo-50 rounded-full flex items-center justify-center text-amber-500 ring-4 ring-indigo-50/50">
                                         <CreditCard className="h-6 w-6" />
                                     </div>
                                     <div>
@@ -181,7 +181,7 @@ export default async function AdminDashboard() {
                 <Card className="col-span-1 shadow-sm border bg-white/50 backdrop-blur-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Dernières Transactions</CardTitle>
-                        <Button variant="ghost" size="sm" asChild className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-indigo-700 hover:bg-indigo-50">
                             <Link href="/admin/transactions">
                                 Voir tout <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
