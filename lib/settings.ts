@@ -22,6 +22,10 @@ export interface AppSettings {
     text_trust_free: string
     text_trust_secure: string
 
+    // Buyer Dashboard Search Popup Texts
+    text_buyer_dashboard_popup_title: string
+    text_buyer_dashboard_popup_description: string
+
     // Home Page Texts
     text_home_hero_title_1: string
     text_home_hero_title_highlight: string
@@ -67,6 +71,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
     text_signup_buyer_subtitle: "Commencez votre recherche immobilière en quelques minutes",
     text_trust_free: "100% Gratuit",
     text_trust_secure: "Sécurisé",
+
+    // Buyer Dashboard Search Popup Defaults
+    text_buyer_dashboard_popup_title: "Recherche de biens en cours 🔍",
+    text_buyer_dashboard_popup_description: "Votre profil a bien été enregistré. Nos agences partenaires analysent actuellement vos critères et nous vous contacterons dès qu'une opportunité off-market correspondante sera disponible.",
 
     // Home Page Defaults
     text_home_hero_title_1: "Trouvez votre",

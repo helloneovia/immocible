@@ -9,6 +9,14 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { NotificationBell } from '@/components/ui/NotificationBell'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
   Home,
   Settings,
   LogOut,
@@ -18,10 +26,28 @@ import {
   MessageSquare
 } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
+import { AppSettings } from '@/lib/settings'
 
 function DashboardContent() {
   const { signOut } = useAuth()
   const [profileCompleted, setProfileCompleted] = useState(false)
+  const [settings, setSettings] = useState<AppSettings | null>(null)
+  const [showSearchPopup, setShowSearchPopup] = useState(false)
+
+  useEffect(() => {
+    const fetchDashboardSettings = async () => {
+      try {
+        const response = await fetch('/api/public/settings')
+        if (response.ok) {
+          const data = await response.json()
+          setSettings(data)
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error)
+      }
+    }
+    fetchDashboardSettings()
+  }, [])
 
   useEffect(() => {
     const checkProfileStatus = async () => {
@@ -29,7 +55,16 @@ function DashboardContent() {
         const response = await fetch('/api/acquereur/questionnaire')
         if (response.ok) {
           const { data } = await response.json()
-          if (data) setProfileCompleted(true)
+          if (data) {
+            setProfileCompleted(true)
+
+            // Check if user has already seen the popup in this session
+            const hasSeenPopup = sessionStorage.getItem('hasSeenSearchPopup')
+            if (!hasSeenPopup) {
+              setShowSearchPopup(true)
+              sessionStorage.setItem('hasSeenSearchPopup', 'true')
+            }
+          }
         }
       } catch (error) {
         console.error('Error checking profile status:', error)
@@ -38,9 +73,37 @@ function DashboardContent() {
     checkProfileStatus()
   }, [])
 
+  const popupTitle = settings?.text_buyer_dashboard_popup_title || "Recherche de biens en cours 🔍"
+  const popupDesc = settings?.text_buyer_dashboard_popup_description || "Votre profil a bien été enregistré. Nos agences partenaires analysent actuellement vos critères et nous vous contacterons dès qu'une opportunité off-market correspondante sera disponible."
+
   return (
     <div className="min-h-screen bg-stone-50">
       <Navbar role="acquereur" />
+
+      {/* Modern Search Popup */}
+      <Dialog open={showSearchPopup} onOpenChange={setShowSearchPopup}>
+        <DialogContent className="sm:max-w-md bg-white border-0 shadow-2xl rounded-2xl">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mt-4 mb-2">
+              <Search className="h-8 w-8 text-amber-500 animate-pulse" />
+            </div>
+            <DialogTitle className="text-2xl text-center font-bold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+              {popupTitle}
+            </DialogTitle>
+            <DialogDescription className="text-center text-slate-500 text-base leading-relaxed">
+              {popupDesc}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-center mt-6">
+            <Button
+              onClick={() => setShowSearchPopup(false)}
+              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 px-8 shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+            >
+              C'est compris, merci
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Header */}

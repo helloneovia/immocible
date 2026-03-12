@@ -129,6 +129,21 @@ const DEFAULT_SETTINGS = [
         label: 'Texte Sécurité (Générique)',
         description: 'Texte générique de sécurité.'
     },
+    // Buyer Dashboard Search Popup
+    {
+        key: 'text_buyer_dashboard_popup_title',
+        value: "Recherche de biens en cours 🔍",
+        type: 'string',
+        label: 'Titre Popup Recherche (Acquéreur)',
+        description: 'Titre de la popup affichée sur le tableau de bord acquéreur quand le profil est complété.'
+    },
+    {
+        key: 'text_buyer_dashboard_popup_description',
+        value: "Votre profil a bien été enregistré. Nos agences partenaires analysent actuellement vos critères et nous vous contacterons dès qu'une opportunité off-market correspondante sera disponible.",
+        type: 'string',
+        label: 'Description Popup Recherche (Acquéreur)',
+        description: 'Texte descriptif de la popup affichée sur le tableau de bord acquéreur.'
+    },
     // Home Page
     {
         key: 'text_home_hero_title_1',
