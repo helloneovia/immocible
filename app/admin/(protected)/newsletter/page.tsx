@@ -7,22 +7,31 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
+import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock, BarChart2, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
+import DatePicker, { registerLocale } from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import { fr } from 'date-fns/locale'
+
+registerLocale('fr', fr)
 
 export default function NewsletterPage() {
     const [newsletters, setNewsletters] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [statsData, setStatsData] = useState<Record<string, any>>({})
+    const [loadingStats, setLoadingStats] = useState<Record<string, boolean>>({})
+    const [currentEmail, setCurrentEmail] = useState('')
 
     // Form state
     const [formData, setFormData] = useState({
         subject: '',
         content: '',
         targetRole: 'ALL',
-        scheduledAt: ''
+        scheduledAt: '',
+        additionalEmails: ''
     })
 
     useEffect(() => {
@@ -54,7 +63,7 @@ export default function NewsletterPage() {
             })
             if (res.ok) {
                 setShowModal(false)
-                setFormData({ subject: '', content: '', targetRole: 'ALL', scheduledAt: '' })
+                setFormData({ subject: '', content: '', targetRole: 'ALL', scheduledAt: '', additionalEmails: '' })
                 fetchNewsletters()
                 alert("Newsletter créée avec succès !")
             } else {
@@ -83,6 +92,30 @@ export default function NewsletterPage() {
         } catch (e) {
             console.error(e)
             alert("Erreur de connexion")
+        }
+    }
+
+    const fetchStats = async (id: string) => {
+        if (statsData[id]) {
+            // Toggle off
+            setStatsData((prev) => { const next = {...prev}; delete next[id]; return next; })
+            return;
+        }
+
+        setLoadingStats((prev) => ({ ...prev, [id]: true }))
+        try {
+            const res = await fetch(`/api/admin/newsletter/${id}/stats`)
+            if (res.ok) {
+                const data = await res.json()
+                setStatsData((prev) => ({ ...prev, [id]: data.stats || { empty: true } }))
+            } else {
+                alert("Erreur lors de la récupération des stats")
+            }
+        } catch (e) {
+            console.error(e)
+            alert("Erreur système")
+        } finally {
+            setLoadingStats((prev) => ({ ...prev, [id]: false }))
         }
     }
 
@@ -145,19 +178,55 @@ export default function NewsletterPage() {
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            {news.status === 'DRAFT' && (
-                                                <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-slate-900 hover:bg-indigo-700 text-white">
-                                                    <Send className="h-3 w-3 mr-1" /> Envoyer maintenant
-                                                </Button>
-                                            )}
-                                            {news.status === 'SCHEDULED' && (
-                                                <Button size="sm" variant="outline" disabled className="text-amber-500 border-blue-200 bg-amber-50">
-                                                    En attente
-                                                </Button>
-                                            )}
+                                        <div className="flex flex-col gap-2 items-end">
+                                            <div className="flex items-center gap-2">
+                                                {news.status === 'SENT' && (
+                                                    <Button size="sm" variant="outline" onClick={() => fetchStats(news.id)} className="border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+                                                        {loadingStats[news.id] ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <BarChart2 className="h-3 w-3 mr-1" />}
+                                                        Stats Mailjet
+                                                    </Button>
+                                                )}
+                                                {news.status === 'DRAFT' && (
+                                                    <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-slate-900 hover:bg-indigo-700 text-white">
+                                                        <Send className="h-3 w-3 mr-1" /> Envoyer maintenant
+                                                    </Button>
+                                                )}
+                                                {news.status === 'SCHEDULED' && (
+                                                    <Button size="sm" variant="outline" disabled className="text-amber-500 border-blue-200 bg-amber-50">
+                                                        En attente
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     </CardContent>
+                                    
+                                    {/* Stats Display Panel */}
+                                    {statsData[news.id] && (
+                                        <div className="bg-slate-50 border-t border-gray-100 p-4 px-6 animate-in slide-in-from-top-2 duration-200">
+                                            {statsData[news.id].empty ? (
+                                                <p className="text-sm text-gray-500">Aucune statistique disponible ou en cours de traitement par Mailjet.</p>
+                                            ) : (
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                        <div className="text-xs text-gray-500 mb-1">Délivrés</div>
+                                                        <div className="text-lg font-semibold text-gray-900">{statsData[news.id].deliveredCount || 0} / {statsData[news.id].totalSent || 0}</div>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                        <div className="text-xs text-gray-500 mb-1">Ouvertures</div>
+                                                        <div className="text-lg font-semibold text-blue-600">{statsData[news.id].openedCount || 0}</div>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                        <div className="text-xs text-gray-500 mb-1">Clics</div>
+                                                        <div className="text-lg font-semibold text-indigo-600">{statsData[news.id].clickedCount || 0}</div>
+                                                    </div>
+                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                                        <div className="text-xs text-gray-500 mb-1">Rebonds</div>
+                                                        <div className="text-lg font-semibold text-red-500">{statsData[news.id].bouncedCount || 0}</div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </Card>
                             ))
                         )}
@@ -204,6 +273,64 @@ export default function NewsletterPage() {
                                 </div>
 
                                 <div className="space-y-2">
+                                    <Label>Emails supplémentaires (Facultatif)</Label>
+                                    <div className="flex gap-2">
+                                        <Input
+                                            value={currentEmail}
+                                            onChange={(e) => setCurrentEmail(e.target.value)}
+                                            placeholder="prospect@exemple.com"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    e.preventDefault()
+                                                    if (currentEmail.trim() && currentEmail.includes('@')) {
+                                                        const newEmails = formData.additionalEmails ? `${formData.additionalEmails},${currentEmail.trim()}` : currentEmail.trim()
+                                                        setFormData({ ...formData, additionalEmails: newEmails })
+                                                        setCurrentEmail('')
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <Button 
+                                            type="button" 
+                                            variant="secondary"
+                                            onClick={() => {
+                                                if (currentEmail.trim() && currentEmail.includes('@')) {
+                                                    const newEmails = formData.additionalEmails ? `${formData.additionalEmails},${currentEmail.trim()}` : currentEmail.trim()
+                                                    setFormData({ ...formData, additionalEmails: newEmails })
+                                                    setCurrentEmail('')
+                                                }
+                                            }}
+                                        >
+                                            Ajouter
+                                        </Button>
+                                    </div>
+                                    {formData.additionalEmails && (
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {formData.additionalEmails.split(',').map((email, idx) => {
+                                                const trimmed = email.trim()
+                                                if (!trimmed) return null
+                                                return (
+                                                    <Badge key={idx} variant="secondary" className="flex items-center gap-1.5 py-1 px-2 border border-gray-200">
+                                                        {trimmed}
+                                                        <button 
+                                                            type="button" 
+                                                            className="text-gray-400 hover:text-red-500 rounded-full bg-white p-0.5"
+                                                            onClick={() => {
+                                                                const emailsArray = formData.additionalEmails.split(',').map(e => e.trim()).filter(e => e !== '')
+                                                                emailsArray.splice(idx, 1)
+                                                                setFormData({ ...formData, additionalEmails: emailsArray.join(',') })
+                                                            }}
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                    </Badge>
+                                                )
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
                                     <Label>Contenu</Label>
                                     <RichTextEditor
                                         value={formData.content}
@@ -212,15 +339,23 @@ export default function NewsletterPage() {
                                     />
                                 </div>
 
-                                <div className="space-y-2">
+                                <div className="space-y-2 flex flex-col">
                                     <Label htmlFor="schedule">Planifier (Optionnel)</Label>
-                                    <Input
+                                    <DatePicker
                                         id="schedule"
-                                        type="datetime-local"
-                                        value={formData.scheduledAt}
-                                        onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                                        selected={formData.scheduledAt ? new Date(formData.scheduledAt) : null}
+                                        onChange={(date: Date | null) => setFormData({ ...formData, scheduledAt: date ? date.toISOString() : '' })}
+                                        showTimeSelect
+                                        timeFormat="HH:mm"
+                                        timeIntervals={15}
+                                        timeCaption="Heure"
+                                        dateFormat="dd/MM/yyyy HH:mm"
+                                        locale="fr"
+                                        placeholderText="JJ/MM/AAAA HH:mm"
+                                        isClearable
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     />
-                                    <p className="text-xs text-gray-500">Laissez vide pour enregistrer en brouillon.</p>
+                                    <p className="text-xs text-gray-500 mt-1">Laissez vide pour enregistrer en brouillon.</p>
                                 </div>
 
                                 <div className="pt-4 flex justify-end gap-3">

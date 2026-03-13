@@ -1,8 +1,12 @@
-
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
-import { sendEmail } from '@/lib/mail'
+import Mailjet from 'node-mailjet'
+
+const mailjet = new Mailjet({
+    apiKey: process.env.MAILJET_API_KEY || '',
+    apiSecret: process.env.MAILJET_SECRET_KEY || ''
+})
 
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
@@ -32,22 +36,51 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             select: { email: true }
         })
 
-        console.log(`Sending newsletter to ${recipients.length} users...`)
+        const dbEmails = recipients.map(r => r.email)
+        const additionalEmails = newsletter.additionalEmails || []
+        
+        // Remove duplicates
+        const allEmails = Array.from(new Set([...dbEmails, ...additionalEmails]))
 
-        // Send logic
+        if (allEmails.length === 0) {
+            return NextResponse.json({ error: 'No recipients found' }, { status: 400 })
+        }
+
+        console.log(`Sending newsletter to ${allEmails.length} users...`)
+
+        // Construct simple text copy
+        const textContent = newsletter.content.replace(/<[^>]*>?/gm, '')
+        const senderEmail = process.env.MAILJET_SENDER_EMAIL || "contact@immocible.com"
+
+        const messages = allEmails.map(email => ({
+            From: {
+                Email: senderEmail,
+                Name: "Immocible"
+            },
+            To: [
+                {
+                    Email: email
+                }
+            ],
+            Subject: newsletter.subject,
+            TextPart: textContent,
+            HTMLPart: newsletter.content,
+            CustomCampaign: `Immocible_NL_${newsletter.id}`
+        }))
+
+        // Mailjet v3.1 Send allows max 50 Messages per request
         let sentCount = 0
-        for (const recipient of recipients) {
+        const chunkSize = 50
+
+        for (let i = 0; i < messages.length; i += chunkSize) {
+            const chunk = messages.slice(i, i + chunkSize)
             try {
-                // Wrap in try/catch to continue if one fails
-                const success = await sendEmail({
-                    to: recipient.email,
-                    subject: newsletter.subject,
-                    html: newsletter.content,
-                    text: newsletter.content.replace(/<[^>]*>?/gm, '') // simple strip tags for text version
+                await mailjet.post("send", { version: "v3.1" }).request({
+                    Messages: chunk
                 })
-                if (success) sentCount++
-            } catch (e) {
-                console.error(`Failed to send to ${recipient.email}`, e)
+                sentCount += chunk.length
+            } catch (e: any) {
+                console.error(`Failed to send chunk ${i/chunkSize}`, e.statusCode || e)
             }
         }
 
@@ -61,7 +94,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             }
         })
 
-        return NextResponse.json({ success: true, sentCount })
+        return NextResponse.json({ success: true, sentCount, totalFailed: allEmails.length - sentCount })
     } catch (error) {
         console.error("Error sending newsletter:", error)
         return NextResponse.json({ error: "Internal Error" }, { status: 500 })

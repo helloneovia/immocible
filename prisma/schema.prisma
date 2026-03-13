@@ -345,8 +345,9 @@ model Newsletter {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   
-  
-  error       String?          @db.Text
+  error             String?          @db.Text
+  additionalEmails  String[]         @default([])
+  mailjetCampaignId String?
   
   @@map("newsletters")
 }

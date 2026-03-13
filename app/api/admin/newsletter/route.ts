@@ -28,13 +28,18 @@ export async function POST(req: Request) {
         }
 
         const body = await req.json()
-        const { subject, content, targetRole, scheduledAt } = body
+        const { subject, content, targetRole, scheduledAt, additionalEmails } = body
 
         if (!subject || !content) {
             return NextResponse.json({ error: "Subject and content are required" }, { status: 400 })
         }
 
         const status = scheduledAt ? 'SCHEDULED' : 'DRAFT'
+        
+        let additionalEmailsArray: string[] = []
+        if (additionalEmails) {
+            additionalEmailsArray = additionalEmails.split(',').map((e: string) => e.trim()).filter((e: string) => e !== '')
+        }
 
         const newsletter = await prisma.newsletter.create({
             data: {
@@ -42,6 +47,7 @@ export async function POST(req: Request) {
                 content,
                 targetRole: targetRole || 'ALL',
                 status: status as any,
+                additionalEmails: additionalEmailsArray,
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null
             }
         })
