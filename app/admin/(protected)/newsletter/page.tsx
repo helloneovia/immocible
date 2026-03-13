@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock, BarChart2, X } from 'lucide-react'
+import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock, BarChart2, X, Trash2, Pencil } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import DatePicker, { registerLocale } from 'react-datepicker'
@@ -24,6 +24,7 @@ export default function NewsletterPage() {
     const [statsData, setStatsData] = useState<Record<string, any>>({})
     const [loadingStats, setLoadingStats] = useState<Record<string, boolean>>({})
     const [currentEmail, setCurrentEmail] = useState('')
+    const [editingId, setEditingId] = useState<string | null>(null)
 
     // Form state
     const [formData, setFormData] = useState({
@@ -52,22 +53,59 @@ export default function NewsletterPage() {
         }
     }
 
+    const handleEdit = (news: any) => {
+        setFormData({
+            subject: news.subject,
+            content: news.content,
+            targetRole: news.targetRole,
+            scheduledAt: news.scheduledAt ? new Date(news.scheduledAt).toISOString() : '',
+            additionalEmails: news.additionalEmails && news.additionalEmails.length > 0 ? news.additionalEmails.join(',') : ''
+        })
+        setEditingId(news.id)
+        setShowModal(true)
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Êtes-vous sûr de vouloir supprimer ce brouillon ?")) return;
+        try {
+            const res = await fetch(`/api/admin/newsletter/${id}`, { method: 'DELETE' })
+            if (res.ok) {
+                fetchNewsletters()
+            } else {
+                alert("Erreur lors de la suppression")
+            }
+        } catch (e) {
+            console.error(e)
+            alert("Erreur système")
+        }
+    }
+
+    const submitAction = async (method: string, url: string) => {
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        return res
+    }
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setSubmitting(true)
         try {
-            const res = await fetch('/api/admin/newsletter', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
+            const url = editingId ? `/api/admin/newsletter/${editingId}` : '/api/admin/newsletter'
+            const method = editingId ? 'PUT' : 'POST'
+
+            const res = await submitAction(method, url)
+
             if (res.ok) {
                 setShowModal(false)
                 setFormData({ subject: '', content: '', targetRole: 'ALL', scheduledAt: '', additionalEmails: '' })
+                setEditingId(null)
                 fetchNewsletters()
-                alert("Newsletter créée avec succès !")
+                alert(editingId ? "Newsletter modifiée avec succès !" : "Newsletter créée avec succès !")
             } else {
-                alert("Erreur lors de la création")
+                alert("Erreur lors de l'enregistrement")
             }
         } catch (e) {
             console.error(e)
@@ -138,7 +176,11 @@ export default function NewsletterPage() {
                         <h1 className="text-3xl font-bold text-gray-900">Newsletter</h1>
                         <p className="text-gray-500 mt-1">Gérez vos campagnes d'emails et communications.</p>
                     </div>
-                    <Button onClick={() => setShowModal(true)} className="bg-slate-900 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
+                    <Button onClick={() => {
+                        setEditingId(null);
+                        setFormData({ subject: '', content: '', targetRole: 'ALL', scheduledAt: '', additionalEmails: '' });
+                        setShowModal(true);
+                    }} className="bg-slate-900 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200">
                         <Plus className="mr-2 h-4 w-4" />
                         Nouvelle Campagne
                     </Button>
@@ -193,9 +235,17 @@ export default function NewsletterPage() {
                                                     </Button>
                                                 )}
                                                 {news.status === 'DRAFT' && (
-                                                    <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-slate-900 hover:bg-indigo-700 text-white">
-                                                        <Send className="h-3 w-3 mr-1" /> Envoyer maintenant
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        <Button size="icon" variant="outline" onClick={() => handleEdit(news)} className="h-9 w-9 text-gray-500 hover:text-indigo-600">
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button size="icon" variant="outline" onClick={() => handleDelete(news.id)} className="h-9 w-9 text-gray-500 hover:text-red-600 border-red-100 hover:border-red-200 hover:bg-red-50">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button size="sm" onClick={() => handleSendNow(news.id)} className="bg-slate-900 hover:bg-indigo-700 text-white ml-2">
+                                                            <Send className="h-3 w-3 mr-1" /> Envoyer maintenant
+                                                        </Button>
+                                                    </div>
                                                 )}
                                                 {news.status === 'SCHEDULED' && (
                                                     <Button size="sm" variant="outline" disabled className="text-amber-500 border-blue-200 bg-amber-50">
@@ -245,7 +295,7 @@ export default function NewsletterPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
                     <Card className="w-full max-w-lg shadow-2xl border-0 max-h-[90vh] overflow-y-auto">
                         <CardHeader>
-                            <CardTitle>Nouvelle Newsletter</CardTitle>
+                            <CardTitle>{editingId ? "Modifier le brouillon" : "Nouvelle Newsletter"}</CardTitle>
                             <CardDescription>Configurez votre envoi d'email de masse.</CardDescription>
                         </CardHeader>
                         <CardContent>

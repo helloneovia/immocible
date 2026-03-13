@@ -24,37 +24,41 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         const customCampaignName = `Immocible_NL_${newsletter.id}`
         
-        // 1. Fetch Campaign ID by CustomCampaign name
-        const campaignReq = await mailjet.get('campaign', { version: 'v3' }).request({
-            CustomCampaign: customCampaignName
+        // Fetch all messages for this CustomCampaign
+        const messageReq = await mailjet.get('message', { version: 'v3' }).request({
+            CustomCampaign: customCampaignName,
+            ShowSubject: true,
+            ShowContactAlt: true
         })
-        
-        const campaigns = (campaignReq.body as any).Data || []
-        if (campaigns.length === 0) {
-            return NextResponse.json({ stats: null, message: "No Mailjet campaign found for this newsletter" })
-        }
-        
-        // Take the latest if there are multiple (e.g. sent in chunks might create same or multiple)
-        // Usually CustomCampaign groups them into one campaign ID
-        const campaignId = campaigns[0].ID
 
-        // 2. Fetch Stats
-        const statsReq = await mailjet.get(`statcounters/campaign`, { version: 'v3' }).id(campaignId).request()
+        const messages = (messageReq.body as any).Data || []
         
-        const statsData = (statsReq.body as any).Data || []
-        if (statsData.length === 0) {
-            return NextResponse.json({ stats: null, message: "No stats available yet" })
+        if (messages.length === 0) {
+            return NextResponse.json({ stats: null, message: "No Mailjet data found yet. Please wait a few minutes." })
         }
 
-        const rawStats = statsData[0]
+        let deliveredCount = 0
+        let openedCount = 0
+        let clickedCount = 0
+        let bouncedCount = 0
+        let spamCount = 0
+
+        for (const msg of messages) {
+            const status = msg.Status
+            if (status === 'sent') deliveredCount++
+            else if (status === 'opened') { deliveredCount++; openedCount++ }
+            else if (status === 'clicked') { deliveredCount++; openedCount++; clickedCount++ }
+            else if (status === 'bounced') bouncedCount++
+            else if (status === 'spam') spamCount++
+        }
         
         const stats = {
-            totalSent: rawStats.TotalMessageCount || 0,
-            deliveredCount: rawStats.MessageSentCount || 0,
-            openedCount: rawStats.MessageOpenedCount || 0,
-            clickedCount: rawStats.MessageClickedCount || 0,
-            bouncedCount: rawStats.MessageHardBouncedCount || 0,
-            spamCount: rawStats.MessageSpamCount || 0,
+            totalSent: messages.length,
+            deliveredCount,
+            openedCount,
+            clickedCount,
+            bouncedCount,
+            spamCount,
         }
 
         return NextResponse.json({ stats })
