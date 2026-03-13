@@ -331,6 +331,7 @@ enum NewsletterRole {
   ALL
   ACQUEREUR
   AGENCE
+  ADDITIONAL_ONLY
 }
 
 model Newsletter {

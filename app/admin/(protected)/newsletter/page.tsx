@@ -164,7 +164,13 @@ export default function NewsletterPage() {
                                                 {getStatusBadge(news.status)}
                                             </div>
                                             <div className="text-sm text-gray-500 flex items-center gap-4">
-                                                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {news.targetRole === 'ALL' ? 'Tous' : news.targetRole}</span>
+                                                <span className="flex items-center gap-1"><Users className="h-3 w-3" /> {
+                                                    news.targetRole === 'ALL' ? 'Tous' : 
+                                                    news.targetRole === 'ADDITIONAL_ONLY' ? 'Emails supp.' : 
+                                                    news.targetRole === 'ACQUEREUR' ? 'Acquéreurs' :
+                                                    news.targetRole === 'AGENCE' ? 'Agences' :
+                                                    news.targetRole
+                                                }</span>
                                                 <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(news.createdAt).toLocaleDateString()}</span>
                                                 {news.scheduledAt && (
                                                     <span className="flex items-center gap-1 text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full text-xs font-medium">
@@ -268,6 +274,7 @@ export default function NewsletterPage() {
                                             <SelectItem value="ALL">Tout le monde</SelectItem>
                                             <SelectItem value="AGENCE">Agences uniquement</SelectItem>
                                             <SelectItem value="ACQUEREUR">Acquéreurs uniquement</SelectItem>
+                                            <SelectItem value="ADDITIONAL_ONLY">Emails supplémentaires seulement</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

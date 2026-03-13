@@ -23,18 +23,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         }
 
         // Fetch targets
-        let whereCondition: any = {}
-        if (newsletter.targetRole === 'ACQUEREUR') whereCondition = { role: 'acquereur' }
-        else if (newsletter.targetRole === 'AGENCE') whereCondition = { role: 'agence' }
-        else if (newsletter.targetRole === 'ALL') whereCondition = { role: { in: ['acquereur', 'agence'] } } // Exclude admins
-
-        const recipients = await prisma.user.findMany({
-            where: {
-                ...whereCondition,
-                email: { not: undefined }
-            },
-            select: { email: true }
-        })
+        let recipients: any[] = []
+        if (newsletter.targetRole === 'ACQUEREUR') {
+            recipients = await prisma.user.findMany({ where: { role: 'acquereur', email: { not: undefined } }, select: { email: true } })
+        } else if (newsletter.targetRole === 'AGENCE') {
+            recipients = await prisma.user.findMany({ where: { role: 'agence', email: { not: undefined } }, select: { email: true } })
+        } else if (newsletter.targetRole === 'ALL') {
+            recipients = await prisma.user.findMany({ where: { role: { in: ['acquereur', 'agence'] }, email: { not: undefined } }, select: { email: true } })
+        } // If ADDITIONAL_ONLY, recipients will remain empty and we rely completely on additionalEmails.
 
         const dbEmails = recipients.map(r => r.email)
         const additionalEmails = newsletter.additionalEmails || []
