@@ -221,10 +221,10 @@ function StatBar({ label, count, total }: { label: string, count: number, total:
     return (
         <div className="space-y-1">
             <div className="flex justify-between text-xs sm:text-sm">
-                <span className="font-medium text-gray-700 truncate pr-2" title={cleanLabel}>{cleanLabel}</span>
-                <span className="text-gray-500 shrink-0 font-mono">{percentage}% ({count})</span>
+                <span className="font-medium text-slate-700 truncate pr-2" title={cleanLabel}>{cleanLabel}</span>
+                <span className="text-slate-500 shrink-0 font-mono">{percentage}% ({count})</span>
             </div>
-            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                 <div
                     className="h-full bg-amber-500 rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
@@ -238,140 +238,148 @@ export default async function AdminDashboard() {
     const stats = await getStats()
 
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <div className="space-y-8 font-sans">
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
 
             {/* Overview Cards with Links */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <Link href="/admin/users?role=all" className="block group">
-                    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-indigo-500 h-full">
+                    <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-slate-800 h-full rounded-2xl overflow-hidden group-hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-amber-500 transition-colors">Utilisateurs Total</CardTitle>
-                            <Users className="h-4 w-4 text-indigo-200 group-hover:text-indigo-500 transition-colors" />
+                            <CardTitle className="text-sm font-medium text-slate-500 group-hover:text-amber-500 transition-colors">Utilisateurs Total</CardTitle>
+                            <div className="h-8 w-8 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-amber-50 transition-colors">
+                                <Users className="h-4 w-4 text-slate-400 group-hover:text-amber-500 transition-colors" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900">{stats.totalUsers}</div>
-                            <p className="text-xs text-gray-500 mt-1">{stats.acquereurs} Acquéreurs, {stats.agences} Agences</p>
+                            <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.totalUsers}</div>
+                            <p className="text-xs text-slate-500 mt-1 font-medium">{stats.acquereurs} Acquéreurs, {stats.agences} Agences</p>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link href="/admin/subscriptions" className="block group">
-                    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-purple-500 h-full">
+                    <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-amber-500 h-full rounded-2xl overflow-hidden group-hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-purple-600 transition-colors">Abonnements Actifs</CardTitle>
-                            <Building2 className="h-4 w-4 text-purple-200 group-hover:text-purple-500 transition-colors" />
+                            <CardTitle className="text-sm font-medium text-slate-500 group-hover:text-amber-600 transition-colors">Abonnements Actifs</CardTitle>
+                            <div className="h-8 w-8 bg-amber-50 rounded-full flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                                <Building2 className="h-4 w-4 text-amber-500 group-hover:text-amber-600 transition-colors" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900">{stats.monthlyActive + stats.yearlyActive}</div>
-                            <p className="text-xs text-gray-500 mt-1">Agences souscrites</p>
+                            <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.monthlyActive + stats.yearlyActive}</div>
+                            <p className="text-xs text-slate-500 mt-1 font-medium">Agences souscrites</p>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link href="/admin/transactions" className="block group">
-                    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-emerald-500 h-full">
+                    <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-emerald-500 h-full rounded-2xl overflow-hidden group-hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-emerald-600 transition-colors">MRR (Revenu Récurrent)</CardTitle>
-                            <TrendingUp className="h-4 w-4 text-emerald-200 group-hover:text-emerald-500 transition-colors" />
+                            <CardTitle className="text-sm font-medium text-slate-500 group-hover:text-emerald-600 transition-colors">MRR (Revenu Récurrent)</CardTitle>
+                            <div className="h-8 w-8 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                                <TrendingUp className="h-4 w-4 text-emerald-500 group-hover:text-emerald-600 transition-colors" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.mrr)}</div>
-                            <p className="text-xs text-gray-500 mt-1">Estimé mensuel</p>
+                            <div className="text-3xl font-bold text-slate-900 tracking-tight">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.mrr)}</div>
+                            <p className="text-xs text-slate-500 mt-1 font-medium">Estimé mensuel</p>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link href="/admin/transactions?type=unlock" className="block group">
-                    <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-amber-500 h-full">
+                    <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-blue-500 h-full rounded-2xl overflow-hidden group-hover:-translate-y-1 bg-white">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-gray-600 group-hover:text-amber-600 transition-colors">Revenu Déblocages</CardTitle>
-                            <CreditCard className="h-4 w-4 text-amber-200 group-hover:text-amber-500 transition-colors" />
+                            <CardTitle className="text-sm font-medium text-slate-500 group-hover:text-blue-600 transition-colors">Revenu Déblocages</CardTitle>
+                            <div className="h-8 w-8 bg-blue-50 rounded-full flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                                <CreditCard className="h-4 w-4 text-blue-500 group-hover:text-blue-600 transition-colors" />
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.unlockRevenue)}</div>
-                            <p className="text-xs text-gray-500 mt-1">Total à vie</p>
+                            <div className="text-3xl font-bold text-slate-900 tracking-tight">{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(stats.unlockRevenue)}</div>
+                            <p className="text-xs text-slate-500 mt-1 font-medium">Total à vie</p>
                         </CardContent>
                     </Card>
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Subscription Breakdown */}
-                <Card className="col-span-1 shadow-sm border bg-white/50 backdrop-blur-sm">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Répartition des Abonnements</CardTitle>
-                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-indigo-700 hover:bg-indigo-50">
+                <Card className="col-span-1 shadow-lg border-slate-200 rounded-2xl bg-white overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50/50 pb-4">
+                        <CardTitle className="text-lg font-semibold text-slate-800 tracking-tight">Répartition des Abonnements</CardTitle>
+                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-amber-600 hover:bg-amber-50/50">
                             <Link href="/admin/subscriptions">
                                 Voir détails <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:border-indigo-100 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-indigo-50 rounded-full flex items-center justify-center text-amber-500 ring-4 ring-indigo-50/50">
+                            <div className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:border-slate-300 transition-all">
+                                <div className="flex items-center gap-5">
+                                    <div className="h-14 w-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-md">
                                         <CreditCard className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-gray-900">Mensuel</div>
-                                        <div className="text-sm text-gray-500">{stats.settings.price_monthly}€ / mois</div>
+                                        <div className="font-bold text-slate-900 text-lg">Mensuel</div>
+                                        <div className="text-sm text-slate-500 font-medium">{stats.settings.price_monthly}€ / mois</div>
                                     </div>
                                 </div>
-                                <div className="text-2xl font-bold text-indigo-900">{stats.monthlyActive}</div>
+                                <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.monthlyActive}</div>
                             </div>
 
-                            <div className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:border-purple-100 transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 ring-4 ring-purple-50/50">
+                            <div className="flex items-center justify-between p-5 bg-white border border-slate-100 rounded-xl shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] hover:border-slate-300 transition-all">
+                                <div className="flex items-center gap-5">
+                                    <div className="h-14 w-14 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-md">
                                         <CreditCard className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-gray-900">Annuel</div>
-                                        <div className="text-sm text-gray-500">{stats.settings.price_yearly}€ / an</div>
+                                        <div className="font-bold text-slate-900 text-lg">Annuel</div>
+                                        <div className="text-sm text-slate-500 font-medium">{stats.settings.price_yearly}€ / an</div>
                                     </div>
                                 </div>
-                                <div className="text-2xl font-bold text-purple-900">{stats.yearlyActive}</div>
+                                <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.yearlyActive}</div>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {/* Recent Transactions */}
-                <Card className="col-span-1 shadow-sm border bg-white/50 backdrop-blur-sm">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Dernières Transactions</CardTitle>
-                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-indigo-700 hover:bg-indigo-50">
+                <Card className="col-span-1 shadow-lg border-slate-200 rounded-2xl bg-white overflow-hidden">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-slate-100 bg-slate-50/50 pb-4">
+                        <CardTitle className="text-lg font-semibold text-slate-800 tracking-tight">Dernières Transactions</CardTitle>
+                        <Button variant="ghost" size="sm" asChild className="text-amber-500 hover:text-amber-600 hover:bg-amber-50/50">
                             <Link href="/admin/transactions">
                                 Voir tout <ArrowRight className="ml-2 h-4 w-4" />
                             </Link>
                         </Button>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-3">
+                    <CardContent className="p-0">
+                        <div className="divide-y divide-slate-100">
                             {stats.recentPayments.length === 0 ? (
-                                <div className="text-center py-10 bg-white rounded-xl border border-dashed text-gray-400">
+                                <div className="text-center py-10 bg-white text-slate-400">
                                     Aucune transaction récente
                                 </div>
                             ) : (
                                 stats.recentPayments.map(payment => (
-                                    <div key={payment.id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100 hover:border-indigo-100 hover:shadow-sm transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`h-10 w-10 number-mono rounded-full flex items-center justify-center text-xs font-bold ${payment.status === 'succeeded' ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-500'}`}>
+                                    <div key={payment.id} className="flex items-center justify-between p-5 bg-white hover:bg-slate-50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`h-12 w-12 rounded-xl flex items-center justify-center font-bold tracking-tight shadow-sm ${payment.status === 'succeeded' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                                                 {payment.currency.toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-medium text-sm text-gray-900">{payment.user.profile?.nomAgence || payment.user.email}</p>
-                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                <p className="font-bold text-sm text-slate-900">{payment.user.profile?.nomAgence || payment.user.email}</p>
+                                                <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mt-1">
                                                     <span>{new Date(payment.createdAt).toLocaleDateString()}</span>
-                                                    <span>•</span>
+                                                    <span className="h-1 w-1 bg-slate-300 rounded-full"></span>
                                                     <span className="capitalize">{payment.plan === 'unlock_contact' ? 'Déblocage' : payment.plan}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="font-bold text-gray-900">
+                                            <p className="font-bold text-slate-900 text-lg">
                                                 +{new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(payment.amount)}
                                             </p>
                                         </div>
@@ -384,42 +392,47 @@ export default async function AdminDashboard() {
             </div>
 
             {/* --- COMPREHENSIVE INTELLIGENCE ACQUEREURS --- */}
-            <div className="mt-12 space-y-8 border-t pt-8">
+            <div className="mt-16 space-y-8 border-t border-slate-200 pt-10">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <PieChart className="h-8 w-8 text-amber-500" />
+                    <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 bg-amber-50 rounded-2xl flex items-center justify-center border border-amber-100/50 shadow-sm">
+                            <PieChart className="h-7 w-7 text-amber-500" />
+                        </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Intelligence Globale Acquéreurs</h2>
-                            <p className="text-gray-500 text-sm mt-1">Analyse détaillée de l'ensemble de la base de données ({stats.questionnaireStats.totalRecherches} recherches actives)</p>
+                            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Intelligence Globale Acquéreurs</h2>
+                            <p className="text-slate-500 font-medium text-sm mt-1">Analyse détaillée de l'ensemble de la base de données ({stats.questionnaireStats.totalRecherches} recherches actives)</p>
                         </div>
                     </div>
                 </div>
 
                 {stats.questionnaireStats.totalRecherches === 0 ? (
-                    <Card className="bg-white/50 backdrop-blur-sm border-dashed">
-                        <CardContent className="py-12 text-center text-muted-foreground">
+                    <Card className="bg-white/50 backdrop-blur-sm border-dashed border-2 rounded-2xl">
+                        <CardContent className="py-16 text-center text-slate-500 font-medium">
                             Aucune donnée de recherche encore disponible.
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
 
                         {/* Row 1: Finances & Budget */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {/* Budget summary block */}
-                            <Card className="shadow-sm border border-amber-100 bg-amber-50/30">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg text-amber-700">
+                            <Card className="shadow-lg border-amber-200 bg-amber-50/50 rounded-2xl overflow-hidden relative">
+                                <div className="absolute top-0 right-0 p-4 opacity-5">
+                                    <Euro className="h-24 w-24 text-amber-900" />
+                                </div>
+                                <CardHeader className="pb-2 relative z-10">
+                                    <CardTitle className="flex items-center gap-2 text-lg text-amber-800 tracking-tight font-bold">
                                         <Euro className="h-5 w-5" /> Budgets
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="text-3xl font-bold text-gray-900 mt-2">
+                                <CardContent className="relative z-10">
+                                    <div className="text-4xl font-bold text-slate-900 mt-2 tracking-tight">
                                         {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(stats.questionnaireStats.avgBudget)}
                                     </div>
-                                    <p className="text-sm text-gray-500 mt-1">Budget moyen maximum</p>
-                                    <div className="mt-4 pt-4 border-t border-amber-100 space-y-3">
-                                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Sources de Financement</h4>
+                                    <p className="text-sm font-medium text-amber-700/80 mt-1">Budget moyen maximum</p>
+                                    <div className="mt-6 pt-5 border-t border-amber-200/50 space-y-4">
+                                        <h4 className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-3">Sources de Financement</h4>
                                         {stats.questionnaireStats.topFinancements.map(([fin, count]) => (
                                             <StatBar key={fin} label={fin} count={count} total={stats.questionnaireStats.totalRecherches} />
                                         ))}
@@ -427,42 +440,42 @@ export default async function AdminDashboard() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-md">
-                                        <Banknote className="h-4 w-4 text-emerald-600" /> Salaires
+                                    <CardTitle className="flex items-center gap-2 text-md font-bold text-slate-800">
+                                        <Banknote className="h-5 w-5 text-slate-400" /> Salaires
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3 mt-2">
+                                <CardContent className="space-y-4 mt-2">
                                     {stats.questionnaireStats.topSalaires.length > 0
                                         ? stats.questionnaireStats.topSalaires.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                        : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                 </CardContent>
                             </Card>
 
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-md">
-                                        <Wallet className="h-4 w-4 text-purple-600" /> Apports Personnels
+                                    <CardTitle className="flex items-center gap-2 text-md font-bold text-slate-800">
+                                        <Wallet className="h-5 w-5 text-slate-400" /> Apports Personnels
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3 mt-2">
+                                <CardContent className="space-y-4 mt-2">
                                     {stats.questionnaireStats.topApports.length > 0
                                         ? stats.questionnaireStats.topApports.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                        : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                 </CardContent>
                             </Card>
 
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-md">
-                                        <Building2 className="h-4 w-4 text-indigo-600" /> Patrimoine
+                                    <CardTitle className="flex items-center gap-2 text-md font-bold text-slate-800">
+                                        <Building2 className="h-5 w-5 text-slate-400" /> Patrimoine
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-3 mt-2">
+                                <CardContent className="space-y-4 mt-2">
                                     {stats.questionnaireStats.topPatrimoines.length > 0
                                         ? stats.questionnaireStats.topPatrimoines.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                        : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                        : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                 </CardContent>
                             </Card>
                         </div>
@@ -471,61 +484,61 @@ export default async function AdminDashboard() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                             {/* Démographie */}
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl h-full">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <Users className="h-5 w-5 text-blue-500" />
+                                    <CardTitle className="flex items-center gap-3 text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">
+                                        <span className="p-2 bg-slate-50 rounded-lg"><Users className="h-5 w-5 text-slate-600" /></span>
                                         Profils Démographiques
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6 mt-2">
+                                <CardContent className="space-y-8 mt-2 pt-2">
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <Heart className="h-4 w-4 text-rose-500" /> Situation Familiale
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <Heart className="h-4 w-4 text-amber-500" /> Situation Familiale
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topSituationsFam.length > 0
                                                 ? stats.questionnaireStats.topSituationsFam.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                                : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <Briefcase className="h-4 w-4 text-blue-700" /> Profession
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <Briefcase className="h-4 w-4 text-slate-500" /> Profession
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topSituationsPro.length > 0
                                                 ? stats.questionnaireStats.topSituationsPro.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                                : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
                             {/* Core Search Criteria */}
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl h-full">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <Home className="h-5 w-5 text-indigo-500" />
+                                    <CardTitle className="flex items-center gap-3 text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">
+                                        <span className="p-2 bg-slate-50 rounded-lg"><Home className="h-5 w-5 text-slate-600" /></span>
                                         Critères Phares
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6 mt-2">
+                                <CardContent className="space-y-8 mt-2 pt-2">
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <Building2 className="h-4 w-4 text-gray-500" /> Types de Biens
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <Building2 className="h-4 w-4 text-amber-500" /> Types de Biens
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topTypesBien.map(([type, count]) => (
                                                 <StatBar key={type} label={type} count={count} total={stats.questionnaireStats.totalRecherches} />
                                             ))}
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <MapPin className="h-4 w-4 text-emerald-500" /> Localisations
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <MapPin className="h-4 w-4 text-slate-500" /> Localisations
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topLocalisations.map(([loc, count]) => (
                                                 <StatBar key={loc} label={loc} count={count} total={stats.questionnaireStats.totalRecherches} />
                                             ))}
@@ -535,19 +548,19 @@ export default async function AdminDashboard() {
                             </Card>
 
                             {/* Features & Urgency */}
-                            <Card className="shadow-sm border bg-white/50 backdrop-blur-sm h-full">
+                            <Card className="shadow-md border-slate-200 bg-white rounded-2xl h-full">
                                 <CardHeader className="pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                        <HelpCircle className="h-5 w-5 text-slate-500" />
+                                    <CardTitle className="flex items-center gap-3 text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">
+                                        <span className="p-2 bg-slate-50 rounded-lg"><HelpCircle className="h-5 w-5 text-slate-600" /></span>
                                         Besoins Spécifiques
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-6 mt-2">
+                                <CardContent className="space-y-8 mt-2 pt-2">
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <Car className="h-4 w-4 text-gray-500" /> Prestations
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <Car className="h-4 w-4 text-amber-500" /> Prestations
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topFeatures
                                                 .filter(([_, count]) => count > 0)
                                                 .map(([feat, count]) => (
@@ -556,13 +569,13 @@ export default async function AdminDashboard() {
                                         </div>
                                     </div>
                                     <div>
-                                        <h4 className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                                            <Clock className="h-4 w-4 text-orange-500" /> Urgence de la recherche
+                                        <h4 className="flex items-center gap-2 text-sm font-bold text-slate-800 tracking-tight mb-4">
+                                            <Clock className="h-4 w-4 text-slate-500" /> Urgence de la recherche
                                         </h4>
-                                        <div className="space-y-3">
+                                        <div className="space-y-4">
                                             {stats.questionnaireStats.topDelais.length > 0
                                                 ? stats.questionnaireStats.topDelais.map(([val, count]) => <StatBar key={val} label={val} count={count} total={stats.questionnaireStats.totalRecherches} />)
-                                                : <p className="text-sm text-gray-400">Non renseigné</p>}
+                                                : <p className="text-sm font-medium text-slate-400">Non renseigné</p>}
                                         </div>
                                     </div>
                                 </CardContent>
