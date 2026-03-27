@@ -8,8 +8,10 @@ export default async function AdminUsersPage({
 }: {
     searchParams: { [key: string]: string | string[] | undefined }
 }) {
+    const ALLOWED_LIMITS = [50, 100, 200, 500]
     const page = Number(searchParams?.page ?? '1')
-    const limit = 10
+    const rawLimit = Number(searchParams?.limit ?? '50')
+    const limit = ALLOWED_LIMITS.includes(rawLimit) ? rawLimit : 50
     const skip = (page - 1) * limit
 
     const [users, totalCount] = await Promise.all([
