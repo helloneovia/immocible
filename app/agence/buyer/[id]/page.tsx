@@ -130,8 +130,20 @@ function BuyerProfileContent() {
         )
     }
 
-    const { search, profile, unlocked, price } = buyerData
-
+    const { profile, unlocked, price } = buyerData
+    let { search } = buyerData
+    
+    // Parse caracteristiques if stringified JSON
+    if (search && typeof search.caracteristiques === 'string') {
+        try {
+            search = {
+                ...search,
+                caracteristiques: JSON.parse(search.caracteristiques)
+            }
+        } catch (e) {
+            console.error('Failed to parse caracteristiques', e)
+        }
+    }
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar role="agence" />
@@ -184,7 +196,9 @@ function BuyerProfileContent() {
                                         <span className="text-sm font-medium">Pièces</span>
                                     </div>
                                     <p className="text-lg font-bold text-gray-900">
-                                        {search?.nombrePieces || 'Non spécifié'}
+                                        {search?.nombrePieces && search.nombrePieces.length > 0 
+                                            ? search.nombrePieces.join(', ') 
+                                            : 'Non spécifié'}
                                     </p>
                                 </div>
 

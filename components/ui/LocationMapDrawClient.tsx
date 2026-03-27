@@ -273,9 +273,11 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnl
 
   return (
     <div className="space-y-2">
-      <p className="text-sm text-gray-600">
-        Dessinez une zone sur la carte (cliquez pour placer les points, fermez le polygone pour valider). Idéal pour des quartiers ou rues précis.
-      </p>
+      {!readOnly && (
+        <p className="text-sm text-gray-600">
+          Dessinez une zone sur la carte (cliquez pour placer les points, fermez le polygone pour valider). Idéal pour des quartiers ou rues précis.
+        </p>
+      )}
       <div className="relative rounded-lg overflow-hidden border border-gray-200" style={{ height }}>
         <MapContainer
           center={[46.603354, 1.888334]}
