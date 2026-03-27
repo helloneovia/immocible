@@ -287,6 +287,13 @@ function BuyerProfileContent() {
                                                 : <span className="text-gray-500 italic">Aucun critère spécifique</span>
                                             }
                                         </div>
+                                        {/* Commentaires libres */}
+                                        {search?.caracteristiques?.commentaires && (
+                                            <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-100">
+                                                <p className="text-xs font-medium text-gray-500 uppercase mb-1">Commentaires</p>
+                                                <p className="text-sm text-gray-800 italic">&ldquo;{search.caracteristiques.commentaires}&rdquo;</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
