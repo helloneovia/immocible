@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Loader2, User, Key, Mail, Phone, Building, Crown, Cred
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
+import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
 
 function SettingsContent() {
@@ -21,6 +22,7 @@ function SettingsContent() {
     const [role, setRole] = useState('')
     const [couponCode, setCouponCode] = useState('')
     const [applyingCoupon, setApplyingCoupon] = useState(false)
+    const [isCheckingOut, setIsCheckingOut] = useState(false)
     const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
 
     const [formData, setFormData] = useState({
@@ -37,6 +39,7 @@ function SettingsContent() {
     const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null)
 
     const handleUpgrade = async () => {
+        setIsCheckingOut(true)
         try {
             const response = await fetch('/api/payment/create-checkout-session', {
                 method: 'POST',
@@ -44,20 +47,23 @@ function SettingsContent() {
                 body: JSON.stringify({
                     email: formData.email,
                     plan: 'yearly',
-                    nomAgence: formData.nomAgence || 'Agence'
+                    nomAgence: formData.nomAgence || 'Agence',
+                    returnUrl: window.location.origin + '/settings'
                 })
             })
 
             const data = await response.json()
 
-            if (response.ok && data.url) {
-                window.location.href = data.url
+            if (response.ok && data.clientSecret) {
+                window.location.href = '/agence/paiement?client_secret=' + data.clientSecret
             } else {
                 alert("Erreur lors de l'initialisation du paiement.")
+                setIsCheckingOut(false)
             }
         } catch (error) {
             console.error("Payment init error", error)
             alert("Erreur de connexion.")
+            setIsCheckingOut(false)
         }
     }
 
@@ -72,7 +78,8 @@ function SettingsContent() {
                     email: formData.email,
                     plan: 'yearly', // Coupon applies to yearly upgrade by default in this context
                     nomAgence: formData.nomAgence || 'Agence',
-                    couponCode
+                    couponCode,
+                    returnUrl: window.location.origin + '/settings'
                 })
             })
 
@@ -81,8 +88,9 @@ function SettingsContent() {
             if (response.ok && data.success) {
                 alert(data.message || "Coupon appliqué avec succès !")
                 window.location.reload()
-            } else if (response.ok && data.url) {
-                window.location.href = data.url
+            } else if (response.ok && data.clientSecret) {
+                setIsCheckingOut(true)
+                window.location.href = '/agence/paiement?client_secret=' + data.clientSecret
             } else {
                 alert(data.error || "Code promo invalide")
             }
@@ -174,6 +182,7 @@ function SettingsContent() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <SecurePaymentOverlay isVisible={isCheckingOut} />
             {/* Navigation */}
             <Navbar role={role as any} />
 

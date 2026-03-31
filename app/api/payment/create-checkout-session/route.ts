@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
         }
 
         const stripe = new Stripe(settings.stripe_secret_key, {
-            apiVersion: '2023-10-16',
+            apiVersion: '2023-10-16' as any,
         })
 
         const PLANS = {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { email, plan, nomAgence } = body
+        const { email, plan, nomAgence, returnUrl: payloadReturnUrl } = body
 
         if (!email || !plan) {
             return NextResponse.json(
@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
         const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
         const host = request.headers.get('host') || 'localhost:3000'
         const baseUrl = `${protocol}://${host}`
+        const returnUrlBase = payloadReturnUrl || `${baseUrl}/agence/inscription/success`
 
         const session = await stripe.checkout.sessions.create({
             discounts: stripeDiscounts.length > 0 ? stripeDiscounts : undefined,
@@ -160,8 +161,8 @@ export async function POST(request: NextRequest) {
                 },
             ],
             mode: 'payment',
-            success_url: `${baseUrl}/agence/inscription/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${baseUrl}/agence/inscription`,
+            ui_mode: 'embedded',
+            return_url: `${returnUrlBase}?session_id={CHECKOUT_SESSION_ID}`,
             customer_email: email,
             metadata: {
                 email,
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        return NextResponse.json({ url: session.url })
+        return NextResponse.json({ clientSecret: session.client_secret })
     } catch (error: any) {
         console.error('Stripe error:', error)
         return NextResponse.json(

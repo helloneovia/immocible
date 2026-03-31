@@ -42,35 +42,31 @@ export async function PUT(req: Request) {
             return NextResponse.json({ error: 'Invalid data format' }, { status: 400 })
         }
 
-        const results = []
-        for (const update of updates) {
-            const { key, value } = update
-
-            if (!key) {
-                console.error('Missing key in update:', update)
-                continue
-            }
-
-            console.log(`Updating setting: ${key} = ${value}`)
-
-            try {
-                const setting = await prisma.systemSetting.update({
-                    where: { key },
-                    data: { value: String(value) }
+        const results = await Promise.all(
+            updates
+                .filter(update => update.key)
+                .map(async (update) => {
+                    const { key, value } = update
+                    console.log(`Updating setting: ${key} = ${value}`)
+                    try {
+                        return await prisma.systemSetting.update({
+                            where: { key },
+                            data: { value: String(value) }
+                        })
+                    } catch (updateError: any) {
+                        console.error(`Error updating setting ${key}:`, updateError.message)
+                        return null
+                    }
                 })
-                results.push(setting)
-            } catch (updateError: any) {
-                console.error(`Error updating setting ${key}:`, updateError.message)
-                // Continue with other updates even if one fails
-            }
-        }
+        )
+        const successfulResults = results.filter(Boolean)
 
-        console.log(`Successfully updated ${results.length} settings`)
+        console.log(`Successfully updated ${successfulResults.length} settings`)
 
         // Invalidate cache
         revalidateTag('settings')
 
-        return NextResponse.json({ success: true, settings: results })
+        return NextResponse.json({ success: true, settings: successfulResults })
     } catch (error: any) {
         console.error('Error updating settings:', error)
         console.error('Error stack:', error.stack)

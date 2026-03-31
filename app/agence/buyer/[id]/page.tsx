@@ -90,9 +90,9 @@ function BuyerProfileContent() {
             const responseData = await res.json().catch(() => ({}))
 
             if (res.ok) {
-                if (responseData.url) {
-                    // Redirect to Stripe
-                    window.location.href = responseData.url
+                if (responseData.clientSecret) {
+                    // Redirect to Stripe Embedded Checkout
+                    window.location.href = '/agence/paiement?client_secret=' + responseData.clientSecret
                     return
                 }
 

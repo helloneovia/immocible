@@ -62,11 +62,28 @@ export async function POST(request: NextRequest) {
         }
 
         const search = buyer.recherches[0]
-        // Calculate price: Max(1€, prixMax * percentage)
-        // Note: Percentage is like 0.01 (meaning 0.01%). Example: 300,000 * 0.0001 = 30€
-        const priceEur = search?.prixMax
-            ? Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
-            : 1 // Default 1€ if no budget
+        
+        // Calculate price
+        let priceEur = 1 // Default 1€ if no budget
+        if (search?.prixMax) {
+            if (settings.price_unlock_profile_min_budget > 0 && search.prixMax < settings.price_unlock_profile_min_budget) {
+                priceEur = 0 // Free unlock if below minimum budget
+            } else {
+                priceEur = Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
+            }
+        }
+
+        if (priceEur <= 0) {
+            // Free unlock: bypass Stripe
+            await prisma.unlockedProfile.create({
+                data: {
+                    agencyId: currentUser.id,
+                    buyerId: buyerId,
+                    amount: 0
+                }
+            })
+            return NextResponse.json({ success: true, message: 'Contact débloqué gratuitement' })
+        }
 
         const priceCents = Math.round(priceEur * 100)
 
@@ -92,8 +109,8 @@ export async function POST(request: NextRequest) {
                 },
             ],
             mode: 'payment',
-            success_url: `${baseUrl}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${baseUrl}/agence/buyer/${buyerId}`,
+            ui_mode: 'embedded',
+            return_url: `${baseUrl}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
             customer_email: currentUser.email, // Agency email
             metadata: {
                 type: 'unlock_contact',
@@ -102,7 +119,7 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        return NextResponse.json({ url: session.url })
+        return NextResponse.json({ clientSecret: session.client_secret })
 
     } catch (e) {
         console.error('Unlock payment init error', e)

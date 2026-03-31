@@ -25,6 +25,13 @@ const DEFAULT_SETTINGS = [
         description: 'Pourcentage du budget max de l\'acquéreur (ex: 1 = 1%, 0.5 = 0.5%).'
     },
     {
+        key: 'price_unlock_profile_min_budget',
+        value: '0',
+        type: 'number',
+        label: 'Budget Minimum Acquéreur (€)',
+        description: 'Budget minimum requis pour activer le prix de déblocage (sinon gratuit).'
+    },
+    {
         key: 'feature_list_monthly',
         value: JSON.stringify([
             "Accès aux profils acquéreurs",

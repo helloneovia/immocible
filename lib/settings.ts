@@ -6,6 +6,7 @@ export interface AppSettings {
     price_monthly: number
     price_yearly: number
     price_unlock_profile_percentage: number
+    price_unlock_profile_min_budget: number
     feature_list_monthly: string[]
     feature_list_yearly: string[]
     stripe_secret_key: string
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     price_monthly: 29,
     price_yearly: 290,
     price_unlock_profile_percentage: 1, // 1%
+    price_unlock_profile_min_budget: 0, // 0 means apply to all
     feature_list_monthly: [
         "Accès aux profils acquéreurs",
         "Système de matching intelligent",
@@ -113,6 +115,7 @@ export const getAppSettings = async (): Promise<AppSettings> => {
             if (s.key === 'price_monthly') config.price_monthly = parseFloat(s.value)
             if (s.key === 'price_yearly') config.price_yearly = parseFloat(s.value)
             if (s.key === 'price_unlock_profile_percentage') config.price_unlock_profile_percentage = parseFloat(s.value)
+            if (s.key === 'price_unlock_profile_min_budget') config.price_unlock_profile_min_budget = parseFloat(s.value)
             if (s.key === 'feature_list_monthly') {
                 try { config.feature_list_monthly = JSON.parse(s.value) } catch { }
             }

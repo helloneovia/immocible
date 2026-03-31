@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
+import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
 
 function DashboardContent() {
@@ -39,6 +40,7 @@ function DashboardContent() {
 
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ location: '', budgetMin: '', surfaceMin: '', typeBien: 'all' })
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
@@ -92,20 +94,28 @@ function DashboardContent() {
 
   const handleUpgrade = async () => {
     if (!user) return
+    setIsCheckingOut(true)
     try {
       const response = await fetch('/api/payment/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, plan: 'yearly', nomAgence: user.profile?.nomAgence || 'Agence' })
+        body: JSON.stringify({ email: user.email, plan: 'yearly', nomAgence: user.profile?.nomAgence || 'Agence', returnUrl: window.location.origin + '/agence/dashboard' })
       })
       const data = await response.json()
-      if (response.ok && data.url) { window.location.href = data.url }
-      else { alert('Erreur lors de l\'initialisation du paiement.') }
-    } catch { alert('Erreur de connexion.') }
+      if (response.ok && data.clientSecret) { window.location.href = '/agence/paiement?client_secret=' + data.clientSecret }
+      else { 
+        alert('Erreur lors de l\'initialisation du paiement.') 
+        setIsCheckingOut(false)
+      }
+    } catch { 
+      alert('Erreur de connexion.') 
+      setIsCheckingOut(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-stone-50">
+      <SecurePaymentOverlay isVisible={isCheckingOut} />
       <Navbar role="agence" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">

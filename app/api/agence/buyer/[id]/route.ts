@@ -50,9 +50,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         // Calculate unlock price (percentage is stored as 0.01 = 0.01%, so divide by 100)
         const settings = await getAppSettings()
-        const price = search?.prixMax
-            ? Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
-            : 0
+        
+        let price = 0
+        if (search?.prixMax) {
+            if (settings.price_unlock_profile_min_budget > 0 && search.prixMax < settings.price_unlock_profile_min_budget) {
+                price = 0 // Free unlock if below minimum budget
+            } else {
+                price = Math.max(1, Math.round(search.prixMax * (settings.price_unlock_profile_percentage / 100)))
+            }
+        }
 
         // Prepare response
         // Prepare response
@@ -66,8 +72,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
                 prenom: buyer.profile?.prenom,
                 ville: buyer.profile?.ville,
                 // Hide sensitive info if locked
-                email: !!unlocked ? buyer.email : '***@***.com',
-                telephone: !!unlocked ? buyer.profile?.telephone : '+33 * ** ** **'
+                email: unlocked !== null ? buyer.email : '***@***.com',
+                telephone: unlocked !== null ? buyer.profile?.telephone : '+33 * ** ** **'
             }
         }
 

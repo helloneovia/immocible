@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Home, ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from 'lucide-react'
+import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
 
 export default function InscriptionAgence() {
@@ -20,6 +21,7 @@ export default function InscriptionAgence() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [plan, setPlan] = useState('monthly')
   const [loading, setLoading] = useState(false)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
 
@@ -88,19 +90,28 @@ export default function InscriptionAgence() {
       const checkoutResponse = await fetch('/api/payment/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, plan, nomAgence, couponCode })
+        body: JSON.stringify({ email, plan, nomAgence, couponCode, returnUrl: window.location.origin + '/agence/inscription/success' })
       })
       const checkoutData = await checkoutResponse.json()
       if (!checkoutResponse.ok) throw new Error(checkoutData.error || 'Erreur lors de l\'initialisation du paiement')
-      if (checkoutData.url) { window.location.href = checkoutData.url } else { throw new Error('Url de paiement invalide') }
+      
+      setIsCheckingOut(true) // Show the secure payment screen before redirecting
+      
+      if (checkoutData.clientSecret) { 
+        window.location.href = '/agence/paiement?client_secret=' + checkoutData.clientSecret
+      } else { 
+        throw new Error('Url de paiement invalide') 
+      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
       setLoading(false)
+      setIsCheckingOut(false)
     }
   }
 
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center py-12">
+      <SecurePaymentOverlay isVisible={isCheckingOut} />
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')" }}
