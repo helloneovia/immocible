@@ -5,28 +5,43 @@ import { TrackingCharts } from './TrackingCharts'
 export const dynamic = 'force-dynamic'
 
 export default async function TrackingPage() {
-    // Analytics gathering
-    const totalVisitors = await prisma.visitorLog.count()
-    const uniqueSessionsRaw = await prisma.visitorLog.groupBy({ by: ['sessionId'] })
-    const uniqueSessions = uniqueSessionsRaw.length
-    
-    // Aggregations
-    const roleStats = await prisma.visitorLog.groupBy({ by: ['role'], _count: { _all: true } })
-    const deviceStats = await prisma.visitorLog.groupBy({ by: ['device'], _count: { _all: true } })
-    const browserStats = await prisma.visitorLog.groupBy({ by: ['browser'], _count: { _all: true }, orderBy: { _count: { id: 'desc' } }, take: 10 })
-    const countryStats = await prisma.visitorLog.groupBy({ by: ['country'], _count: { _all: true }, orderBy: { _count: { id: 'desc' } }, take: 10 })
-    
-    const referrers = await prisma.visitorLog.groupBy({ 
-        by: ['referrer'], 
-        _count: { _all: true }, 
-        orderBy: { _count: { id: 'desc' } }, 
-        take: 15 
-    })
+    let totalVisitors = 0
+    let uniqueSessions = 0
+    let roleData: any[] = []
+    let deviceData: any[] = []
+    let browserData: any[] = []
+    let countryData: any[] = []
+    let referrers: any[] = []
+    let dbError = false
 
-    const roleData = roleStats.map(r => ({ role: r.role || 'Inconnu', count: r._count._all }))
-    const deviceData = deviceStats.map(r => ({ device: r.device || 'Inconnu', count: r._count._all }))
-    const browserData = browserStats.map(r => ({ browser: r.browser || 'Inconnu', count: r._count._all }))
-    const countryData = countryStats.map(r => ({ country: r.country || 'Inconnu', count: r._count._all }))
+    try {
+        // Analytics gathering
+        totalVisitors = await prisma.visitorLog.count()
+        const uniqueSessionsRaw = await prisma.visitorLog.groupBy({ by: ['sessionId'] })
+        uniqueSessions = uniqueSessionsRaw.length
+        
+        // Aggregations
+        const roleStats = await prisma.visitorLog.groupBy({ by: ['role'], _count: { _all: true } })
+        const deviceStats = await prisma.visitorLog.groupBy({ by: ['device'], _count: { _all: true } })
+        const browserStats = await prisma.visitorLog.groupBy({ by: ['browser'], _count: { _all: true }, orderBy: { _count: { id: 'desc' } }, take: 10 })
+        const countryStats = await prisma.visitorLog.groupBy({ by: ['country'], _count: { _all: true }, orderBy: { _count: { id: 'desc' } }, take: 10 })
+        
+        const rawReferrers = await prisma.visitorLog.groupBy({ 
+            by: ['referrer'], 
+            _count: { _all: true }, 
+            orderBy: { _count: { id: 'desc' } }, 
+            take: 15 
+        })
+        referrers = rawReferrers
+
+        roleData = roleStats.map(r => ({ role: r.role || 'Inconnu', count: r._count._all }))
+        deviceData = deviceStats.map(r => ({ device: r.device || 'Inconnu', count: r._count._all }))
+        browserData = browserStats.map(r => ({ browser: r.browser || 'Inconnu', count: r._count._all }))
+        countryData = countryStats.map(r => ({ country: r.country || 'Inconnu', count: r._count._all }))
+    } catch (error) {
+        console.error("Tracking DB Error (Table not found?):", error)
+        dbError = true
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -34,6 +49,17 @@ export default async function TrackingPage() {
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Tracking & Analytics</h1>
                 <p className="text-slate-500 mt-2">Analysez l'origine de vos visiteurs et les statistiques de navigation en temps réel.</p>
             </div>
+
+            {dbError && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-4">
+                    <p className="font-bold">Attention : Base de données non initialisée</p>
+                    <p className="text-sm mt-1">
+                        La table <code>VisitorLog</code> n'a pas encore été créée dans votre base de données Vercel. 
+                        Veuillez exécuter <code>npx prisma db push</code> localement vers votre BDD de production, 
+                        ou ajouter cette commande de migration.
+                    </p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Card className="shadow-sm border-slate-100 bg-white">
