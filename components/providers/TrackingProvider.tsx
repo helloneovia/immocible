@@ -7,21 +7,22 @@ import { useAuth } from '@/contexts/AuthContext'
 export function TrackingProvider() {
     const pathname = usePathname()
     const { user, loading } = useAuth()
-    const [sessionId] = useState(() => {
+    const [sessionId, setSessionId] = useState<string | null>(null)
+
+    useEffect(() => {
         if (typeof window !== 'undefined') {
             let sid = sessionStorage.getItem('immocible_session_id')
             if (!sid) {
                 sid = Math.random().toString(36).substring(2, 15)
                 sessionStorage.setItem('immocible_session_id', sid)
             }
-            return sid
+            setSessionId(sid)
         }
-        return 'ssr'
-    })
+    }, [])
 
     useEffect(() => {
-        if (!loading) return; // Wait, actually it should be `if (loading) return;` Wait, let's look at the logic.
         if (loading) return;
+        if (!sessionId) return; // Wait for session id to be assigned
         if (pathname?.startsWith('/admin')) return; // Don't track admin pages
 
         const trackPageview = async () => {
@@ -37,8 +38,8 @@ export function TrackingProvider() {
                         sessionId,
                         userId: user?.id || null,
                         role: user?.role || 'visitor',
-                    }),
-                    keepalive: true 
+                    })
+                    // Removed keepalive to avoid CORS preflight blocking in Chromium
                 })
             } catch (e) {
                 // Silently ignore tracking errors
