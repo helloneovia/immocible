@@ -101,7 +101,7 @@ export default function AdminSettingsPage() {
 
     // Group settings
     const priceSettings = settings.filter(s => s.key.startsWith('price_')).sort((a, b) => {
-        const order = ['price_monthly', 'price_yearly', 'price_unlock_profile_percentage']
+        const order = ['price_monthly', 'price_yearly', 'price_unlock_profile_percentage', 'price_unlock_profile_min_budget']
         return order.indexOf(a.key) - order.indexOf(b.key)
     })
     const featureSettings = settings.filter(s => s.key.startsWith('feature_'))

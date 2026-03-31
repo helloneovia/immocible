@@ -30,6 +30,7 @@ export async function GET() {
             text_trust_trial: settings.text_trust_trial,
             text_trust_free: settings.text_trust_free,
             text_trust_secure: settings.text_trust_secure,
+            stripe_public_key: settings.stripe_public_key,
             price_monthly: settings.price_monthly,
             price_yearly: settings.price_yearly,
             feature_list_monthly: settings.feature_list_monthly,
