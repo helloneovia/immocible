@@ -17,19 +17,17 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#64748b', // Slate-500 equivalent color
-          borderRadius: '128px',
-          border: '24px solid rgba(255, 255, 255, 0.4)',
+          background: 'transparent',
         }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="256"
-          height="256"
+          width="440"
+          height="440"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="white"
-          strokeWidth="2"
+          stroke="#0f172a"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
