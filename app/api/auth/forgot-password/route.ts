@@ -25,11 +25,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true })
         }
 
-        // Generate reset token (mock)
+        // Generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex')
+        const expires = new Date(Date.now() + 3600 * 1000)
 
-        // Save token to DB (skipped for now as per instructions "add feature", we mock the flow primarily or need to add fields)
-        // For now we just send the email with the token.
+        await prisma.verificationToken.deleteMany({
+            where: { identifier: email }
+        })
+
+        await prisma.verificationToken.create({
+            data: {
+                identifier: email,
+                token: resetToken,
+                expires
+            }
+        })
 
         await sendPasswordResetEmail(email, resetToken)
 
