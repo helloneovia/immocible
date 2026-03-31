@@ -376,3 +376,24 @@ model BotAd {
 
   @@map("bot_ads")
 }
+
+model VisitorLog {
+  id        String   @id @default(uuid())
+  sessionId String?
+  userId    String?
+  role      String?
+  path      String   @db.Text
+  referrer  String?  @db.Text
+  userAgent String?  @db.Text
+  device    String?
+  browser   String?
+  os        String?
+  country   String?
+  ipHash    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+  @@index([role])
+  @@map("visitor_logs")
+}

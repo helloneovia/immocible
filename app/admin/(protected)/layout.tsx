@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings, Mail, MessageSquare, PieChart } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings, Mail, MessageSquare, PieChart, Activity } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
@@ -37,6 +37,10 @@ export default async function AdminLayout({
                     <Link href="/admin/statistiques" className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-300 font-medium group">
                         <PieChart className="h-5 w-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
                         Statistiques
+                    </Link>
+                    <Link href="/admin/tracking" className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-300 font-medium group">
+                        <Activity className="h-5 w-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                        Tracking
                     </Link>
                     <Link href="/admin/users" className="flex items-center gap-3 px-4 py-3 text-slate-300 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-300 font-medium group">
                         <Users className="h-5 w-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
