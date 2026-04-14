@@ -28,6 +28,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/core": "^8.3.0",
     "@faker-js/faker": "^10.3.0",
     "@geoman-io/leaflet-geoman-free": "^2.19.2",
     "@hookform/resolvers": "^5.2.2",

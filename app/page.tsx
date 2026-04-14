@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -21,10 +21,10 @@ export default async function HomePage() {
   const settings = await getAppSettings()
 
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 relative overflow-x-hidden font-sans text-slate-900">
 
       {/* Navigation */}
-      <nav className="absolute top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20">
+      <nav className="absolute top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20 pt-[env(safe-area-inset-top)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">
             <Link href="/" className="flex items-center space-x-3 group">

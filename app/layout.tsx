@@ -3,12 +3,13 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { TrackingProvider } from '@/components/providers/TrackingProvider'
+import { CapacitorHardwareBack } from '@/components/CapacitorHardwareBack'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: "IMMOCIBLE - Le moteur de recherche inverse de l'immobilier",
-  description: 'Plateforme de matching acquÃ©reurs â†" opportunitÃ©s immobiliÃ¨res qualifiÃ©es',
+  description: 'Plateforme de matching acquéreurs → opportunités immobilières qualifiées',
 }
 
 export const dynamic = 'force-dynamic'
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <TrackingProvider />
+          <CapacitorHardwareBack />
           {children}
         </AuthProvider>
       </body>

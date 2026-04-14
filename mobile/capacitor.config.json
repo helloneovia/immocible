@@ -1,0 +1,9 @@
+{
+  "appId": "com.immocible.app",
+  "appName": "immocible-mobile",
+  "webDir": "out",
+  "server": {
+    "url": "https://immocible.com",
+    "cleartext": true
+  }
+}
