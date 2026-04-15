@@ -30,6 +30,10 @@
   "dependencies": {
     "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
     "@faker-js/faker": "^10.3.0",
     "@geoman-io/leaflet-geoman-free": "^2.19.2",
     "@hookform/resolvers": "^5.2.2",
