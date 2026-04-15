@@ -30,8 +30,10 @@
   "dependencies": {
     "@capacitor/app": "^8.1.0",
     "@capacitor/core": "^8.3.0",
+    "@capacitor/geolocation": "^8.2.0",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/network": "^8.0.1",
+    "@capacitor/push-notifications": "^8.0.3",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@faker-js/faker": "^10.3.0",
@@ -58,6 +60,7 @@
     "clsx": "^2.1.0",
     "date-fns": "^3.6.0",
     "dotenv": "^17.2.3",
+    "firebase-admin": "^13.8.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.309.0",
     "next": "14.0.4",

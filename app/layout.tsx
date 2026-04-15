@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { TrackingProvider } from '@/components/providers/TrackingProvider'
 import { CapacitorHardwareBack } from '@/components/CapacitorHardwareBack'
 import { CapacitorNativeShell } from '@/components/CapacitorNativeShell'
+import { NativePushEnabler } from '@/components/NativePushEnabler'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -27,6 +28,7 @@ export default function RootLayout({
           <TrackingProvider />
           <CapacitorHardwareBack />
           <CapacitorNativeShell />
+          <NativePushEnabler />
           {children}
         </AuthProvider>
       </body>

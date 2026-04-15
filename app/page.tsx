@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { getAppSettings } from '@/lib/settings'
 import { HomeAboutDialog } from '@/components/HomeAboutDialog'
+import { PublicNavbar } from '@/components/layout/PublicNavbar'
 
 export const revalidate = 60 // Revalidate page every 60 seconds
 
@@ -23,31 +24,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-x-hidden font-sans text-slate-900">
 
-      {/* Navigation */}
-      <nav className="absolute top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20 pt-[env(safe-area-inset-top)]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 transition-all duration-300 group-hover:bg-white/30">
-                <Home className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl sm:text-2xl font-semibold tracking-wide text-white">
-                IMMOCIBLE
-              </span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/acquereur/connexion">
-                <Button variant="ghost" className="hidden sm:inline-flex font-medium text-white hover:bg-white/20 hover:text-white">Connexion</Button>
-              </Link>
-              <Link href="/acquereur/inscription">
-                <Button className="bg-slate-900 text-white hover:bg-slate-800 shadow-md transition-all duration-300 border border-slate-700">
-                  Commencer
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar />
 
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center">

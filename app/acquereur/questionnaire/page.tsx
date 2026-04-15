@@ -36,6 +36,7 @@ import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
 import { LocationMapDraw, type DrawnAreaGeoJSON } from '@/components/ui/LocationMapDraw'
 import { MapErrorBoundary } from '@/components/ui/MapErrorBoundary'
 import { Navbar } from '@/components/layout/Navbar'
+import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
 
 interface QuestionnaireData {
   // Informations personnelles
@@ -510,9 +511,20 @@ function QuestionnaireContent() {
         return (
           <div className="space-y-6">
             <div className="space-y-4">
-              <Label htmlFor="localisation" className="text-base font-semibold">
-                Villes ou régions recherchées
-              </Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="localisation" className="text-base font-semibold">
+                  Villes ou régions recherchées
+                </Label>
+                <NativeLocationButton
+                  variant="outline"
+                  className="rounded-lg"
+                  onLocationFound={(val) => {
+                    if (val && !formData.localisation.includes(val)) {
+                      updateFormData('localisation', [...formData.localisation, val])
+                    }
+                  }}
+                />
+              </div>
 
               {/* Selected Locations */}
               <div className="flex flex-wrap gap-2 min-h-[30px]">

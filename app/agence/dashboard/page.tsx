@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
 
 function DashboardContent() {
   const router = useRouter()
@@ -235,9 +236,16 @@ function DashboardContent() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-slate-700">Localisation</Label>
-                  <Input placeholder="Ex: Paris" value={filters.location}
-                    onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-                    className="border-slate-200 focus:border-slate-900 rounded-lg" />
+                  <div className="flex gap-2">
+                    <Input placeholder="Ex: Paris" value={filters.location}
+                      onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                      className="border-slate-200 focus:border-slate-900 rounded-lg flex-1" />
+                    <NativeLocationButton 
+                      variant="outline" 
+                      className="px-3"
+                      onLocationFound={(loc) => setFilters(prev => ({ ...prev, location: loc }))} 
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-slate-700">Budget Min</Label>
