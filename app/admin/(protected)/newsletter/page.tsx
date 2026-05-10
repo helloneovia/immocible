@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock, BarChart2, X, Trash2, Pencil } from 'lucide-react'
+import { Plus, Send, Calendar, Users, Mail, Loader2, CheckCircle2, AlertTriangle, Clock, BarChart2, X, Trash2, Pencil, MousePointerClick, Eye, Ban, AlertOctagon, Activity } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import DatePicker, { registerLocale } from 'react-datepicker'
@@ -258,26 +258,106 @@ export default function NewsletterPage() {
                                     
                                     {/* Stats Display Panel */}
                                     {statsData[news.id] && (
-                                        <div className="bg-slate-50 border-t border-gray-100 p-4 px-6 animate-in slide-in-from-top-2 duration-200">
+                                        <div className="bg-slate-50 border-t border-gray-100 p-6 animate-in slide-in-from-top-2 duration-200">
                                             {statsData[news.id].empty ? (
-                                                <p className="text-sm text-gray-500">Aucune statistique disponible ou en cours de traitement par Mailjet.</p>
+                                                <div className="flex items-center gap-3 text-sm text-gray-500 bg-white p-4 rounded-xl border border-gray-100">
+                                                    <Activity className="h-5 w-5 text-indigo-400" />
+                                                    Aucune statistique disponible ou traitement en cours par Mailjet.
+                                                </div>
                                             ) : (
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                                        <div className="text-xs text-gray-500 mb-1">Délivrés</div>
-                                                        <div className="text-lg font-semibold text-gray-900">{statsData[news.id].deliveredCount || 0} / {statsData[news.id].totalSent || 0}</div>
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <BarChart2 className="h-5 w-5 text-indigo-600" />
+                                                        <h4 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Performances de la campagne</h4>
                                                     </div>
-                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                                        <div className="text-xs text-gray-500 mb-1">Ouvertures</div>
-                                                        <div className="text-lg font-semibold text-blue-600">{statsData[news.id].openedCount || 0}</div>
-                                                    </div>
-                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                                        <div className="text-xs text-gray-500 mb-1">Clics</div>
-                                                        <div className="text-lg font-semibold text-indigo-600">{statsData[news.id].clickedCount || 0}</div>
-                                                    </div>
-                                                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                                                        <div className="text-xs text-gray-500 mb-1">Rebonds</div>
-                                                        <div className="text-lg font-semibold text-red-500">{statsData[news.id].bouncedCount || 0}</div>
+                                                    
+                                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                                        {/* Délivrés */}
+                                                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                                <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+                                                            </div>
+                                                            <div className="text-xs font-medium text-gray-500 mb-1">Délivrés</div>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <div className="text-2xl font-bold text-gray-900">{statsData[news.id].deliveredCount || 0}</div>
+                                                                <div className="text-xs font-medium text-gray-400">/ {statsData[news.id].totalSent || 0}</div>
+                                                            </div>
+                                                            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, ((statsData[news.id].deliveredCount || 0) / Math.max(1, statsData[news.id].totalSent || 1)) * 100)}%` }} />
+                                                            </div>
+                                                            <div className="mt-1 text-[10px] font-medium text-emerald-600 text-right">
+                                                                {Math.round(((statsData[news.id].deliveredCount || 0) / Math.max(1, statsData[news.id].totalSent || 1)) * 100)}%
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Ouvertures */}
+                                                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                                <Eye className="h-8 w-8 text-blue-600" />
+                                                            </div>
+                                                            <div className="text-xs font-medium text-gray-500 mb-1">Ouvertures</div>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <div className="text-2xl font-bold text-blue-600">{statsData[news.id].openedCount || 0}</div>
+                                                            </div>
+                                                            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min(100, ((statsData[news.id].openedCount || 0) / Math.max(1, statsData[news.id].deliveredCount || 1)) * 100)}%` }} />
+                                                            </div>
+                                                            <div className="mt-1 text-[10px] font-medium text-blue-600 text-right">
+                                                                {Math.round(((statsData[news.id].openedCount || 0) / Math.max(1, statsData[news.id].deliveredCount || 1)) * 100)}%
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Clics */}
+                                                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                                <MousePointerClick className="h-8 w-8 text-violet-600" />
+                                                            </div>
+                                                            <div className="text-xs font-medium text-gray-500 mb-1">Clics</div>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <div className="text-2xl font-bold text-violet-600">{statsData[news.id].clickedCount || 0}</div>
+                                                            </div>
+                                                            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-violet-500 rounded-full" style={{ width: `${Math.min(100, ((statsData[news.id].clickedCount || 0) / Math.max(1, statsData[news.id].openedCount || 1)) * 100)}%` }} />
+                                                            </div>
+                                                            <div className="mt-1 text-[10px] font-medium text-violet-600 text-right">
+                                                                {Math.round(((statsData[news.id].clickedCount || 0) / Math.max(1, statsData[news.id].openedCount || 1)) * 100)}%
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Rebonds / Spams */}
+                                                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                                <AlertOctagon className="h-8 w-8 text-amber-500" />
+                                                            </div>
+                                                            <div className="text-xs font-medium text-gray-500 mb-1 flex items-center gap-1">Erreurs</div>
+                                                            <div className="flex flex-col gap-1 mt-1">
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[11px] text-gray-400">Rebonds</span>
+                                                                    <span className="text-sm font-semibold text-amber-600">{statsData[news.id].bouncedCount || 0}</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[11px] text-gray-400">Spams</span>
+                                                                    <span className="text-sm font-semibold text-red-500">{statsData[news.id].spamCount || 0}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Désabonnements */}
+                                                        <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
+                                                            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                                <Ban className="h-8 w-8 text-slate-500" />
+                                                            </div>
+                                                            <div className="text-xs font-medium text-gray-500 mb-1">Désabonnements</div>
+                                                            <div className="flex items-baseline gap-2">
+                                                                <div className="text-2xl font-bold text-slate-700">{statsData[news.id].unsubscribedCount || 0}</div>
+                                                            </div>
+                                                            <div className="mt-2 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-slate-400 rounded-full" style={{ width: `${Math.min(100, ((statsData[news.id].unsubscribedCount || 0) / Math.max(1, statsData[news.id].deliveredCount || 1)) * 100)}%` }} />
+                                                            </div>
+                                                            <div className="mt-1 text-[10px] font-medium text-slate-500 text-right">
+                                                                {Math.round(((statsData[news.id].unsubscribedCount || 0) / Math.max(1, statsData[news.id].deliveredCount || 1)) * 100)}%
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}

@@ -45,6 +45,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         let clickedCount = 0
         let bouncedCount = 0
         let spamCount = 0
+        let unsubscribedCount = 0
         let totalSent = 0
 
         // 2. For each campaign found, fetch its messages
@@ -65,6 +66,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
                 else if (status === 'clicked') { deliveredCount++; openedCount++; clickedCount++ }
                 else if (status === 'bounced') bouncedCount++
                 else if (status === 'spam') spamCount++
+                else if (status === 'unsub') { deliveredCount++; openedCount++; unsubscribedCount++ }
             }
         }
         
@@ -75,6 +77,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
             clickedCount,
             bouncedCount,
             spamCount,
+            unsubscribedCount
         }
 
         return NextResponse.json({ stats })

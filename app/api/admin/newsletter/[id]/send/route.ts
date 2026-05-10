@@ -67,7 +67,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
             Subject: newsletter.subject,
             TextPart: textContent,
             HTMLPart: newsletter.content,
-            CustomCampaign: `Immocible_NL_${newsletter.id}`
+            CustomCampaign: `Immocible_NL_${newsletter.id}`,
+            TrackOpens: "account_default",
+            TrackClicks: "account_default"
         }))
 
         // Mailjet v3.1 Send allows max 50 Messages per request
