@@ -3,11 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 import Mailjet from 'node-mailjet'
 
-const mailjet = new Mailjet({
-    apiKey: process.env.MAILJET_API_KEY || '',
-    apiSecret: process.env.MAILJET_SECRET_KEY || ''
-})
-
 export async function POST(req: Request, { params }: { params: { id: string } }) {
     try {
         const user = await getCurrentUser()
@@ -21,6 +16,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         if (newsletter.status === 'SENT') {
             return NextResponse.json({ error: 'Already sent' }, { status: 400 })
         }
+
+        const mailjetApiKeySetting = await prisma.systemSetting.findUnique({ where: { key: 'mailjet_api_key' } })
+        const mailjetApiSecretSetting = await prisma.systemSetting.findUnique({ where: { key: 'mailjet_api_secret' } })
+        
+        const apiKey = mailjetApiKeySetting?.value || process.env.MAILJET_API_KEY || ''
+        const apiSecret = mailjetApiSecretSetting?.value || process.env.MAILJET_SECRET_KEY || process.env.MAILJET_API_SECRET || ''
+
+        const mailjet = new Mailjet({
+            apiKey,
+            apiSecret
+        })
 
         // Fetch targets
         let recipients: any[] = []

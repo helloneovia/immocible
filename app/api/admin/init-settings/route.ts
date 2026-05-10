@@ -71,6 +71,20 @@ const DEFAULT_SETTINGS = [
         label: 'Clé Publique Stripe',
         description: 'Clé publique Stripe utilisée par le frontend.'
     },
+    {
+        key: 'mailjet_api_key',
+        value: process.env.MAILJET_API_KEY || '',
+        type: 'string',
+        label: 'Clé API Mailjet',
+        description: 'Clé publique API Mailjet pour l\'envoi d\'emails.'
+    },
+    {
+        key: 'mailjet_api_secret',
+        value: process.env.MAILJET_SECRET_KEY || process.env.MAILJET_API_SECRET || '',
+        type: 'string',
+        label: 'Clé Secrète Mailjet',
+        description: 'Clé secrète API Mailjet pour l\'envoi d\'emails.'
+    },
     // Marketing Texts
     {
         key: 'text_hero_title',
