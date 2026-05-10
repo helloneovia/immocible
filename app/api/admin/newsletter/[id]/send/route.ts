@@ -77,10 +77,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         for (let i = 0; i < messages.length; i += chunkSize) {
             const chunk = messages.slice(i, i + chunkSize)
             try {
-                await mailjet.post("send", { version: "v3.1" }).request({
+                const res = await mailjet.post("send", { version: "v3.1" }).request({
                     Messages: chunk
                 })
-                sentCount += chunk.length
+                
+                const responseData = res.body as any
+                let successCount = 0
+                
+                if (responseData.Messages) {
+                    for (const msg of responseData.Messages) {
+                        if (msg.Status === 'success') {
+                            successCount++
+                        } else {
+                            console.error("Mailjet message error:", msg.Errors)
+                        }
+                    }
+                }
+                
+                sentCount += successCount
             } catch (e: any) {
                 console.error(`Failed to send chunk ${i/chunkSize}`, e.statusCode || e)
             }

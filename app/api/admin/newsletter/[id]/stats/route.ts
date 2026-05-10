@@ -30,16 +30,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
         const customCampaignName = `Immocible_NL_${newsletter.id}`
         
-        // Fetch all messages for this CustomCampaign
-        const messageReq = await mailjet.get('message', { version: 'v3' }).request({
-            CustomCampaign: customCampaignName,
-            ShowSubject: true,
-            ShowContactAlt: true
+        // 1. Fetch campaigns matching the CustomCampaign name
+        const campaignReq = await mailjet.get('campaign', { version: 'v3' }).request({
+            CustomCampaign: customCampaignName
         })
-
-        const messages = (messageReq.body as any).Data || []
+        const campaigns = (campaignReq.body as any).Data || []
         
-        if (messages.length === 0) {
+        if (campaigns.length === 0) {
             return NextResponse.json({ stats: null, message: "No Mailjet data found yet. Please wait a few minutes." })
         }
 
@@ -48,18 +45,31 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         let clickedCount = 0
         let bouncedCount = 0
         let spamCount = 0
+        let totalSent = 0
 
-        for (const msg of messages) {
-            const status = msg.Status
-            if (status === 'sent') deliveredCount++
-            else if (status === 'opened') { deliveredCount++; openedCount++ }
-            else if (status === 'clicked') { deliveredCount++; openedCount++; clickedCount++ }
-            else if (status === 'bounced') bouncedCount++
-            else if (status === 'spam') spamCount++
+        // 2. For each campaign found, fetch its messages
+        for (const camp of campaigns) {
+            const messageReq = await mailjet.get('message', { version: 'v3' }).request({
+                Campaign: camp.ID,
+                ShowSubject: true,
+                ShowContactAlt: true,
+                Limit: 1000
+            })
+            const messages = (messageReq.body as any).Data || []
+            totalSent += messages.length
+
+            for (const msg of messages) {
+                const status = msg.Status
+                if (status === 'sent') deliveredCount++
+                else if (status === 'opened') { deliveredCount++; openedCount++ }
+                else if (status === 'clicked') { deliveredCount++; openedCount++; clickedCount++ }
+                else if (status === 'bounced') bouncedCount++
+                else if (status === 'spam') spamCount++
+            }
         }
         
         const stats = {
-            totalSent: messages.length,
+            totalSent,
             deliveredCount,
             openedCount,
             clickedCount,
