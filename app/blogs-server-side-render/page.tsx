@@ -1,20 +1,24 @@
 import Link from 'next/link'
 import { Home } from 'lucide-react'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
-import Script from 'next/script'
 import { getAppSettings } from '@/lib/settings'
 
 export const metadata = {
-  title: 'Blog - IMMOCIBLE',
+  title: 'Blog - IMMOCIBLE (SSR)',
   description: 'Actualités et articles sur l\'immobilier d\'exception',
 }
 
 export const revalidate = 60
 
-export default async function BlogsPage() {
+export default async function BlogsSSRPage() {
   const settings = await getAppSettings()
 
-
+  // Fetch articles on the server for perfect SEO
+  const res = await fetch("https://adneo.cloud/api/widget/articles?websiteId=cmpxtvs0500003aleux4hn8nv", { 
+    next: { revalidate: 3600 } 
+  });
+  const data = await res.json();
+  const articles = data.articles || [];
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-x-hidden font-sans text-slate-900 flex flex-col">
@@ -41,8 +45,32 @@ export default async function BlogsPage() {
 
       {/* Blog List Section */}
       <section className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div id="adneo-blog"></div>
-        <Script src="https://adneo.cloud/api/embed/cmpxtvs0500003aleux4hn8nv?theme=dark" strategy="lazyOnload" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {articles.map((article: any) => (
+            <a href={`/blogs/${article.slug}`} key={article.id} className="border border-slate-200 bg-white rounded-xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group flex flex-col">
+              <div className="overflow-hidden">
+                {article.featuredImage && (
+                  <img 
+                    src={article.featuredImage} 
+                    alt={article.title} 
+                    className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-105" 
+                  />
+                )}
+              </div>
+              <div className="p-6 flex-grow flex flex-col">
+                <h3 className="font-semibold text-xl mb-3 text-slate-900 line-clamp-2">{article.title}</h3>
+                <p className="text-slate-500 font-light leading-relaxed line-clamp-3 mb-4">{article.excerpt}</p>
+                
+                <span className="mt-auto text-sm font-semibold text-slate-900 group-hover:text-slate-700 transition-colors flex items-center">
+                  Lire l'article
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
       </section>
 
       {/* Footer */}
