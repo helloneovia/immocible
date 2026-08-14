@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { LayoutDashboard, Users, CreditCard, Receipt, Trash2, Home, LogOut, Menu, X, Settings, Ticket, MessageSquare, Mail, PieChart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Logo } from '@/components/ui/Logo'
 
 export function AdminMobileNav() {
     const [isOpen, setIsOpen] = useState(false)
@@ -32,7 +33,7 @@ export function AdminMobileNav() {
                     <div className="relative flex w-64 max-w-xs flex-col bg-gray-900 text-white h-full p-6 shadow-xl transition-transform">
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-2 font-bold text-xl">
-                                <span className="text-indigo-500">IMMOCIBLE</span> ADMIN
+                                <Logo showWordmark={false} className="text-white" iconClassName="h-6 w-6" /> ADMIN
                             </div>
                             <Button
                                 variant="ghost"

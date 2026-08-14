@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api-auth';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,10 @@ const getLeboncoinBot = async () => {
 };
 
 export async function GET(request: NextRequest) {
+    // Réservé aux admins : cette route démarre un navigateur headless sur le serveur.
+    const { error } = await requireAdmin();
+    if (error) return error;
+
     const encoder = new TextEncoder();
 
     const customReadable = new ReadableStream({

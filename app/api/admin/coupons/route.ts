@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-// import { authOptions } from '@/lib/auth' // Assuming authOptions is exported correctly or check existing files
+import { requireAdmin } from '@/lib/api-auth'
 
 export async function GET() {
-    // TODO: Add proper admin auth check using getServerSession
-    // For now assuming middleware protects /admin routes or we add check here
+    const { error } = await requireAdmin()
+    if (error) return error
 
     try {
         const coupons = await prisma.coupon.findMany({
@@ -18,6 +17,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+    const { error: authError } = await requireAdmin()
+    if (authError) return authError
+
     try {
         const body = await req.json()
         const { code, discountType, discountValue, durationMonths, maxUses, planType, validUntil } = body

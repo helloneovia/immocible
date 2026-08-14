@@ -33,4 +33,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 mobile/node_modules
-dev.log
+
+# logs & artefacts de développement
+*.log
+diff_output*.txt
+*_layout.txt
+
+# artefacts du bot (ne jamais committer : cookies de session, profil Chrome, captures)
+lbc_cookies.json
+chrome-data/
+public/screenshots/

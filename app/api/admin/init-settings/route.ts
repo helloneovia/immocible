@@ -1,6 +1,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
+import { requireAdmin } from '@/lib/api-auth'
 
 const DEFAULT_SETTINGS = [
     {
@@ -252,6 +253,9 @@ IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
 ]
 
 export async function POST(req: Request) {
+    const { error } = await requireAdmin()
+    if (error) return error
+
     try {
         for (const setting of DEFAULT_SETTINGS) {
             await prisma.systemSetting.upsert({

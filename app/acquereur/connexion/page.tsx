@@ -9,7 +9,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Home, ArrowRight, LogIn, Shield, AlertCircle, Loader2 } from 'lucide-react'
+import { ArrowRight, LogIn, Shield, AlertCircle, Loader2 } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/contexts/AuthContext'
 
 const loginSchema = z.object({
@@ -72,12 +73,7 @@ export default function ConnexionAcquereur() {
         {/* Logo */}
         <div className="flex justify-center mb-10">
           <Link href="/" className="flex items-center space-x-3 group">
-            <div className="h-12 w-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-xl group-hover:bg-white/20 transition-all duration-300">
-              <Home className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-3xl font-bold tracking-wide text-white" style={{ fontFamily: "'Playfair Display', serif" }}>
-              IMMOCIBLE
-            </span>
+            <Logo className="text-white" iconClassName="h-12 w-12" wordmarkClassName="text-3xl" />
           </Link>
         </div>
 

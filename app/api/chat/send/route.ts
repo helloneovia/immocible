@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             data: {
                 conversationId,
                 senderId: currentUser.id,
-                content: sanitizedContent,
+                content: filteredContent,
             },
         })
 
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
                 await sendNewMessageNotification(
                     recipient.email,
                     senderName,
-                    sanitizedContent,
+                    filteredContent,
                     conversationId,
                     recipientRole,
                     recipientName

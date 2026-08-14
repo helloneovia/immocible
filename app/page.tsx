@@ -15,6 +15,7 @@ import {
 import { getAppSettings } from '@/lib/settings'
 import { HomeAboutDialog } from '@/components/HomeAboutDialog'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
+import { Footer } from '@/components/layout/Footer'
 
 export const revalidate = 60 // Revalidate page every 60 seconds
 
@@ -178,28 +179,7 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-center space-y-8 text-center">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="h-10 w-10 bg-slate-900 rounded-lg flex items-center justify-center group-hover:bg-slate-800 transition-colors">
-                <Home className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-2xl font-semibold tracking-wide text-slate-900">
-                IMMOCIBLE
-              </span>
-            </Link>
-            <div className="flex space-x-6 text-sm text-slate-500 font-medium">
-              <Link href="#" className="hover:text-slate-900 transition-colors">Mentions légales</Link>
-              <Link href="#" className="hover:text-slate-900 transition-colors">Confidentialité</Link>
-              <Link href="#" className="hover:text-slate-900 transition-colors">Contact</Link>
-            </div>
-            <p className="text-sm text-slate-400 font-light">
-              {settings.text_footer_copyright || '© 2024 IMMOCIBLE. L\'immobilier repensé. Tous droits réservés.'}
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer copyright={settings.text_footer_copyright} />
     </div>
   )
 }

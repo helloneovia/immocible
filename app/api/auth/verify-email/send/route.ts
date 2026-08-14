@@ -1,19 +1,23 @@
 
 import { NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/mail'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
-// Helper to generate 6-digit numeric token
+// Code à 6 chiffres généré via un PRNG cryptographique (non prédictible).
 function generateToken() {
-    return Math.floor(100000 + Math.random() * 900000).toString()
+    return crypto.randomInt(100000, 1000000).toString()
 }
 
 export async function POST(req: Request) {
     try {
+        // Limite l'envoi d'OTP : 5 par 10 minutes et par IP.
+        const limited = enforceRateLimit(req, 'otp-send', 5, 10 * 60_000)
+        if (limited) return limited
+
         const body = await req.json()
         const email = body.email?.trim().toLowerCase()
-
-        console.log(`[Verify Email] Sending OTP to: ${email}`)
 
         if (!email) {
             return NextResponse.json({ error: 'Email invalide' }, { status: 400 })
@@ -48,8 +52,8 @@ export async function POST(req: Request) {
         // Send email
         const sent = await sendVerificationEmail(email, token)
 
-        if (!sent) {
-            // Fallback for dev environment without SMTP
+        if (!sent && process.env.NODE_ENV !== 'production') {
+            // Fallback de développement uniquement (jamais en production).
             console.log(`[DEV MODE] Verification Code for ${email}: ${token}`)
         }
 

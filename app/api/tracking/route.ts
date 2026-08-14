@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
         // Hash IP for privacy
         const ipHash = crypto.createHash('sha256').update(ip).digest('hex').substring(0, 16)
 
-        // Find or structure data
+        // On ne conserve PAS l'User-Agent brut (identifiant) : seules les valeurs
+        // dérivées agrégées (navigateur, OS, type d'appareil) sont stockées.
         await prisma.visitorLog.create({
             data: {
                 sessionId: sessionId || null,
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
                 role: role || 'visitor',
                 path: path || '/',
                 referrer: referrer || null,
-                userAgent: userAgentRaw,
+                userAgent: '',
                 device: deviceType,
                 browser: browser,
                 os: os,

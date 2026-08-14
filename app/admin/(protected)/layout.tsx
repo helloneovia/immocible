@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LayoutDashboard, Users, CreditCard, LogOut, Home, Trash2, Receipt, Ticket, Settings, Mail, MessageSquare, PieChart, Activity } from 'lucide-react'
 import { getCurrentUser } from '@/lib/session'
 import { redirect } from 'next/navigation'
+import { Logo } from '@/components/ui/Logo'
 import { AdminMobileNav } from '@/components/admin/AdminMobileNav'
 import { AdminLogoutButton } from '@/components/admin/AdminLogoutButton'
 
@@ -21,12 +22,7 @@ export default async function AdminLayout({
             {/* Sidebar */}
             <aside className="w-72 bg-slate-900 text-white hidden md:flex flex-col border-r border-slate-800 shadow-2xl">
                 <div className="p-8">
-                    <div className="flex items-center gap-2 font-bold text-2xl tracking-wide">
-                        <span className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center border border-white/20">
-                            <Home className="h-4 w-4 text-white" />
-                        </span>
-                        <span>IMMOCIBLE</span>
-                    </div>
+                    <Logo className="text-white" iconClassName="h-9 w-9" wordmarkClassName="text-xl" />
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 py-4">
@@ -90,12 +86,7 @@ export default async function AdminLayout({
             {/* Main Content */}
             <main className="flex-1 overflow-auto relative">
                 <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-slate-200 px-6 py-4 flex items-center justify-between md:hidden sticky top-0 z-50">
-                    <div className="font-bold flex items-center gap-2">
-                        <span className="h-6 w-6 bg-slate-900 rounded-md flex items-center justify-center">
-                            <Home className="h-3 w-3 text-white" />
-                        </span>
-                        IMMOCIBLE
-                    </div>
+                    <Logo className="text-slate-900" iconClassName="h-8 w-8" wordmarkClassName="text-lg" />
                     <AdminMobileNav />
                 </header>
                 <div className="p-6 md:p-10 max-w-7xl mx-auto">

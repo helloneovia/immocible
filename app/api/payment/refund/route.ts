@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/api-auth'
 
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is missing in environment variables')
@@ -12,6 +13,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 })
 
 export async function POST(request: Request) {
+    // Un remboursement (opération financière) est strictement réservé aux admins.
+    const { error: authError } = await requireAdmin()
+    if (authError) return authError
+
     try {
         const body = await request.json()
         const { paymentId } = body

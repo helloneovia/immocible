@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
+import { getCurrentUser } from '@/lib/session'
 
 export async function POST(request: NextRequest) {
     try {
@@ -29,7 +30,12 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json()
-        const { email, plan, nomAgence, returnUrl: payloadReturnUrl } = body
+        const { plan, nomAgence, returnUrl: payloadReturnUrl } = body
+
+        // L'email de facturation/activation est celui du compte connecté quand il
+        // existe : on ne peut ni payer ni activer un abonnement pour l'email d'un tiers.
+        const currentUser = await getCurrentUser()
+        const email = currentUser?.email || body.email
 
         if (!email || !plan) {
             return NextResponse.json(
@@ -69,6 +75,14 @@ export async function POST(request: NextRequest) {
 
             // Handle FREE_TRIAL (Bypass Stripe)
             if (coupon.discountType === 'FREE_TRIAL') {
+                // Activation sans paiement : réservée à l'utilisateur authentifié,
+                // et uniquement pour son propre compte (email forcé ci-dessus).
+                if (!currentUser) {
+                    return NextResponse.json(
+                        { error: 'Veuillez vous connecter pour activer cette offre.' },
+                        { status: 401 }
+                    )
+                }
                 const user = await prisma.user.findUnique({
                     where: { email },
                     include: { profile: true }

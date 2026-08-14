@@ -1,8 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { prisma } from '@/lib/prisma'
-import { sendPaymentSuccessEmail } from '@/lib/mail'
+import { applyCheckoutSession } from '@/lib/payment'
 
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is missing in environment variables')
@@ -24,7 +23,8 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        // Retreive session from Stripe
+        // On récupère la session directement auprès de Stripe : impossible de
+        // forger un session_id « payé » sans avoir réellement payé.
         const session = await stripe.checkout.sessions.retrieve(sessionId)
 
         if (session.payment_status !== 'paid') {
@@ -34,72 +34,13 @@ export async function GET(request: NextRequest) {
             )
         }
 
-        const email = session.customer_details?.email || session.metadata?.email
+        // Activation idempotente : rejouer le même session_id n'accorde rien de plus.
+        const result = await applyCheckoutSession(session)
 
-        if (email) {
-            // Find user first
-            const user = await prisma.user.findUnique({
-                where: { email },
-                include: { profile: true }
-            })
-
-            if (user) {
-                // Calculate new subscription end date
-                const planType = session.metadata?.plan || user.profile?.plan || 'mensuel'
-
-                const startDate = new Date()
-                const newEndDate = new Date(startDate)
-
-                // User request: Start date = Payment Date. End date = Payment Date + 30 days (or 1 year).
-                if (planType === 'yearly') {
-                    newEndDate.setFullYear(newEndDate.getFullYear() + 1)
-                } else {
-                    // Fixed 30 days for monthly
-                    newEndDate.setDate(newEndDate.getDate() + 30)
-                }
-
-                // Activate user in DB
-                await prisma.profile.update({
-                    where: { userId: user.id },
-                    data: {
-                        subscriptionStatus: 'ACTIVE',
-                        stripeCustomerId: session.customer as string,
-                        plan: planType,
-                        subscriptionStartDate: startDate,
-                        subscriptionEndDate: newEndDate
-                    }
-                })
-
-                // Save payment transaction
-                await prisma.payment.create({
-                    data: {
-                        userId: user.id,
-                        stripeSessionId: session.id,
-                        stripePaymentIntentId: session.payment_intent as string | null,
-                        amount: session.amount_total ? session.amount_total / 100 : 0,
-                        currency: session.currency || 'eur',
-                        status: session.payment_status,
-                        plan: planType,
-                    }
-                })
-
-                // Send success email
-                try {
-                    await sendPaymentSuccessEmail(
-                        email,
-                        (session.amount_total || 0) / 100,
-                        planType as string,
-                        startDate,
-                        newEndDate,
-                        user.profile?.nomAgence || user.profile?.prenom || undefined
-                    )
-                } catch (e) {
-                    console.error('Failed to send payment email', e)
-                }
-            }
-        }
-
-        return NextResponse.json({ valid: true })
+        return NextResponse.json({
+            valid: true,
+            alreadyProcessed: result.reason === 'already_processed',
+        })
     } catch (error: any) {
         console.error('Payment verification error:', error)
         return NextResponse.json(

@@ -3,9 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendPasswordResetEmail } from '@/lib/mail'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
     try {
+        const limited = enforceRateLimit(request, 'forgot-password', 5, 15 * 60_000)
+        if (limited) return limited
+
         const { email } = await request.json()
 
         if (!email) {

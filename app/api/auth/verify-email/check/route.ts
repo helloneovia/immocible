@@ -1,9 +1,14 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
     try {
+        // Empêche le brute-force du code à 6 chiffres : 10 essais / 10 min / IP.
+        const limited = enforceRateLimit(req, 'otp-check', 10, 10 * 60_000)
+        if (limited) return limited
+
         const { email, code } = await req.json()
 
         if (!email || !code) {

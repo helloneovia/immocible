@@ -68,20 +68,21 @@ export async function authenticateUser(email: string, password: string, role?: U
     throw new Error('Email ou mot de passe incorrect')
   }
 
-  if (role && user.role !== role) {
-    const roleName = role === 'acquereur' ? 'acquéreur' : 'agence'
-    const actualRoleName = user.role === 'acquereur' ? 'acquéreur' : user.role === 'agence' ? 'agence' : 'admin'
-
-    // Debug log
-    console.error(`Login failed: Role mismatch. Expected ${role} (${roleName}), got ${user.role}`)
-
-    throw new Error(`Ce compte est un compte ${actualRoleName}, pas un compte ${roleName}. Veuillez vous connecter sur le bon portail.`)
-  }
-
+  // On vérifie d'abord le mot de passe : tant qu'il n'est pas validé, on ne
+  // révèle jamais l'existence du compte ni son rôle (pas d'oracle d'énumération).
   const isValid = await verifyPassword(password, user.password)
 
   if (!isValid) {
     throw new Error('Email ou mot de passe incorrect')
+  }
+
+  // Le mot de passe est correct : indiquer un éventuel mauvais portail est ici
+  // sans risque, l'appelant s'est authentifié.
+  if (role && user.role !== role) {
+    const roleName = role === 'acquereur' ? 'acquéreur' : 'agence'
+    const actualRoleName = user.role === 'acquereur' ? 'acquéreur' : user.role === 'agence' ? 'agence' : 'admin'
+
+    throw new Error(`Ce compte est un compte ${actualRoleName}, pas un compte ${roleName}. Veuillez vous connecter sur le bon portail.`)
   }
 
   // Remove password from returned user

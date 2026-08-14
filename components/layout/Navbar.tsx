@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { NotificationBell } from '@/components/ui/NotificationBell'
 import { Button } from '@/components/ui/button'
-import { Home, MessageSquare, Settings, LogOut, Menu, X } from 'lucide-react'
+import { MessageSquare, Settings, LogOut, Menu, X } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 
 interface NavbarProps {
     role: 'agence' | 'acquereur' | 'admin'
@@ -28,13 +29,12 @@ export function Navbar({ role }: NavbarProps) {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-20 items-center justify-between">
                     {/* Logo */}
-                    <Link href={homeLink} className="flex items-center space-x-3 group">
-                        <div className="h-10 w-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-md group-hover:bg-slate-800 transition-all duration-300">
-                            <Home className="h-5 w-5 text-amber-400" />
-                        </div>
-                        <span className="text-xl sm:text-2xl font-bold tracking-wide text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-                            IMMOCIBLE
-                        </span>
+                    <Link href={homeLink} className="group" aria-label="IMMOCIBLE — accueil">
+                        <Logo
+                            className="text-slate-900"
+                            iconClassName="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
+                            wordmarkClassName="hidden sm:inline-block"
+                        />
                     </Link>
 
                     {/* Desktop Navigation */}

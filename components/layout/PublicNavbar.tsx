@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Home, Menu, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 
 export function PublicNavbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -12,13 +13,12 @@ export function PublicNavbar() {
     <nav className="absolute top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20 pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="h-10 w-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 transition-all duration-300 group-hover:bg-white/30">
-              <Home className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl sm:text-2xl font-semibold tracking-wide text-white">
-              IMMOCIBLE
-            </span>
+          <Link href="/" className="group" aria-label="IMMOCIBLE — accueil">
+            <Logo
+              className="text-white"
+              iconClassName="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
+              wordmarkClassName="hidden sm:inline-block"
+            />
           </Link>
           
           {/* Desktop Navigation */}

@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { hasAnalyticsConsent, CONSENT_EVENT } from '@/components/CookieConsent'
 
 export function TrackingProvider() {
     const pathname = usePathname()
     const { user, loading } = useAuth()
     const [sessionId, setSessionId] = useState<string | null>(null)
+    const [consented, setConsented] = useState(false)
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -20,8 +22,21 @@ export function TrackingProvider() {
         }
     }, [])
 
+    // Suit le consentement à la mesure d'audience (bandeau cookies).
+    useEffect(() => {
+        const sync = () => setConsented(hasAnalyticsConsent())
+        sync()
+        window.addEventListener(CONSENT_EVENT, sync)
+        window.addEventListener('storage', sync)
+        return () => {
+            window.removeEventListener(CONSENT_EVENT, sync)
+            window.removeEventListener('storage', sync)
+        }
+    }, [])
+
     useEffect(() => {
         if (loading) return;
+        if (!consented) return; // N'assure aucun suivi sans consentement explicite
         if (!sessionId) return; // Wait for session id to be assigned
         if (pathname?.startsWith('/admin')) return; // Don't track admin pages
 
@@ -50,7 +65,7 @@ export function TrackingProvider() {
         const timeoutId = setTimeout(trackPageview, 1000)
 
         return () => clearTimeout(timeoutId)
-    }, [pathname, user, loading, sessionId])
+    }, [pathname, user, loading, sessionId, consented])
 
     return null
 }

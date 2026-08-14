@@ -7,6 +7,9 @@ export const size = {
 
 export const contentType = 'image/png'
 
+// Favicon de marque : maison + épingle sur fond marine (lisible sur onglets
+// clairs comme sombres). Couleurs solides car le moteur de rendu OG ne gère
+// pas les dégradés SVG.
 export default function Icon() {
   return new ImageResponse(
     (
@@ -17,22 +20,32 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'transparent',
+          background: '#0B1F38',
+          borderRadius: 96,
         }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="440"
-          height="440"
-          viewBox="0 0 24 24"
+          width="360"
+          height="360"
+          viewBox="0 0 64 64"
           fill="none"
-          stroke="white"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
         >
-          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
+          <path
+            d="M26 55 L13 55 L13 25 L32 7 L43 17.4 L43 11 L48 11 L48 22.1 L51 25 L51 55 L38 55"
+            stroke="#FFFFFF"
+            strokeWidth="4"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          <circle cx="32" cy="33" r="12.5" stroke="#FFFFFF" strokeWidth="3.4" fill="none" />
+          <path
+            d="M32 31 L32 47"
+            stroke="#E0A93B"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+          />
+          <circle cx="32" cy="28.5" r="5.8" fill="#E0A93B" />
         </svg>
       </div>
     ),

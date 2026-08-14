@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
     try {
+        const limited = enforceRateLimit(request, 'reset-password', 10, 15 * 60_000)
+        if (limited) return limited
+
         const { token, password } = await request.json()
 
         if (!token || !password) {
             return NextResponse.json(
                 { error: 'Token et mot de passe requis' },
+                { status: 400 }
+            )
+        }
+
+        if (password.length < 8) {
+            return NextResponse.json(
+                { error: 'Le mot de passe doit contenir au moins 8 caractères' },
                 { status: 400 }
             )
         }
@@ -40,13 +51,19 @@ export async function POST(request: NextRequest) {
         const hashedPassword = await hashPassword(password)
 
         // Update user
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { email: verificationToken.identifier },
             data: { password: hashedPassword }
         })
 
+        // Invalide toutes les sessions existantes : un mot de passe changé doit
+        // déconnecter les sessions actives (y compris une session volée).
+        await prisma.session.deleteMany({
+            where: { userId: updatedUser.id }
+        })
+
         // Delete token
-        await prisma.verificationToken.delete({ 
+        await prisma.verificationToken.delete({
             where: { 
                 identifier_token: { 
                     identifier: verificationToken.identifier, 
