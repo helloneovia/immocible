@@ -85,7 +85,8 @@ export function Logo({
       {showWordmark && (
         <span
           className={cn(
-            'text-xl sm:text-2xl font-bold tracking-[0.16em] leading-none',
+            // translate-y : recentre optiquement les capitales (sans jambages) avec l'icône
+            'text-xl sm:text-2xl font-bold tracking-[0.16em] leading-none translate-y-[0.07em]',
             wordmarkClassName,
           )}
         >
