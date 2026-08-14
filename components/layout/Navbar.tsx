@@ -32,8 +32,8 @@ export function Navbar({ role }: NavbarProps) {
                     <Link href={homeLink} className="group" aria-label="IMMOCIBLE — accueil">
                         <Logo
                             className="text-slate-900"
-                            iconClassName="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
-                            wordmarkClassName="hidden sm:inline-block"
+                            iconClassName="h-14 w-14 transition-transform duration-300 group-hover:scale-105"
+                            wordmarkClassName="text-xl sm:text-2xl"
                         />
                     </Link>
 

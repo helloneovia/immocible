@@ -16,8 +16,8 @@ export function PublicNavbar() {
           <Link href="/" className="group" aria-label="IMMOCIBLE — accueil">
             <Logo
               className="text-white"
-              iconClassName="h-10 w-10 transition-transform duration-300 group-hover:scale-105"
-              wordmarkClassName="hidden sm:inline-block"
+              iconClassName="h-16 w-16 transition-transform duration-300 group-hover:scale-105"
+              wordmarkClassName="text-2xl sm:text-3xl"
             />
           </Link>
           

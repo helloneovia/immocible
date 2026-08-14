@@ -7,9 +7,8 @@ export const size = {
 
 export const contentType = 'image/png'
 
-// Favicon de marque : maison + épingle sur fond marine (lisible sur onglets
-// clairs comme sombres). Couleurs solides car le moteur de rendu OG ne gère
-// pas les dégradés SVG.
+// Favicon : une grosse cible (anneaux concentriques + centre doré) sur fond
+// marine. Simple et lisible même à 16 px, et fidèle au nom « immo-CIBLE ».
 export default function Icon() {
   return new ImageResponse(
     (
@@ -21,31 +20,13 @@ export default function Icon() {
           alignItems: 'center',
           justifyContent: 'center',
           background: '#0B1F38',
-          borderRadius: 96,
+          borderRadius: 112,
         }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="360"
-          height="360"
-          viewBox="0 0 64 64"
-          fill="none"
-        >
-          <path
-            d="M26 55 L13 55 L13 25 L32 7 L43 17.4 L43 11 L48 11 L48 22.1 L51 25 L51 55 L38 55"
-            stroke="#FFFFFF"
-            strokeWidth="4"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <circle cx="32" cy="33" r="12.5" stroke="#FFFFFF" strokeWidth="3.4" fill="none" />
-          <path
-            d="M32 31 L32 47"
-            stroke="#E0A93B"
-            strokeWidth="4.5"
-            strokeLinecap="round"
-          />
-          <circle cx="32" cy="28.5" r="5.8" fill="#E0A93B" />
+        <svg width="470" height="470" viewBox="0 0 64 64" fill="none">
+          <circle cx="32" cy="32" r="26" stroke="#FFFFFF" strokeWidth="5" fill="none" />
+          <circle cx="32" cy="32" r="15.5" stroke="#FFFFFF" strokeWidth="5" fill="none" />
+          <circle cx="32" cy="32" r="6.5" fill="#E0A93B" />
         </svg>
       </div>
     ),
