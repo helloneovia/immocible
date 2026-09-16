@@ -1,4 +1,5 @@
 import { Linking } from 'react-native'
+import { router } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { API_URL } from '@/lib/api'
 import { colors } from '@/theme'
@@ -13,10 +14,9 @@ export function openInApp(urlOrPath: string) {
   }).catch(() => Linking.openURL(url))
 }
 
-export const LEGAL_LINKS = [
-  { label: 'Mentions légales', path: '/mentions-legales' },
-  { label: 'Confidentialité', path: '/confidentialite' },
-  { label: 'CGU / CGV', path: '/cgu' },
-]
+/** Pages légales affichées en natif (contenu lu sur le serveur, modifiable dans l'admin). */
+export function openLegal(slug: 'mentions-legales' | 'confidentialite' | 'cgu') {
+  router.push({ pathname: '/legal/[slug]', params: { slug } })
+}
 
 export const SUPPORT_EMAIL = 'contact@immocible.com'

@@ -113,6 +113,7 @@ function RootNavigator({ fontsReady }: { fontsReady: boolean }) {
         <Stack.Screen name="reset-password" />
         <Stack.Screen name="blog/index" />
         <Stack.Screen name="blog/[slug]" />
+        <Stack.Screen name="legal/[slug]" />
       </Stack>
       <OfflineBanner />
     </>

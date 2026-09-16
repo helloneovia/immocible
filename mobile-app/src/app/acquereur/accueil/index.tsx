@@ -102,8 +102,8 @@ export default function AccueilScreen() {
   const rings = projectRings(data)
   const recent = conversations.slice(0, 2)
 
-  // Les étapes restent ordonnées : une proposition ne compte qu'une fois le projet enregistré.
-  const proposed = hasProject && conversations.length > 0
+  // Les étapes restent ordonnées ; le message de bienvenue d'IMMOCIBLE n'est pas une proposition d'agence.
+  const proposed = hasProject && conversations.some((conv) => !conv.isPlatform)
   const timeline = [
     {
       title: 'Projet enregistré',

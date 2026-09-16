@@ -2,6 +2,8 @@
 import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/api-auth'
+import { LEGAL_FIELDS } from '@/lib/legal'
+import { DEFAULT_SETTINGS as APP_DEFAULTS } from '@/lib/settings'
 
 const DEFAULT_SETTINGS = [
     {
@@ -249,7 +251,22 @@ IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
         type: 'string',
         label: 'Copyright Footer',
         description: 'Texte de copyright en bas de page.'
-    }
+    },
+    {
+        key: 'text_buyer_welcome_message',
+        value: APP_DEFAULTS.text_buyer_welcome_message,
+        type: 'string',
+        label: 'Message de bienvenue (Acquéreur)',
+        description: "Message automatique envoyé par IMMOCIBLE dans la messagerie de chaque nouvel acquéreur, à l'inscription."
+    },
+    // Informations légales : affichées dans les mentions légales, les CGU et la politique de confidentialité (site et application).
+    ...Object.entries(LEGAL_FIELDS).map(([key, field]) => ({
+        key,
+        value: field.value,
+        type: 'string',
+        label: field.label,
+        description: `Remplace « ${field.placeholder} » dans les pages légales. Laisser vide pour l'afficher comme « à renseigner ».`
+    }))
 ]
 
 export async function POST(req: Request) {

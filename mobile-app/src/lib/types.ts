@@ -129,6 +129,8 @@ export interface Conversation {
   buyer?: { id: string; email?: string; profile?: Profile | null }
   messages?: Message[]
   _count?: { messages: number }
+  /** Conversation ouverte par IMMOCIBLE (message de bienvenue), pas par une agence. */
+  isPlatform?: boolean
 }
 
 export interface AccountProfile {

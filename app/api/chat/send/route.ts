@@ -75,13 +75,14 @@ export async function POST(request: NextRequest) {
 
         // Send email notification to recipient
         const recipientId = currentUser.id === conversation.agencyId ? conversation.buyerId : conversation.agencyId
-        const recipientRole = currentUser.id === conversation.agencyId ? 'acquereur' : 'agence'
 
         // Fetch recipient email
         const recipient = await prisma.user.findUnique({
             where: { id: recipientId },
             include: { profile: true }
         })
+
+        const recipientRole = recipient?.role === 'admin' ? 'admin' : currentUser.id === conversation.agencyId ? 'acquereur' : 'agence'
 
         if (recipient?.email) {
             const senderName = currentUser.profile?.nomAgence || currentUser.profile?.prenom || 'Un utilisateur'

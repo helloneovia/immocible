@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
             },
             include: {
                 agency: {
-                    select: { id: true, email: true, profile: true },
+                    select: { id: true, email: true, role: true, profile: true },
                 },
                 buyer: {
                     select: { id: true, email: true, profile: true },
@@ -43,6 +43,15 @@ export async function GET(request: NextRequest) {
 
         // Sanitize data: Hide buyer contact info if user is an agency
         const sanitizedConversations = conversations.map(conv => {
+            // Messages automatiques d'IMMOCIBLE (compte administrateur) : affichés au nom de la
+            // plateforme, sans e-mail, et signalés pour ne pas compter comme une proposition d'agence.
+            if (conv.agency?.role === 'admin') {
+                return {
+                    ...conv,
+                    isPlatform: true,
+                    agency: { id: conv.agency.id, role: conv.agency.role, email: '', profile: { nomAgence: 'IMMOCIBLE' } },
+                }
+            }
             if (currentUser.role === 'agence') {
                 if (conv.buyer) {
                     // Create a shallow copy of buyer object (or modify it if mutable, but copy is safer)

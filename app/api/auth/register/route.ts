@@ -4,6 +4,7 @@ import { createSession } from '@/lib/session'
 import { UserRole } from '@prisma/client'
 import { sendWelcomeEmail } from '@/lib/mail'
 import { prisma } from '@/lib/prisma'
+import { getAppSettings } from '@/lib/settings'
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,50 +58,36 @@ export async function POST(request: NextRequest) {
     // Create session
     await createSession(user.id)
 
-    // Send automatic Welcome message from MBJ Immo to acquereurs
+    // Message de bienvenue automatique d'IMMOCIBLE (compte administrateur de la plateforme).
+    // Il n'est pas envoyé au nom d'une agence : aucune agence n'obtient ainsi de conversation
+    // avec tous les acquéreurs. Texte modifiable dans l'admin (text_buyer_welcome_message).
     if (role === 'acquereur') {
       try {
-        const agencyEmail = 'mbjimmo@outlook.fr';
-        const agencyUser = await prisma.user.findUnique({
-          where: { email: agencyEmail }
-        });
+        const platformUser = await prisma.user.findFirst({
+          where: { role: 'admin' },
+          orderBy: { createdAt: 'asc' },
+        })
 
-        if (agencyUser && agencyUser.role === 'agence') {
-          // Check if conversation already exists (just in case)
-          let conversation = await prisma.conversation.findUnique({
-            where: {
-              agencyId_buyerId: {
-                agencyId: agencyUser.id,
-                buyerId: user.id
-              }
-            }
-          });
-
-          // Create if it does not exist
-          if (!conversation) {
-            conversation = await prisma.conversation.create({
-              data: {
-                agencyId: agencyUser.id,
-                buyerId: user.id
-              }
-            })
-          }
-
-          // Create the actual welcome message
-          const welcomeMessageText = `Bonjour,\n\nNous sommes heureux de vous compter parmi nos acquéreurs off-market, \nn'hésitez pas à nous contacter ici pour toute question ou interrogation.\n\nDans l’attente de vous aider à trouver la perle rare,\nMBJ`;
+        if (platformUser) {
+          const settings = await getAppSettings()
+          const conversation = await prisma.conversation.upsert({
+            where: { agencyId_buyerId: { agencyId: platformUser.id, buyerId: user.id } },
+            update: {},
+            create: { agencyId: platformUser.id, buyerId: user.id },
+          })
 
           await prisma.message.create({
             data: {
               conversationId: conversation.id,
-              senderId: agencyUser.id,
-              content: welcomeMessageText,
-              isRead: false
-            }
+              senderId: platformUser.id,
+              content: settings.text_buyer_welcome_message,
+              isRead: false,
+            },
           })
         }
       } catch (welcomeMsgError) {
-        console.error('Failed to send MBJ welcome message:', welcomeMsgError);
-        // Ensure it doesn't fail registration
+        console.error('Failed to send IMMOCIBLE welcome message:', welcomeMsgError)
+        // Ne fait pas échouer l'inscription
       }
     }
 

@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { api } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
-import { openInApp, SUPPORT_EMAIL } from '@/lib/links'
+import { openLegal, SUPPORT_EMAIL } from '@/lib/links'
 import { largeTitleScrollProps } from '@/lib/navigation'
 import type { AccountProfile } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
@@ -140,9 +140,9 @@ export function ProfileHome({ role }: { role: 'acquereur' | 'agence' }) {
       </ListSection>
 
       <ListSection title="Informations légales">
-        <ListRow icon={Scale} iconBackground={colors.slate500} title="Mentions légales" onPress={() => openInApp('/mentions-legales')} />
-        <ListRow icon={Shield} iconBackground={colors.slate500} title="Confidentialité" onPress={() => openInApp('/confidentialite')} />
-        <ListRow icon={FileText} iconBackground={colors.slate500} title="Conditions générales" onPress={() => openInApp('/cgu')} />
+        <ListRow icon={Scale} iconBackground={colors.slate500} title="Mentions légales" onPress={() => openLegal('mentions-legales')} />
+        <ListRow icon={Shield} iconBackground={colors.slate500} title="Confidentialité" onPress={() => openLegal('confidentialite')} />
+        <ListRow icon={FileText} iconBackground={colors.slate500} title="Conditions générales" onPress={() => openLegal('cgu')} />
       </ListSection>
 
       <ListSection>

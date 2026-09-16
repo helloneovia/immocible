@@ -164,7 +164,7 @@ export async function sendNewMessageNotification(
 ): Promise<boolean> {
   const subject = `${recipientName ? `${recipientName}, ` : ''}Nouveau message de ${senderName}`;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const messagesPath = recipientRole === 'agence' ? '/agence/messages' : '/acquereur/messages';
+  const messagesPath = recipientRole === 'admin' ? '/admin/chats' : recipientRole === 'agence' ? '/agence/messages' : '/acquereur/messages';
   const messageUrl = `${baseUrl}${messagesPath}?conversation=${conversationId}`;
 
   // Truncate content for privacy/brevity

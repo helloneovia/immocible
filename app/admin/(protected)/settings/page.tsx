@@ -10,7 +10,7 @@ import {
     AlertCircle, CheckCircle2, Save,
     RefreshCw, DollarSign, List, Key, Sparkles, AlertTriangle,
     AlignLeft, CreditCard, LayoutTemplate, Settings2, FileText,
-    ChevronRight, Layers
+    ChevronRight, Layers, Scale
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
@@ -22,7 +22,7 @@ interface SystemSetting {
     description: string
 }
 
-type TabType = 'content' | 'pricing' | 'features' | 'config'
+type TabType = 'content' | 'legal' | 'pricing' | 'features' | 'config'
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(false)
@@ -45,7 +45,8 @@ export default function AdminSettingsPage() {
             const res = await fetch('/api/admin/settings')
             if (res.ok) {
                 const data = await res.json()
-                if (Array.isArray(data) && data.length > 0) {
+                // Nouvelles définitions (ex. informations légales) : synchronisées automatiquement.
+                if (Array.isArray(data) && data.some((s: SystemSetting) => s.key === 'legal_company_name')) {
                     setSettings(data)
                 } else {
                     await initSettings()
@@ -106,14 +107,18 @@ export default function AdminSettingsPage() {
     })
     const featureSettings = settings.filter(s => s.key.startsWith('feature_'))
     const textSettings = settings.filter(s => s.key.startsWith('text_'))
+    // legal_last_updated est tenu à jour automatiquement à l'enregistrement.
+    const legalSettings = settings.filter(s => s.key.startsWith('legal_') && s.key !== 'legal_last_updated')
     const otherSettings = settings.filter(s =>
         !s.key.startsWith('price_') &&
         !s.key.startsWith('feature_') &&
-        !s.key.startsWith('text_')
+        !s.key.startsWith('text_') &&
+        !s.key.startsWith('legal_')
     )
 
     const menuItems = [
-        { id: 'content', label: 'Contenu & Textes', icon: FileText, desc: 'Textes de la page d\'accueil et pages légales', count: textSettings.length },
+        { id: 'content', label: 'Contenu & Textes', icon: FileText, desc: 'Textes de la page d\'accueil et messages', count: textSettings.length },
+        { id: 'legal', label: 'Informations légales', icon: Scale, desc: 'Société, hébergeur, CGU et confidentialité (site et application)', count: legalSettings.length },
         { id: 'pricing', label: 'Tarification', icon: CreditCard, desc: 'Prix des abonnements et déblocages', count: priceSettings.length },
         { id: 'features', label: 'Fonctionnalités', icon: Layers, desc: 'Listes des avantages par plan', count: featureSettings.length },
         { id: 'config', label: 'Configuration API', icon: Settings2, desc: 'Clés API Stripe et config système', count: otherSettings.length },
@@ -266,11 +271,12 @@ export default function AdminSettingsPage() {
 
                                     <div className="p-6 space-y-6">
                                         {activeTab === 'content' && textSettings.map(renderField)}
+                                        {activeTab === 'legal' && legalSettings.map(renderField)}
                                         {activeTab === 'pricing' && priceSettings.map(renderField)}
                                         {activeTab === 'features' && featureSettings.map(renderField)}
                                         {activeTab === 'config' && otherSettings.map(renderField)}
 
-                                        {[textSettings, priceSettings, featureSettings, otherSettings][['content', 'pricing', 'features', 'config'].indexOf(activeTab)].length === 0 && (
+                                        {[textSettings, legalSettings, priceSettings, featureSettings, otherSettings][['content', 'legal', 'pricing', 'features', 'config'].indexOf(activeTab)].length === 0 && (
                                             <div className="py-12 text-center">
                                                 <p className="text-gray-400">Aucun paramètre dans cette section.</p>
                                             </div>

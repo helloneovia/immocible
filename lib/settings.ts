@@ -26,6 +26,7 @@ export interface AppSettings {
     // Buyer Dashboard Search Popup Texts
     text_buyer_dashboard_popup_title: string
     text_buyer_dashboard_popup_description: string
+    text_buyer_welcome_message: string
 
     // Home Page Texts
     text_home_hero_title_1: string
@@ -76,6 +77,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
 
     // Buyer Dashboard Search Popup Defaults
     text_buyer_dashboard_popup_title: "Recherche de biens en cours 🔍",
+    text_buyer_welcome_message: "Bienvenue sur IMMOCIBLE !\n\nVotre compte est créé. Prochaine étape : décrivez votre projet (type de bien, budget, secteur). Il sera transmis à nos agences partenaires, qui vous écriront ici dès qu'un bien off-market correspond.\n\nVos coordonnées restent masquées : seules les agences qui débloquent votre dossier peuvent les voir.\n\nL'équipe IMMOCIBLE",
     text_buyer_dashboard_popup_description: "Votre profil a bien été enregistré. Nos agences partenaires analysent actuellement vos critères et nous vous contacterons dès qu'une opportunité off-market correspondante sera disponible.",
 
     // Home Page Defaults

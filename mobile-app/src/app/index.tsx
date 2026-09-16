@@ -19,7 +19,7 @@ import { Text } from '@/components/ui/Text'
 import { useSettings } from '@/contexts/SettingsContext'
 import { capitalize } from '@/lib/labels'
 import { useStatusBar } from '@/lib/hooks'
-import { openInApp } from '@/lib/links'
+import { openLegal } from '@/lib/links'
 import { colors, fonts, spacing } from '@/theme'
 
 interface Slide {
@@ -133,11 +133,11 @@ export default function OnboardingScreen() {
         <Button title="J'ai déjà un compte" variant="glass" size="lg" onPress={() => router.push('/connexion')} />
         <Text style={styles.legal}>
           En continuant, vous acceptez les{' '}
-          <Text style={styles.legalLink} onPress={() => openInApp('/cgu')}>
+          <Text style={styles.legalLink} onPress={() => openLegal('cgu')}>
             conditions générales
           </Text>{' '}
           et la{' '}
-          <Text style={styles.legalLink} onPress={() => openInApp('/confidentialite')}>
+          <Text style={styles.legalLink} onPress={() => openLegal('confidentialite')}>
             politique de confidentialité
           </Text>
           .
