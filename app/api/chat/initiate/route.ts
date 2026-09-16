@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
 
 export async function POST(request: NextRequest) {
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser || currentUser.role !== 'agence') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
+        if (!hasActiveSubscription(currentUser.profile)) {
+            return subscriptionRequiredResponse()
         }
 
         const { buyerId } = await request.json()

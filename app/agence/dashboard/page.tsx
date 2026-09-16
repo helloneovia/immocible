@@ -19,6 +19,7 @@ import {
   MessageSquare,
   Zap,
   Crown,
+  Lock,
   X
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -42,6 +43,8 @@ function DashboardContent() {
 
   const [activeSearches, setActiveSearches] = useState([])
   const [loading, setLoading] = useState(true)
+  // Agence sans abonnement actif : le serveur refuse l'accès aux acquéreurs.
+  const [subscriptionRequired, setSubscriptionRequired] = useState(false)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ location: '', budgetMin: '', surfaceMin: '', typeBien: 'all' })
@@ -58,6 +61,9 @@ function DashboardContent() {
         if (response.ok) {
           const { data } = await response.json()
           setActiveSearches(data || [])
+        } else if (response.status === 403) {
+          const body = await response.json().catch(() => null)
+          if (body?.subscriptionRequired) setSubscriptionRequired(true)
         }
       } catch (error) {
         console.error('Error fetching searches:', error)
@@ -94,14 +100,14 @@ function DashboardContent() {
     } catch { alert('Impossible de contacter ce profil pour le moment.') }
   }
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan: 'monthly' | 'yearly' = 'yearly') => {
     if (!user) return
     setIsCheckingOut(true)
     try {
       const response = await fetch('/api/payment/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, plan: 'yearly', nomAgence: user.profile?.nomAgence || 'Agence', returnUrl: window.location.origin + '/agence/dashboard' })
+        body: JSON.stringify({ email: user.email, plan, nomAgence: user.profile?.nomAgence || 'Agence', returnUrl: window.location.origin + '/agence/dashboard' })
       })
       const data = await response.json()
       if (response.ok && data.clientSecret) { window.location.href = '/agence/paiement?client_secret=' + data.clientSecret }
@@ -148,7 +154,7 @@ function DashboardContent() {
         )}
 
         {/* Subscription Plan Banner */}
-        {((user?.profile as any)?.plan !== 'yearly') && (
+        {!subscriptionRequired && ((user?.profile as any)?.plan !== 'yearly') && (
           <Card className="mb-10 border-0 shadow-lg bg-slate-900 text-white overflow-hidden relative rounded-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/8 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/3 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3" />
@@ -179,7 +185,7 @@ function DashboardContent() {
                   <span className="text-slate-400">/an</span>
                 </div>
                 <p className="text-sm text-amber-300 mb-6 font-medium">2 mois offerts</p>
-                <Button size="lg" onClick={handleUpgrade}
+                <Button size="lg" onClick={() => handleUpgrade('yearly')}
                   className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold shadow-lg shadow-amber-500/25 border-0 hover:scale-105 transition-all">
                   <Crown className="mr-2 h-5 w-5" />
                   Passer Premium
@@ -190,6 +196,34 @@ function DashboardContent() {
           </Card>
         )}
 
+        {subscriptionRequired ? (
+          <Card className="mb-10 border border-slate-200 shadow-sm bg-white rounded-2xl">
+            <CardContent className="p-8 sm:p-10 text-center space-y-6">
+              <div className="mx-auto h-16 w-16 rounded-full bg-amber-50 flex items-center justify-center">
+                <Lock className="h-8 w-8 text-amber-600" />
+              </div>
+              <div className="space-y-2 max-w-xl mx-auto">
+                <h2 className="text-2xl font-bold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Activez votre abonnement
+                </h2>
+                <p className="text-slate-500 font-light">
+                  Les dossiers des acquéreurs qualifiés sont réservés aux agences abonnées. Choisissez une offre pour les consulter et les contacter.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                <Button size="lg" variant="outline" className="border-2 rounded-xl font-semibold" onClick={() => handleUpgrade('monthly')}>
+                  Mensuel · {formatPlanPrice(settings.price_monthly)}€ / mois
+                </Button>
+                <Button size="lg" className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl border-0" onClick={() => handleUpgrade('yearly')}>
+                  <Crown className="mr-2 h-5 w-5" />
+                  Annuel · {formatPlanPrice(settings.price_yearly)}€ / an
+                </Button>
+              </div>
+              <p className="text-xs text-slate-400">Paiement sécurisé via Stripe</p>
+            </CardContent>
+          </Card>
+        ) : (
+        <>
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <Card className="border-0 shadow-lg bg-slate-900 text-white rounded-2xl overflow-hidden relative">
@@ -366,6 +400,8 @@ function DashboardContent() {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   )

@@ -19,6 +19,7 @@ function BuyerProfileContent() {
     const [loading, setLoading] = useState(true)
     const [unlocking, setUnlocking] = useState(false)
     const [verifying, setVerifying] = useState(false)
+    const [subscriptionRequired, setSubscriptionRequired] = useState(false)
 
     useEffect(() => {
         if (!id) return
@@ -28,6 +29,9 @@ function BuyerProfileContent() {
                 if (res.ok) {
                     const data = await res.json()
                     setBuyerData(data)
+                } else if (res.status === 403) {
+                    const body = await res.json().catch(() => null)
+                    if (body?.subscriptionRequired) setSubscriptionRequired(true)
                 }
             } catch (error) {
                 console.error('Failed to fetch buyer', error)
@@ -116,6 +120,21 @@ function BuyerProfileContent() {
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
+    }
+
+    if (subscriptionRequired) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+                <Lock className="h-10 w-10 text-amber-600 mb-4" />
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Abonnement requis</h2>
+                <p className="text-gray-500 max-w-md">
+                    Les dossiers des acquéreurs sont réservés aux agences disposant d&apos;un abonnement actif.
+                </p>
+                <Button className="mt-6" onClick={() => router.push('/agence/dashboard')}>
+                    Voir les offres
+                </Button>
+            </div>
+        )
     }
 
     if (!buyerData) {

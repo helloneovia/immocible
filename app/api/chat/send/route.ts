@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { sanitizeContent } from '@/lib/utils'
 import { sendNewMessageNotification } from '@/lib/mail'
+import { hasActiveSubscription } from '@/lib/subscription'
 
 export async function POST(request: NextRequest) {
     try {
@@ -31,11 +32,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Check subscription for agency
-        if (currentUser.role === 'agence') {
-            const endDate = currentUser.profile?.subscriptionEndDate
-            if (!endDate || new Date(endDate) < new Date()) {
-                return NextResponse.json({ error: 'Abonnement expiré ou inactif.' }, { status: 403 })
-            }
+        // Statut et échéance : un abonnement remboursé (CANCELLED) ne permet plus d'écrire.
+        if (currentUser.role === 'agence' && !hasActiveSubscription(currentUser.profile)) {
+            return NextResponse.json({ error: 'Abonnement expiré ou inactif.', subscriptionRequired: true }, { status: 403 })
         }
 
         const sanitizedContent = sanitizeContent(content)

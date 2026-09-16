@@ -53,12 +53,15 @@ export default function BuyerDossierScreen() {
   const [unlocking, setUnlocking] = useState(false)
   const [chatting, setChatting] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
+  const [locked, setLocked] = useState(false)
   useStatusBar('dark')
 
   const load = useCallback(async () => {
     try {
       setBuyer(await api<BuyerDetails>(`/api/agence/buyer/${encodeURIComponent(id)}`))
-    } catch {
+      setLocked(false)
+    } catch (err) {
+      setLocked(err instanceof ApiError && err.status === 403 && !!err.data?.subscriptionRequired)
       setBuyer(null)
     } finally {
       setLoading(false)
@@ -82,6 +85,21 @@ export default function BuyerDossierScreen() {
         <Skeleton height={80} rounded={radius.lg} />
         <Skeleton height={220} rounded={radius.lg} />
       </ScrollView>
+    )
+  }
+
+  if (locked) {
+    return (
+      <View style={[styles.root, { justifyContent: 'center' }]}>
+        {screen}
+        <EmptyState
+          icon={Lock}
+          title="Abonnement requis"
+          message="Les dossiers des acquéreurs sont réservés aux agences disposant d'un abonnement actif."
+          actionLabel="Voir les offres"
+          onAction={() => router.navigate('/agence/profil/abonnement')}
+        />
+      </View>
     )
   }
 

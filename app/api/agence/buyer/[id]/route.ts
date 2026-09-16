@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
+import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
     try {
@@ -10,6 +11,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
         if (!currentUser || currentUser.role !== 'agence') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
+        if (!hasActiveSubscription(currentUser.profile)) {
+            return subscriptionRequiredResponse()
         }
 
         // Check unlock status

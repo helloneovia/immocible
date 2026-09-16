@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/session'
+import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
 
 export async function GET() {
     try {
@@ -8,6 +9,11 @@ export async function GET() {
 
         if (!session || !session.user || session.user.role !== 'agence') {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
+        if (!hasActiveSubscription(session.user.profile)) {
+            return subscriptionRequiredResponse()
         }
 
         // Fetch all active searches (buyer profiles)

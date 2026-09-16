@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native'
 import { router, Stack, useFocusEffect } from 'expo-router'
-import { ChevronRight, Crown, MapPin, SearchX, TriangleAlert, Users } from 'lucide-react-native'
+import { ChevronRight, Crown, Lock, MapPin, SearchX, TriangleAlert, Users } from 'lucide-react-native'
 import { ScoreRing } from '@/components/brand/TargetRing'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Chip, ChipRow } from '@/components/ui/Chips'
@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/contexts/AuthContext'
-import { api } from '@/lib/api'
+import { api, ApiError } from '@/lib/api'
 import { compactEuro, formatDate } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
 import { capitalize, delaiShortLabel } from '@/lib/labels'
@@ -95,14 +95,21 @@ export default function AcquereursScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [filters, setFilters] = useState<Filters>(NO_FILTERS)
   const [sheet, setSheet] = useState<'budget' | 'surface' | null>(null)
+  // Sans abonnement actif, le serveur refuse la liste : on propose de s'abonner.
+  const [locked, setLocked] = useState(false)
   useStatusBar('dark')
 
   const load = useCallback(async () => {
     try {
       const response = await api<{ data: Recherche[] }>('/api/agence/recherches')
       setSearches(response?.data || [])
-    } catch {
-      // liste précédente conservée
+      setLocked(false)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403 && err.data?.subscriptionRequired) {
+        setSearches([])
+        setLocked(true)
+      }
+      // Autres erreurs : liste précédente conservée
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -135,7 +142,7 @@ export default function AcquereursScreen() {
         </Pressable>
       ) : null}
 
-      {!yearly && !expired ? (
+      {!yearly && !expired && !locked ? (
         <Pressable accessibilityRole="button" onPress={() => router.navigate('/agence/profil/abonnement')} style={styles.upsell}>
           <View style={styles.crown}>
             <Crown size={18} color={colors.navy} />
@@ -151,6 +158,8 @@ export default function AcquereursScreen() {
         </Pressable>
       ) : null}
 
+      {!locked ? (
+      <>
       <View style={styles.countRow}>
         <Text variant="title3">
           {loading ? 'Chargement…' : `${filtered.length} acquéreur${filtered.length > 1 ? 's' : ''}`}
@@ -184,6 +193,8 @@ export default function AcquereursScreen() {
           <Chip label="Dossier complet" selected={filters.complete} onPress={() => setFilters((f) => ({ ...f, complete: !f.complete }))} />
         </ChipRow>
       </View>
+      </>
+      ) : null}
 
       {loading
         ? Array.from({ length: 3 }, (_, i) => <Skeleton key={i} height={132} rounded={radius.lg} />)
@@ -227,7 +238,15 @@ export default function AcquereursScreen() {
           />
         }
         ListEmptyComponent={
-          loading ? null : (
+          loading ? null : locked ? (
+            <EmptyState
+              icon={Lock}
+              title="Activez votre abonnement"
+              message="Les dossiers des acquéreurs qualifiés sont réservés aux agences abonnées. Choisissez une offre pour les consulter et les contacter."
+              actionLabel="Voir les offres"
+              onAction={() => router.navigate('/agence/profil/abonnement')}
+            />
+          ) : (
             <EmptyState
               icon={active ? SearchX : Users}
               title={active ? 'Aucun acquéreur ne correspond' : 'Aucune recherche active'}
