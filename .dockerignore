@@ -37,6 +37,9 @@ Thumbs.db
 # Legacy files (no longer needed)
 *.sql
 
+# Applications mobiles (hors build Next.js)
+mobile-app
+
 # Other
 coverage
 .nyc_output

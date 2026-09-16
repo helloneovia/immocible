@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "IMMOCIBLE",
+    "slug": "immocible",
+    "scheme": "immocible",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAFAF9",
+    "ios": {
+      "bundleIdentifier": "com.immocible.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.immocible.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1F38",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              "./node_modules/@expo-google-fonts/inter/300Light/Inter_300Light.ttf",
+              "./node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf",
+              "./node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf",
+              "./node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf",
+              "./node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf",
+              "./node_modules/@expo-google-fonts/playfair-display/600SemiBold/PlayfairDisplay_600SemiBold.ttf",
+              "./node_modules/@expo-google-fonts/playfair-display/700Bold/PlayfairDisplay_700Bold.ttf"
+            ]
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B1F38"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "IMMOCIBLE utilise votre position pour ajouter votre ville à vos critères de recherche.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#E0A93B"
+        }
+      ],
+      "expo-web-browser",
+      "expo-image"
+    ]
+  }
+}
