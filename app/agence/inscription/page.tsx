@@ -10,6 +10,7 @@ import { ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from
 import { Logo } from '@/components/ui/Logo'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { formatPlanPrice } from '@/lib/utils'
 
 export default function InscriptionAgence() {
   const router = useRouter()
@@ -266,7 +267,7 @@ export default function InscriptionAgence() {
                     >
                       {plan === 'monthly' && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center"><CheckCircle2 className="h-3 w-3 text-white" /></div>}
                       <div className="font-bold text-slate-900">Mensuel</div>
-                      <div className="text-sm text-slate-500 mt-1">{settings.price_monthly}€ / mois</div>
+                      <div className="text-sm text-slate-500 mt-1">{formatPlanPrice(settings.price_monthly)}€ / mois</div>
                       <ul className="mt-3 space-y-1.5 text-xs text-slate-500">
                         {settings.feature_list_monthly.map((feature, i) => (
                           <li key={i} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" /> {feature}</li>
@@ -279,7 +280,7 @@ export default function InscriptionAgence() {
                     >
                       {plan === 'yearly' && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center"><CheckCircle2 className="h-3 w-3 text-white" /></div>}
                       <div className="font-bold text-slate-900">Annuel</div>
-                      <div className="text-sm text-slate-500 mt-1">{settings.price_yearly}€ / an</div>
+                      <div className="text-sm text-slate-500 mt-1">{formatPlanPrice(settings.price_yearly)}€ / an</div>
                       <div className="text-[10px] text-amber-600 font-semibold">2 mois offerts</div>
                       <ul className="mt-2 space-y-1.5 text-xs text-slate-500">
                         {settings.feature_list_yearly.map((feature, i) => (

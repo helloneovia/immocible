@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Building2, CreditCard, TrendingUp, ArrowRight, PieChart } from 'lucide-react'
 import { getAppSettings } from '@/lib/settings'
+import { formatPlanPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -162,7 +163,7 @@ export default async function AdminDashboard() {
                                     </div>
                                     <div>
                                         <div className="font-bold text-slate-900 text-lg">Mensuel</div>
-                                        <div className="text-sm text-slate-500 font-medium">{stats.settings.price_monthly}€ / mois</div>
+                                        <div className="text-sm text-slate-500 font-medium">{formatPlanPrice(stats.settings.price_monthly)}€ / mois</div>
                                     </div>
                                 </div>
                                 <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.monthlyActive}</div>
@@ -175,7 +176,7 @@ export default async function AdminDashboard() {
                                     </div>
                                     <div>
                                         <div className="font-bold text-slate-900 text-lg">Annuel</div>
-                                        <div className="text-sm text-slate-500 font-medium">{stats.settings.price_yearly}€ / an</div>
+                                        <div className="text-sm text-slate-500 font-medium">{formatPlanPrice(stats.settings.price_yearly)}€ / an</div>
                                     </div>
                                 </div>
                                 <div className="text-3xl font-bold text-slate-900 tracking-tight">{stats.yearlyActive}</div>

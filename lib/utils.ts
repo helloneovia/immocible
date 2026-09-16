@@ -13,6 +13,14 @@ export function formatPrice(price: number): string {
   }).format(price)
 }
 
+/** Tarif d'abonnement : « 49,90 » ou « 399 » (décimales seulement si nécessaires). */
+export function formatPlanPrice(price: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(price)
+}
+
 export function formatSurface(surface: number): string {
   return `${surface} m²`
 }

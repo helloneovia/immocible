@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { formatPlanPrice } from '@/lib/utils'
 
 function SettingsContent() {
     const router = useRouter()
@@ -32,8 +33,11 @@ function SettingsContent() {
         telephone: '',
         nomAgence: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        currentPassword: ''
     })
+    // E-mail enregistré : le changer exige le mot de passe actuel.
+    const [savedEmail, setSavedEmail] = useState('')
     const [plan, setPlan] = useState('')
     const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
     const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null)
@@ -116,6 +120,7 @@ function SettingsContent() {
                         telephone: data.telephone || '',
                         nomAgence: data.nomAgence || ''
                     }))
+                    setSavedEmail(data.email || '')
                     setRole(data.role)
                     setPlan(data.plan)
                     setSubscriptionEndDate(data.subscriptionEndDate)
@@ -152,6 +157,19 @@ function SettingsContent() {
             return
         }
 
+        if (formData.password && formData.password.length < 8) {
+            alert("Le mot de passe doit contenir au moins 8 caractères.")
+            setSaving(false)
+            return
+        }
+
+        const emailChanged = formData.email.trim().toLowerCase() !== savedEmail.trim().toLowerCase()
+        if ((formData.password || emailChanged) && !formData.currentPassword) {
+            alert("Saisissez votre mot de passe actuel pour modifier l'e-mail ou le mot de passe.")
+            setSaving(false)
+            return
+        }
+
         try {
             const response = await fetch('/api/user/profile', {
                 method: 'PUT',
@@ -161,7 +179,8 @@ function SettingsContent() {
 
             if (response.ok) {
                 alert('Profil mis à jour avec succès !')
-                setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }))
+                setSavedEmail(formData.email.trim().toLowerCase())
+                setFormData(prev => ({ ...prev, password: '', confirmPassword: '', currentPassword: '' }))
             } else {
                 const errorData = await response.json()
                 alert(`Erreur: ${errorData.error || 'Impossible de mettre à jour le profil'}`)
@@ -311,7 +330,7 @@ function SettingsContent() {
                                                     className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap w-full"
                                                 >
                                                     <Crown className="mr-2 h-4 w-4" />
-                                                    Passer à l'annuel ({settings.price_yearly}€/an)
+                                                    Passer à l'annuel ({formatPlanPrice(settings.price_yearly)}€/an)
                                                 </Button>
                                             )}
                                             {plan !== 'yearly' && (
@@ -376,6 +395,18 @@ function SettingsContent() {
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
                                             placeholder="Confirmer le nouveau mot de passe"
+                                        />
+                                    </div>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <Label htmlFor="currentPassword">Mot de passe actuel</Label>
+                                        <Input
+                                            id="currentPassword"
+                                            name="currentPassword"
+                                            type="password"
+                                            autoComplete="current-password"
+                                            value={formData.currentPassword}
+                                            onChange={handleChange}
+                                            placeholder="Requis pour changer l'e-mail ou le mot de passe"
                                         />
                                     </div>
                                 </div>

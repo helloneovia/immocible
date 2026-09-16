@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import { Footer } from '@/components/layout/Footer'
+import { articleBlocks } from '@/lib/blog-content'
 
 export const revalidate = 3600
 
@@ -14,6 +15,7 @@ interface Article {
   slug: string
   title: string
   excerpt?: string
+  metaDescription?: string
   featuredImage?: string
   content?: string
   url?: string
@@ -21,14 +23,14 @@ interface Article {
 
 async function getArticle(slug: string): Promise<Article | null> {
   try {
+    // La liste Adneo ne contient pas le corps : il n'est renvoyé qu'avec le paramètre `slug`.
     const res = await fetch(
-      `https://adneo.cloud/api/widget/articles?websiteId=${ADNEO_WEBSITE_ID}`,
+      `https://adneo.cloud/api/widget/articles?websiteId=${ADNEO_WEBSITE_ID}&slug=${encodeURIComponent(slug)}`,
       { next: { revalidate: 3600 } },
     )
     if (!res.ok) return null
     const data = await res.json()
-    const articles: Article[] = Array.isArray(data?.articles) ? data.articles : []
-    return articles.find((a) => a.slug === slug) || null
+    return data?.article ?? null
   } catch {
     return null
   }
@@ -39,11 +41,11 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return { title: 'Article introuvable', robots: { index: false, follow: false } }
   return {
     title: article.title,
-    description: article.excerpt,
+    description: article.metaDescription || article.excerpt,
     alternates: { canonical: `/blogs/${article.slug}` },
     openGraph: {
       title: article.title,
-      description: article.excerpt,
+      description: article.metaDescription || article.excerpt,
       images: article.featuredImage ? [article.featuredImage] : undefined,
     },
   }
@@ -53,12 +55,8 @@ export default async function ArticlePage({ params }: { params: { slug: string }
   const article = await getArticle(params.slug)
   if (!article) notFound()
 
-  // Le corps est affiché en texte brut (paragraphes) pour ne pas injecter de
-  // HTML tiers non fiable. À enrichir quand la structure de l'API Adneo est connue.
-  const paragraphs = (article.content || article.excerpt || '')
-    .split(/\n{2,}/)
-    .map((p) => p.trim())
-    .filter(Boolean)
+  // Corps converti en blocs texte : le HTML tiers n'est pas injecté tel quel.
+  const blocks = articleBlocks(article.content || article.excerpt || '')
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
@@ -82,11 +80,22 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         )}
 
         <div className="prose prose-slate max-w-none space-y-5">
-          {paragraphs.map((p, i) => (
-            <p key={i} className="text-lg text-slate-700 leading-relaxed font-light">
-              {p}
-            </p>
-          ))}
+          {blocks.map((block, i) =>
+            block.kind === 'heading' ? (
+              <h2 key={i} className="text-2xl font-bold text-slate-900 pt-4">
+                {block.text}
+              </h2>
+            ) : block.kind === 'bullet' ? (
+              <p key={i} className="text-lg text-slate-700 leading-relaxed font-light pl-5 relative">
+                <span className="absolute left-0" aria-hidden="true">•</span>
+                {block.text}
+              </p>
+            ) : (
+              <p key={i} className="text-lg text-slate-700 leading-relaxed font-light">
+                {block.text}
+              </p>
+            ),
+          )}
         </div>
       </article>
 

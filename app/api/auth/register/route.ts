@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Create the actual welcome message
-          const welcomeMessageText = `Bonjour,\n\nNous sommes heureux de vous compter parmis nos acquéreurs off-market, \nn'hésitez pas à nous contacter ici pour toute question ou interrogation.\n\nDans l’attente de vous aider à trouver la perle rare,\nMBJ`;
+          const welcomeMessageText = `Bonjour,\n\nNous sommes heureux de vous compter parmi nos acquéreurs off-market, \nn'hésitez pas à nous contacter ici pour toute question ou interrogation.\n\nDans l’attente de vous aider à trouver la perle rare,\nMBJ`;
 
           await prisma.message.create({
             data: {

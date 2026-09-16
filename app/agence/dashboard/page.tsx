@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { formatPlanPrice } from '@/lib/utils'
 import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
 
 function DashboardContent() {
@@ -174,7 +175,7 @@ function DashboardContent() {
               <div className="flex-shrink-0 bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center min-w-[260px]">
                 <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-2">Offre Annuelle</p>
                 <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-5xl font-extrabold text-white">{settings.price_yearly}€</span>
+                  <span className="text-5xl font-extrabold text-white">{formatPlanPrice(settings.price_yearly)}€</span>
                   <span className="text-slate-400">/an</span>
                 </div>
                 <p className="text-sm text-amber-300 mb-6 font-medium">2 mois offerts</p>

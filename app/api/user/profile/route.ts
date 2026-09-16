@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getCurrentUser } from '@/lib/session'
+import { getCurrentUser, getSession } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { hash } from 'bcryptjs'
+import { validateEmail } from '@/lib/mail'
+import { compare, hash } from 'bcryptjs'
 
 export async function GET() {
     try {
@@ -34,21 +35,46 @@ export async function GET() {
 
 export async function PUT(request: Request) {
     try {
-        const user = await getCurrentUser()
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const session = await getSession()
+        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        const user = session.user
 
         const body = await request.json()
-        const { nom, prenom, email, telephone, password, nomAgence } = body
+        const { nom, prenom, telephone, password, nomAgence, currentPassword } = body
+        const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
 
         if (!email) {
             return NextResponse.json({ error: 'Email est requis' }, { status: 400 })
         }
 
+        const emailChanged = email !== user.email
+        const passwordChanged = typeof password === 'string' && password.length > 0
+
+        // Changer l'e-mail ou le mot de passe exige le mot de passe actuel :
+        // une session volée ne doit pas suffire à s'approprier le compte.
+        if (emailChanged || passwordChanged) {
+            const valid = typeof currentPassword === 'string' && currentPassword.length > 0
+                && await compare(currentPassword, user.password)
+            if (!valid) {
+                return NextResponse.json({ error: 'Mot de passe actuel incorrect.' }, { status: 403 })
+            }
+        }
+
         // Prepare User update (Email & Password)
         const userUpdateData: any = { email }
-        if (password && password.length > 0) {
-            if (password.length < 6) {
-                return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 6 caractères' }, { status: 400 })
+        if (emailChanged) {
+            if (!validateEmail(email)) {
+                return NextResponse.json({ error: 'Adresse e-mail invalide.' }, { status: 400 })
+            }
+            const existing = await prisma.user.findUnique({ where: { email } })
+            if (existing) {
+                return NextResponse.json({ error: 'Cet email est déjà utilisé.' }, { status: 409 })
+            }
+        }
+        if (passwordChanged) {
+            // Même minimum que l'inscription.
+            if (password.length < 8) {
+                return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caractères' }, { status: 400 })
             }
             userUpdateData.password = await hash(password, 10)
         }
@@ -58,6 +84,11 @@ export async function PUT(request: Request) {
             where: { id: user.id },
             data: userUpdateData
         })
+
+        // Nouveau mot de passe : les autres sessions ouvertes sont fermées.
+        if (passwordChanged) {
+            await prisma.session.deleteMany({ where: { userId: user.id, id: { not: session.id } } })
+        }
 
         // Prepare Profile update fields
         // Only update provided fields (or allow clearing?)

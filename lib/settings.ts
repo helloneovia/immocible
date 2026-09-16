@@ -104,6 +104,11 @@ IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
     text_footer_copyright: "© 2024 IMMOCIBLE. Tous droits réservés."
 }
 
+/** Valeur numérique saisie dans l'admin : accepte la virgule décimale (« 49,90 »). */
+function parseSettingNumber(value: string) {
+    return parseFloat(value.replace(/\s/g, '').replace(',', '.'))
+}
+
 // Direct DB fetch to avoid cache issues
 export const getAppSettings = async (): Promise<AppSettings> => {
     try {
@@ -112,10 +117,10 @@ export const getAppSettings = async (): Promise<AppSettings> => {
         const config: any = { ...DEFAULT_SETTINGS }
 
         settings.forEach(s => {
-            if (s.key === 'price_monthly') config.price_monthly = parseFloat(s.value)
-            if (s.key === 'price_yearly') config.price_yearly = parseFloat(s.value)
-            if (s.key === 'price_unlock_profile_percentage') config.price_unlock_profile_percentage = parseFloat(s.value)
-            if (s.key === 'price_unlock_profile_min_budget') config.price_unlock_profile_min_budget = parseFloat(s.value)
+            if (s.key === 'price_monthly') config.price_monthly = parseSettingNumber(s.value)
+            if (s.key === 'price_yearly') config.price_yearly = parseSettingNumber(s.value)
+            if (s.key === 'price_unlock_profile_percentage') config.price_unlock_profile_percentage = parseSettingNumber(s.value)
+            if (s.key === 'price_unlock_profile_min_budget') config.price_unlock_profile_min_budget = parseSettingNumber(s.value)
             if (s.key === 'feature_list_monthly') {
                 try { config.feature_list_monthly = JSON.parse(s.value) } catch { }
             }

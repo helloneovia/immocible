@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { format } from 'date-fns'
 import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { formatPlanPrice } from '@/lib/utils'
 
 interface UserEditFormProps {
     user: any
@@ -152,8 +153,8 @@ export function UserEditForm({ user }: UserEditFormProps) {
                                     <SelectValue placeholder="Sélectionner un plan" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="monthly">Mensuel ({settings.price_monthly}€/mois)</SelectItem>
-                                    <SelectItem value="yearly">Annuel ({settings.price_yearly}€/an)</SelectItem>
+                                    <SelectItem value="monthly">Mensuel ({formatPlanPrice(settings.price_monthly)}€/mois)</SelectItem>
+                                    <SelectItem value="yearly">Annuel ({formatPlanPrice(settings.price_yearly)}€/an)</SelectItem>
                                     <SelectItem value="freemium">Gratuit / Inactif</SelectItem>
                                 </SelectContent>
                             </Select>

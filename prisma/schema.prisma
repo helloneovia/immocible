@@ -21,6 +21,8 @@ enum BienType {
   maison
   studio
   loft
+  duplex
+  penthouse
   villa
   terrain
   autre
