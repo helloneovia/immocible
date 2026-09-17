@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native'
 import { router, Stack, useFocusEffect } from 'expo-router'
-import { useHeaderHeight } from 'expo-router/react-navigation'
 import { Check, Crown, Lock, Ticket } from 'lucide-react-native'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -13,7 +12,7 @@ import { api, errorMessage } from '@/lib/api'
 import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatDate, formatPlanPrice } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
-import { pushedScreenOptions } from '@/lib/navigation'
+import { largeTitleScrollProps, pushedScreenOptions, useTabScreenKeyboardOffset } from '@/lib/navigation'
 import type { AccountProfile } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
 
@@ -27,7 +26,7 @@ export function SubscriptionScreen() {
   const [coupon, setCoupon] = useState('')
   const [upgrading, setUpgrading] = useState(false)
   const [activating, setActivating] = useState(false)
-  const headerHeight = useHeaderHeight()
+  const keyboardOffset = useTabScreenKeyboardOffset()
   const [applying, setApplying] = useState(false)
   useStatusBar('dark')
 
@@ -77,9 +76,9 @@ export function SubscriptionScreen() {
   const daysLeft = Math.ceil(remaining / DAY)
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={headerHeight}>
+    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={keyboardOffset}>
       <Stack.Screen options={{ ...pushedScreenOptions, title: 'Abonnement' }} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView {...largeTitleScrollProps} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {!profile ? (
           <Skeleton height={190} rounded={radius.xxl} />
         ) : (

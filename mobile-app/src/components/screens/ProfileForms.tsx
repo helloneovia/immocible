@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { router, Stack } from 'expo-router'
-import { useHeaderHeight } from 'expo-router/react-navigation'
 import { Building2, Lock, Mail, Phone, UserRound } from 'lucide-react-native'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -11,7 +10,7 @@ import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
 import { api, errorMessage } from '@/lib/api'
 import { useStatusBar } from '@/lib/hooks'
-import { pushedScreenOptions } from '@/lib/navigation'
+import { largeTitleScrollProps, pushedScreenOptions, useTabScreenKeyboardOffset } from '@/lib/navigation'
 import type { AccountProfile } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
 
@@ -47,7 +46,7 @@ export function ProfileInfoScreen() {
   const { form, setForm, role, savedEmail } = useProfileForm()
   const [currentPassword, setCurrentPassword] = useState('')
   const [saving, setSaving] = useState(false)
-  const headerHeight = useHeaderHeight()
+  const keyboardOffset = useTabScreenKeyboardOffset()
   useStatusBar('dark')
 
   // Changer d'e-mail exige le mot de passe actuel (vérifié par le serveur).
@@ -74,7 +73,7 @@ export function ProfileInfoScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={headerHeight}>
+    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={keyboardOffset}>
       <Stack.Screen
         options={{
           ...pushedScreenOptions,
@@ -89,7 +88,8 @@ export function ProfileInfoScreen() {
             ),
         }}
       />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      {/* Écran poussé sous un grand titre (iOS) : le contenu ne doit pas passer sous l'en-tête. */}
+      <ScrollView {...largeTitleScrollProps} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {!form ? (
           <>
             <Skeleton height={80} rounded={radius.md} />
@@ -160,7 +160,7 @@ export function ProfilePasswordScreen() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [saving, setSaving] = useState(false)
-  const headerHeight = useHeaderHeight()
+  const keyboardOffset = useTabScreenKeyboardOffset()
   useStatusBar('dark')
 
   const save = async () => {
@@ -180,9 +180,10 @@ export function ProfilePasswordScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={headerHeight}>
+    <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={keyboardOffset}>
       <Stack.Screen options={{ ...pushedScreenOptions, title: 'Mot de passe' }} />
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      {/* Écran poussé sous un grand titre (iOS) : le contenu ne doit pas passer sous l'en-tête. */}
+      <ScrollView {...largeTitleScrollProps} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text variant="subhead">Choisissez un mot de passe d’au moins 8 caractères que vous n’utilisez pas ailleurs.</Text>
         <TextField
           tone="surface"

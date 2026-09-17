@@ -231,7 +231,7 @@ export default function AccueilScreen() {
                   subtitle={last?.content ? singleLine(last.content) : 'Nouvelle conversation'}
                   value={formatRelative(last?.createdAt ?? conv.updatedAt)}
                   badge={unread || undefined}
-                  onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: conv.id, name, role: 'Agence' } })}
+                  onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: conv.id, name, role: conv.isPlatform ? 'Plateforme' : 'Agence' } })}
                 />
               )
             })

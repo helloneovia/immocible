@@ -23,7 +23,8 @@ export function recipientOf(conv: Conversation, viewer: Viewer) {
     const name = singleLine(`${profile?.prenom || ''} ${profile?.nom || ''}`)
     return { name: name || conv.buyer?.email || 'Acquéreur', role: 'Acquéreur' }
   }
-  return { name: conv.agency?.profile?.nomAgence || conv.agency?.email || 'Agence', role: 'Agence' }
+  // Message de bienvenue : envoyé par la plateforme, pas par une agence.
+  return { name: conv.agency?.profile?.nomAgence || conv.agency?.email || 'Agence', role: conv.isPlatform ? 'Plateforme' : 'Agence' }
 }
 
 export function openConversation(id: string, name: string, role: string) {
