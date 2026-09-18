@@ -21,9 +21,11 @@ interface Props {
   title?: string
   children: React.ReactNode
   footer?: React.ReactNode
+  /** iOS : appelé une fois la feuille entièrement fermée (animation terminée). */
+  onDismissed?: () => void
 }
 
-export function BottomSheet({ visible, onClose, title, children, footer }: Props) {
+export function BottomSheet({ visible, onClose, title, children, footer, onDismissed }: Props) {
   const insets = useSafeAreaInsets()
   const { height } = useWindowDimensions()
   const translateY = useRef(new Animated.Value(height)).current
@@ -36,7 +38,7 @@ export function BottomSheet({ visible, onClose, title, children, footer }: Props
   }, [visible, height, translateY])
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} onDismiss={onDismissed} statusBarTranslucent>
       {/* Android edge-to-edge : la fenêtre n'est plus redimensionnée par le clavier, on remonte la feuille nous-mêmes. */}
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <Pressable accessibilityLabel={t('common.actions.close')} style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={onClose} />
