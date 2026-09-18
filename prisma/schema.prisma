@@ -51,6 +51,7 @@ model User {
   favorites  Favorite[]
   sessions   Session[]
   payments   Payment[]
+  storePurchases StorePurchase[]
 
   // Chat Relations
   agencyConversations Conversation[] @relation("AgencyConversations")
@@ -239,12 +240,40 @@ model Payment {
   currency        String   @default("eur")
   status          String   // succeeded, pending, failed, refunded
   plan            String?  // monthly, yearly
+  provider        String   @default("stripe") // stripe, apple, google
   createdAt       DateTime @default(now())
 
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("payments")
   @@index([userId])
+}
+
+/// Achat effectué dans une application via l'App Store ou Google Play, vérifié par le serveur.
+/// Un achat n'est rattaché qu'à un seul compte : un reçu ne peut pas débloquer deux comptes.
+model StorePurchase {
+  id                    String    @id @default(uuid())
+  userId                String
+  platform              String    // apple, google
+  kind                  String    // subscription, unlock
+  productId             String
+  plan                  String?   // monthly, yearly (abonnements)
+  buyerId               String?   // acquéreur débloqué (déblocages)
+  transactionId         String    @unique // Apple : transactionId ; Google : orderId ou jeton d'achat
+  originalTransactionId String?   // Apple : identifiant stable de l'abonnement (renouvellements)
+  purchaseToken         String?   // Google : jeton d'achat (renouvellements)
+  expiresAt             DateTime?
+  status                String    @default("active") // active, expired, revoked
+  environment           String?   // Production, Sandbox
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("store_purchases")
+  @@index([userId])
+  @@index([originalTransactionId])
+  @@index([purchaseToken])
 }
 
 model Conversation {

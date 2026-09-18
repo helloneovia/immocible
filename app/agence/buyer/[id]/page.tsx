@@ -8,6 +8,7 @@ import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCir
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Navbar } from '@/components/layout/Navbar'
 import { LocationMapDraw } from '@/components/ui/LocationMapDraw'
+import { MobileAppPaymentNotice } from '@/components/shared/MobileAppPaymentNotice'
 import { useI18n } from '@/lib/i18n/client'
 import { intlLocale } from '@/lib/i18n/core'
 
@@ -27,6 +28,15 @@ function BuyerProfileContent() {
     const [unlocking, setUnlocking] = useState(false)
     const [verifying, setVerifying] = useState(false)
     const [subscriptionRequired, setSubscriptionRequired] = useState(false)
+    // Paiement Stripe désactivé par l'admin : les déblocages payants se font dans l'application mobile.
+    const [stripeWebEnabled, setStripeWebEnabled] = useState(true)
+
+    useEffect(() => {
+        fetch('/api/public/settings')
+            .then(res => res.json())
+            .then(data => { if (data && !data.error) setStripeWebEnabled(data.payment_stripe_web_enabled !== false) })
+            .catch(console.error)
+    }, [])
 
     useEffect(() => {
         if (!id) return
@@ -84,6 +94,8 @@ function BuyerProfileContent() {
     }, [sessionId])
 
     const handleUnlock = async () => {
+        // Déblocage payant sans Stripe sur le site : rien à lancer ici (message affiché à la place du bouton).
+        if (!stripeWebEnabled && Number(buyerData?.price) > 0) return
         if (!confirm(t('agency.buyerProfile.confirmUnlock', { price: buyerData.price }))) return
 
         setUnlocking(true)
@@ -469,18 +481,24 @@ function BuyerProfileContent() {
                                     <p className="text-gray-600 mb-6 max-w-xs">
                                         {t('agency.buyerProfile.lockedDesc')}
                                     </p>
-                                    <Button
-                                        size="lg"
-                                        className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-xl transform transition hover:-translate-y-1"
-                                        onClick={handleUnlock}
-                                        disabled={unlocking}
-                                    >
-                                        {unlocking ? t('agency.buyerProfile.processing') : t('agency.buyerProfile.unlockFor', { price })}
-                                        {!unlocking && <Unlock className="ml-2 h-4 w-4" />}
-                                    </Button>
-                                    <p className="text-xs text-gray-400 mt-3">
-                                        {t('agency.buyerProfile.oneTimePayment')}
-                                    </p>
+                                    {!stripeWebEnabled && Number(price) > 0 ? (
+                                        <MobileAppPaymentNotice className="bg-white" message={t('common.payment.appOnlyUnlock')} />
+                                    ) : (
+                                        <>
+                                            <Button
+                                                size="lg"
+                                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-xl transform transition hover:-translate-y-1"
+                                                onClick={handleUnlock}
+                                                disabled={unlocking}
+                                            >
+                                                {unlocking ? t('agency.buyerProfile.processing') : t('agency.buyerProfile.unlockFor', { price })}
+                                                {!unlocking && <Unlock className="ml-2 h-4 w-4" />}
+                                            </Button>
+                                            <p className="text-xs text-gray-400 mt-3">
+                                                {t('agency.buyerProfile.oneTimePayment')}
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </CardContent>

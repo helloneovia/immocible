@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
+import { MobileAppPaymentNotice } from '@/components/shared/MobileAppPaymentNotice'
 import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/client'
@@ -28,6 +29,8 @@ export default function InscriptionAgence() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
+  // Paiement Stripe désactivé par l'admin : l'abonnement se souscrit dans l'application mobile.
+  const stripeWebEnabled = settings.payment_stripe_web_enabled !== false
 
   useEffect(() => {
     fetch('/api/public/settings')
@@ -90,6 +93,13 @@ export default function InscriptionAgence() {
       })
       const registerData = await registerResponse.json()
       if (!registerResponse.ok) throw new Error(registerData.error || t('auth.common.registerError'))
+
+      // Sans Stripe sur le site : le compte est créé (session ouverte), le tableau de bord
+      // affiche l'invitation à s'abonner depuis l'application mobile.
+      if (!stripeWebEnabled) {
+        window.location.href = '/agence/dashboard'
+        return
+      }
 
       const checkoutResponse = await fetch('/api/payment/create-checkout-session', {
         method: 'POST',
@@ -259,7 +269,12 @@ export default function InscriptionAgence() {
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white" />
                 </div>
 
+                {!stripeWebEnabled && (
+                  <MobileAppPaymentNotice message={t('common.payment.appOnlySubscription')} />
+                )}
+
                 {/* Plan selector */}
+                {stripeWebEnabled && (
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-slate-700">{t('auth.agencySignup.choosePlan')}</Label>
                   <div className="grid grid-cols-2 gap-3">
@@ -292,8 +307,10 @@ export default function InscriptionAgence() {
                     </div>
                   </div>
                 </div>
+                )}
 
                 {/* Coupon */}
+                {stripeWebEnabled && (
                 <div className="space-y-2">
                   <Label htmlFor="coupon" className="text-sm font-semibold text-slate-700">{t('auth.agencySignup.promoCode')}</Label>
                   <div className="relative">
@@ -303,6 +320,7 @@ export default function InscriptionAgence() {
                       className="pl-10 h-10 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white uppercase font-mono tracking-wider text-sm" />
                   </div>
                 </div>
+                )}
 
                 <Button type="submit" disabled={loading}
                   className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 group disabled:opacity-50"
@@ -331,10 +349,12 @@ export default function InscriptionAgence() {
             </div>
 
             <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
-              <div className="flex items-center gap-1.5">
-                <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                <span>{settings.text_trust_payment || t('auth.agencySignup.trustPayment')}</span>
-              </div>
+              {stripeWebEnabled && (
+                <div className="flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                  <span>{settings.text_trust_payment || t('auth.agencySignup.trustPayment')}</span>
+                </div>
+              )}
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" />
                 <span>{settings.text_trust_trial || t('auth.agencySignup.trustTrial')}</span>

@@ -107,6 +107,7 @@ const auth: typeof fr = {
       securitySubtitle: 'Choose a password of at least 8 characters.',
       planTitle: 'Choose your plan',
       submit: 'Continue to payment',
+      submitStore: 'Create my account',
       yearly: 'Yearly',
       monthly: 'Monthly',
       perYear: '/ year',

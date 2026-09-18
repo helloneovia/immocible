@@ -2,6 +2,17 @@
 import { prisma } from '@/lib/prisma'
 import { unstable_cache } from 'next/cache'
 
+/**
+ * Palier de prix d'un déblocage de contact vendu dans les applications : les stores
+ * n'acceptent que des produits à prix fixe. Le palier s'applique aux acquéreurs dont le
+ * budget maximum est inférieur ou égal à maxBudget (null = au-delà du dernier palier).
+ */
+export interface IapUnlockTier {
+    maxBudget: number | null
+    apple: string
+    google: string
+}
+
 export interface AppSettings {
     price_monthly: number
     price_yearly: number
@@ -11,6 +22,23 @@ export interface AppSettings {
     feature_list_yearly: string[]
     stripe_secret_key: string
     stripe_public_key: string
+    // Paiements : Stripe sur le site, achats intégrés (App Store / Google Play) dans les applications
+    payment_stripe_web_enabled: boolean
+    iap_enabled: boolean
+    iap_apple_product_monthly: string
+    iap_apple_product_yearly: string
+    iap_google_product_monthly: string
+    iap_google_product_yearly: string
+    iap_google_base_plan_monthly: string
+    iap_google_base_plan_yearly: string
+    iap_unlock_tiers: IapUnlockTier[]
+    // Identifiants serveur (secrets, jamais exposés) pour vérifier les achats auprès des stores
+    iap_apple_bundle_id: string
+    iap_apple_issuer_id: string
+    iap_apple_key_id: string
+    iap_apple_private_key: string
+    iap_google_package_name: string
+    iap_google_service_account: string
     // Marketing Texts
     text_hero_title: string
     text_signup_agency_title: string
@@ -62,6 +90,21 @@ export const DEFAULT_SETTINGS: AppSettings = {
     ],
     stripe_secret_key: process.env.STRIPE_SECRET_KEY || '',
     stripe_public_key: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '',
+    payment_stripe_web_enabled: true,
+    iap_enabled: false,
+    iap_apple_product_monthly: '',
+    iap_apple_product_yearly: '',
+    iap_google_product_monthly: '',
+    iap_google_product_yearly: '',
+    iap_google_base_plan_monthly: '',
+    iap_google_base_plan_yearly: '',
+    iap_unlock_tiers: [],
+    iap_apple_bundle_id: 'com.immocible.app',
+    iap_apple_issuer_id: '',
+    iap_apple_key_id: '',
+    iap_apple_private_key: '',
+    iap_google_package_name: 'com.immocible.app',
+    iap_google_service_account: '',
 
     // Marketing Texts Defaults
     text_hero_title: "Le moteur de recherche inverse de l'immobilier",
@@ -135,6 +178,19 @@ export const getAppSettings = async (): Promise<AppSettings> => {
             }
             if (s.key === 'stripe_secret_key') config.stripe_secret_key = s.value
             if (s.key === 'stripe_public_key') config.stripe_public_key = s.value
+            // Paiements et achats intégrés
+            if (s.key === 'payment_stripe_web_enabled' || s.key === 'iap_enabled') {
+                config[s.key] = s.value.trim() !== 'false'
+                if (s.key === 'iap_enabled') config[s.key] = s.value.trim() === 'true'
+            }
+            if (s.key === 'iap_unlock_tiers') {
+                try {
+                    const tiers = JSON.parse(s.value || '[]')
+                    if (Array.isArray(tiers)) config.iap_unlock_tiers = tiers
+                } catch { }
+            } else if (s.key.startsWith('iap_') && s.key !== 'iap_enabled') {
+                if (s.value.trim()) config[s.key] = s.value.trim()
+            }
 
             // Generic text mapping
             if (s.key.startsWith('text_')) {
@@ -219,4 +275,30 @@ export function localizeSettings<T extends Partial<AppSettings>>(settings: T, lo
         localized[key] = hasCustom ? custom : ENGLISH_DEFAULTS[key]
     }
     return localized
+}
+
+/**
+ * Réglages de paiement sans secret, exposés au site et aux applications
+ * (/api/public/settings) : produits des stores, paliers de déblocage, interrupteurs.
+ */
+export function publicPaymentSettings(settings: AppSettings) {
+    return {
+        payment_stripe_web_enabled: settings.payment_stripe_web_enabled,
+        iap_enabled: settings.iap_enabled,
+        iap_apple_product_monthly: settings.iap_apple_product_monthly,
+        iap_apple_product_yearly: settings.iap_apple_product_yearly,
+        iap_google_product_monthly: settings.iap_google_product_monthly,
+        iap_google_product_yearly: settings.iap_google_product_yearly,
+        iap_google_base_plan_monthly: settings.iap_google_base_plan_monthly,
+        iap_google_base_plan_yearly: settings.iap_google_base_plan_yearly,
+        iap_unlock_tiers: settings.iap_unlock_tiers,
+    }
+}
+
+/** Valeur renvoyée à l'admin à la place d'un secret configuré (jamais la vraie valeur). */
+export const SECRET_PLACEHOLDER = '__secret_configured__'
+
+/** Réglage secret : masqué dans l'admin et jamais journalisé. */
+export function isSecretSetting(setting: { key: string; type?: string | null }) {
+    return setting.type === 'secret' || setting.key === 'stripe_secret_key'
 }

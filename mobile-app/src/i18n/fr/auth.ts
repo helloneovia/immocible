@@ -105,6 +105,7 @@ const auth = {
       securitySubtitle: 'Choisissez un mot de passe d’au moins 8 caractères.',
       planTitle: 'Choisissez votre offre',
       submit: 'Continuer vers le paiement',
+      submitStore: 'Créer mon compte',
       yearly: 'Annuel',
       monthly: 'Mensuel',
       perYear: '/ an',

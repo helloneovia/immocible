@@ -95,6 +95,16 @@ const api: typeof fr = {
         unlockProductDescription: 'Access to full contact details (Ref: {ref})',
         buyerFallback: 'Buyer',
     },
+    iap: {
+        disabled: 'In-app purchases are not enabled.',
+        notConfigured: 'In-app purchases are not configured yet. Please try again later.',
+        invalidPurchase: 'This purchase could not be verified with the store.',
+        wrongAccount: 'This purchase belongs to another account.',
+        alreadyUsed: 'This purchase has already been used.',
+        wrongProduct: "This product doesn't match this offer.",
+        notFree: 'This unlock is free: no purchase is needed.',
+        agencyOnly: 'Agency accounts only.',
+    },
 }
 
 export default api

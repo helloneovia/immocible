@@ -12,6 +12,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
+import { MobileAppPaymentNotice } from '@/components/shared/MobileAppPaymentNotice'
 import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/client'
@@ -28,6 +29,8 @@ function SettingsContent() {
     const [applyingCoupon, setApplyingCoupon] = useState(false)
     const [isCheckingOut, setIsCheckingOut] = useState(false)
     const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
+    // Paiement Stripe désactivé par l'admin : l'abonnement se souscrit dans l'application mobile.
+    const stripeWebEnabled = settings.payment_stripe_web_enabled !== false
 
     const [formData, setFormData] = useState({
         nom: '',
@@ -46,6 +49,7 @@ function SettingsContent() {
     const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null)
 
     const handleUpgrade = async () => {
+        if (!stripeWebEnabled) return
         setIsCheckingOut(true)
         try {
             const response = await fetch('/api/payment/create-checkout-session', {
@@ -75,7 +79,7 @@ function SettingsContent() {
     }
 
     const handleApplyCoupon = async () => {
-        if (!couponCode) return
+        if (!couponCode || !stripeWebEnabled) return
         setApplyingCoupon(true)
         try {
             const response = await fetch('/api/payment/create-checkout-session', {
@@ -326,7 +330,10 @@ function SettingsContent() {
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-3 items-end w-full sm:w-auto">
-                                            {plan !== 'yearly' && (
+                                            {plan !== 'yearly' && !stripeWebEnabled && (
+                                                <MobileAppPaymentNotice className="sm:max-w-xs bg-white" message={t('common.payment.appOnlySubscription')} />
+                                            )}
+                                            {plan !== 'yearly' && stripeWebEnabled && (
                                                 <Button
                                                     type="button"
                                                     onClick={handleUpgrade}
@@ -336,7 +343,7 @@ function SettingsContent() {
                                                     {t('settings.subscription.upgrade', { price: formatPlanPrice(settings.price_yearly, locale) })}
                                                 </Button>
                                             )}
-                                            {plan !== 'yearly' && (
+                                            {plan !== 'yearly' && stripeWebEnabled && (
                                                 <div className="relative group w-full pt-2">
                                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-xl opacity-30 group-hover:opacity-60 transition duration-500 blur-[2px]"></div>
                                                     <div className="relative flex bg-white rounded-lg p-1.5 w-full items-center">

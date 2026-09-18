@@ -42,6 +42,10 @@ const common = {
     preparing: 'Préparation de votre paiement sécurisé...',
     title: 'Paiement sécurisé',
     stripe: 'Sécurisé par Stripe',
+    // Paiement Stripe désactivé sur le site : les achats se font dans les applications
+    appOnlyTitle: 'Application mobile IMMOCIBLE',
+    appOnlySubscription: "Les abonnements se souscrivent depuis l'application mobile IMMOCIBLE (iOS et Android).",
+    appOnlyUnlock: "Le déblocage de ce contact se fait depuis l'application mobile IMMOCIBLE (iOS et Android).",
   },
   loading: 'Chargement...',
   pagination: {

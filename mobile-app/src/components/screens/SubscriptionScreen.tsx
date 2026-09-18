@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { Alert, KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native'
 import { router, Stack, useFocusEffect } from 'expo-router'
 import { Check, Crown, Lock, Ticket } from 'lucide-react-native'
+import { StoreSubscription, storeName } from '@/components/screens/StoreSubscription'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Text } from '@/components/ui/Text'
@@ -13,6 +14,7 @@ import { api, errorMessage } from '@/lib/api'
 import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatDate, formatPlanPrice } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
+import { storeBillingEnabled } from '@/lib/iap'
 import { largeTitleScrollProps, pushedScreenOptions, useTabScreenKeyboardOffset } from '@/lib/navigation'
 import type { AccountProfile } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
@@ -21,8 +23,10 @@ const DAY = 24 * 60 * 60 * 1000
 
 /** Abonnement agence : état de la période, passage à l'annuel, code promo. */
 export function SubscriptionScreen() {
-  const { refresh } = useAuth()
+  const { refresh, user } = useAuth()
   const settings = useSettings()
+  // Apps publiées sur les stores : abonnement via l'App Store / Google Play, sans Stripe ni code promo.
+  const storeBilling = storeBillingEnabled(settings)
   const [profile, setProfile] = useState<AccountProfile | null>(null)
   const [coupon, setCoupon] = useState('')
   const [upgrading, setUpgrading] = useState(false)
@@ -109,7 +113,19 @@ export function SubscriptionScreen() {
         )}
 
         {/* Offre choisie mais jamais payée, ou expirée : pouvoir la régler telle quelle. */}
-        {profile && !active ? (
+        {profile && user && storeBilling ? (
+          <StoreSubscription
+            profile={profile}
+            userId={user.id}
+            active={active}
+            onChanged={() => {
+              load()
+              refresh()
+            }}
+          />
+        ) : null}
+
+        {profile && !storeBilling && !active ? (
           <Button
             title={
               yearly
@@ -124,7 +140,7 @@ export function SubscriptionScreen() {
           />
         ) : null}
 
-        {profile && !yearly ? (
+        {profile && !storeBilling && !yearly ? (
           <View style={styles.upgrade}>
             <View style={styles.upgradeHeader}>
               <View style={styles.crown}>
@@ -150,7 +166,7 @@ export function SubscriptionScreen() {
           </View>
         ) : null}
 
-        {profile && !yearly ? (
+        {profile && !storeBilling && !yearly ? (
           <View style={{ gap: 10 }}>
             <Text variant="label">{t('agency.subscription.promoCode')}</Text>
             <View style={styles.couponRow}>
@@ -171,7 +187,7 @@ export function SubscriptionScreen() {
         ) : null}
 
         <Text variant="footnote" center color={colors.text3}>
-          {t('agency.subscription.footer')}
+          {storeBilling ? t('agency.store.footer', { store: storeName() }) : t('agency.subscription.footer')}
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

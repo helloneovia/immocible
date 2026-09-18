@@ -15,6 +15,7 @@ import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatPlanPrice } from '@/lib/format'
+import { storeBillingEnabled } from '@/lib/iap'
 import { colors, fonts, radius } from '@/theme'
 
 type Plan = 'monthly' | 'yearly'
@@ -73,6 +74,9 @@ function PlanCard({
 export default function InscriptionAgenceScreen() {
   const settings = useSettings()
   const { refresh, setPendingHref } = useAuth()
+  // Apps des stores : pas de formule ni de paiement ici, l'abonnement se prend ensuite via le store.
+  const storeBilling = storeBillingEnabled(settings)
+  const totalSteps = storeBilling ? 4 : STEPS
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -98,7 +102,8 @@ export default function InscriptionAgenceScreen() {
     } else if (step === 4) {
       if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
       if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
-      setStep(5)
+      if (storeBilling) await register()
+      else setStep(5)
     } else {
       await register()
     }
@@ -118,6 +123,11 @@ export default function InscriptionAgenceScreen() {
     }
 
     // Le compte existe et la session est ouverte : on initialise le paiement.
+    if (storeBilling) {
+      setPendingHref('/agence/profil/abonnement')
+      await refresh()
+      return
+    }
     try {
       const checkout = await createSubscriptionCheckout({
         email: verification.normalized,
@@ -144,15 +154,15 @@ export default function InscriptionAgenceScreen() {
     5: { title: t('auth.signup.agency.planTitle'), subtitle: settings.text_signup_agency_subtitle },
   }[step as 1 | 2 | 3 | 4 | 5]
 
-  const cta = step === 5 ? t('auth.signup.agency.submit') : step === 2 ? t('auth.signup.verify') : t('auth.signup.continue')
+  const cta = step === 5 ? t('auth.signup.agency.submit') : step === totalSteps ? t('auth.signup.agency.submitStore') : step === 2 ? t('auth.signup.verify') : t('auth.signup.continue')
   const disabled = (step === 1 && !email.trim()) || (step === 2 && code.length < 6)
 
   return (
     <AuthScaffold
-      eyebrow={t('auth.signup.agencyStepOf', { step, total: STEPS })}
+      eyebrow={t('auth.signup.agencyStepOf', { step, total: totalSteps })}
       title={copy.title}
       subtitle={copy.subtitle}
-      progress={step / STEPS}
+      progress={step / totalSteps}
       gestureEnabled={step === 1}
       footer={
         <>

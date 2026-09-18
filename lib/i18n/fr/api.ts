@@ -93,6 +93,16 @@ const api = {
         unlockProductDescription: 'Accès aux coordonnées complètes (Réf: {ref})',
         buyerFallback: 'Acquéreur',
     },
+    iap: {
+        disabled: "Les achats intégrés ne sont pas activés.",
+        notConfigured: "Les achats intégrés ne sont pas encore configurés. Réessayez plus tard.",
+        invalidPurchase: "Cet achat n'a pas pu être vérifié auprès du store.",
+        wrongAccount: 'Cet achat est rattaché à un autre compte.',
+        alreadyUsed: 'Cet achat a déjà été utilisé.',
+        wrongProduct: 'Ce produit ne correspond pas à cette offre.',
+        notFree: "Ce déblocage est gratuit : aucun achat n'est nécessaire.",
+        agencyOnly: 'Réservé aux comptes agence.',
+    },
 }
 
 export default api

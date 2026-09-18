@@ -28,6 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
+import { MobileAppPaymentNotice } from '@/components/shared/MobileAppPaymentNotice'
 import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
 import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
@@ -52,6 +53,8 @@ function DashboardContent() {
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ location: '', budgetMin: '', surfaceMin: '', typeBien: 'all' })
   const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
+  // Paiement Stripe désactivé par l'admin : l'abonnement se souscrit dans l'application mobile.
+  const stripeWebEnabled = settings.payment_stripe_web_enabled !== false
 
   useEffect(() => {
     fetch('/api/public/settings').then(r => r.json()).then(d => { if (d && !d.error) setSettings(d) }).catch(console.error)
@@ -104,7 +107,7 @@ function DashboardContent() {
   }
 
   const handleUpgrade = async (plan: 'monthly' | 'yearly' = 'yearly') => {
-    if (!user) return
+    if (!user || !stripeWebEnabled) return
     setIsCheckingOut(true)
     try {
       const response = await fetch('/api/payment/create-checkout-session', {
@@ -188,12 +191,18 @@ function DashboardContent() {
                   <span className="text-slate-400">{t('agency.dashboard.perYear')}</span>
                 </div>
                 <p className="text-sm text-amber-300 mb-6 font-medium">{t('agency.dashboard.twoMonthsFree')}</p>
-                <Button size="lg" onClick={() => handleUpgrade('yearly')}
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold shadow-lg shadow-amber-500/25 border-0 hover:scale-105 transition-all">
-                  <Crown className="mr-2 h-5 w-5" />
-                  {t('agency.dashboard.goPremium')}
-                </Button>
-                <p className="mt-3 text-xs text-center text-slate-500">{t('agency.dashboard.securePayment')}</p>
+                {stripeWebEnabled ? (
+                  <>
+                    <Button size="lg" onClick={() => handleUpgrade('yearly')}
+                      className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold shadow-lg shadow-amber-500/25 border-0 hover:scale-105 transition-all">
+                      <Crown className="mr-2 h-5 w-5" />
+                      {t('agency.dashboard.goPremium')}
+                    </Button>
+                    <p className="mt-3 text-xs text-center text-slate-500">{t('agency.dashboard.securePayment')}</p>
+                  </>
+                ) : (
+                  <MobileAppPaymentNotice tone="dark" className="max-w-[260px] mx-auto" message={t('common.payment.appOnlySubscription')} />
+                )}
               </div>
             </CardContent>
           </Card>
@@ -213,16 +222,22 @@ function DashboardContent() {
                   {t('agency.dashboard.paywallDesc')}
                 </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
-                <Button size="lg" variant="outline" className="border-2 rounded-xl font-semibold" onClick={() => handleUpgrade('monthly')}>
-                  {t('agency.dashboard.monthlyButton', { price: formatPlanPrice(settings.price_monthly, locale) })}
-                </Button>
-                <Button size="lg" className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl border-0" onClick={() => handleUpgrade('yearly')}>
-                  <Crown className="mr-2 h-5 w-5" />
-                  {t('agency.dashboard.yearlyButton', { price: formatPlanPrice(settings.price_yearly, locale) })}
-                </Button>
-              </div>
-              <p className="text-xs text-slate-400">{t('agency.dashboard.securePayment')}</p>
+              {stripeWebEnabled ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+                    <Button size="lg" variant="outline" className="border-2 rounded-xl font-semibold" onClick={() => handleUpgrade('monthly')}>
+                      {t('agency.dashboard.monthlyButton', { price: formatPlanPrice(settings.price_monthly, locale) })}
+                    </Button>
+                    <Button size="lg" className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl border-0" onClick={() => handleUpgrade('yearly')}>
+                      <Crown className="mr-2 h-5 w-5" />
+                      {t('agency.dashboard.yearlyButton', { price: formatPlanPrice(settings.price_yearly, locale) })}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-slate-400">{t('agency.dashboard.securePayment')}</p>
+                </>
+              ) : (
+                <MobileAppPaymentNotice className="max-w-xl mx-auto" message={t('common.payment.appOnlySubscription')} />
+              )}
             </CardContent>
           </Card>
         ) : (

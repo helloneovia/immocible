@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Alert, Linking, ScrollView, StyleSheet, View } from 'react-native'
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { Lock, Mail, MapPin, MessageSquare, Phone, Unlock, UserX } from 'lucide-react-native'
@@ -12,10 +12,13 @@ import { ListRow, ListSection } from '@/components/ui/List'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StickyFooter } from '@/components/ui/StickyFooter'
 import { Text } from '@/components/ui/Text'
+import { useAuth } from '@/contexts/AuthContext'
+import { useSettings } from '@/contexts/SettingsContext'
 import { t } from '@/i18n'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { compactEuro, formatEuro } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
+import { buyUnlock, loadProducts, PurchaseCancelled, storeBillingEnabled, unlockProductId } from '@/lib/iap'
 import {
   DUREE_PRET,
   EXTRAS,
@@ -53,6 +56,12 @@ export default function BuyerDossierScreen() {
   const [chatting, setChatting] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [locked, setLocked] = useState(false)
+  const settings = useSettings()
+  const { user } = useAuth()
+  // Apps des stores : un déblocage payant s'achète au prix du palier (produit consommable).
+  const storeBilling = storeBillingEnabled(settings)
+  const [storePrice, setStorePrice] = useState<string | null>(null)
+  const unlockProduct = storeBilling && buyer && !buyer.unlocked && buyer.price > 0 ? unlockProductId(settings, buyer.search?.prixMax) : null
   const NOT_SET = t('agency.buyerFile.notSet')
   useStatusBar('dark')
 
@@ -67,6 +76,14 @@ export default function BuyerDossierScreen() {
       setLoading(false)
     }
   }, [id])
+
+  useEffect(() => {
+    setStorePrice(null)
+    if (!unlockProduct) return
+    loadProducts(settings, [unlockProduct], 'in-app')
+      .then((products) => setStorePrice(products[unlockProduct]?.displayPrice ?? null))
+      .catch(() => {})
+  }, [settings, unlockProduct])
 
   // Rechargé au retour de l'écran de paiement.
   useFocusEffect(
@@ -124,8 +141,34 @@ export default function BuyerDossierScreen() {
   const extras = EXTRAS.filter(({ key }) => c[key]).map(({ label }) => label)
   const completion = search ? dossierCompletion(search) : 0
 
+  const storeUnlock = () => {
+    if (!unlockProduct || !storePrice || !user) {
+      Alert.alert(t('agency.buyerFile.unlockFailed'), t('agency.store.unlockUnavailable'))
+      return
+    }
+    Alert.alert(t('agency.buyerFile.unlockTitle'), t('agency.store.unlockPaid', { price: storePrice }), [
+      { text: t('agency.buyerFile.cancel'), style: 'cancel' },
+      {
+        text: t('agency.store.unlockBuy', { price: storePrice }),
+        onPress: async () => {
+          setUnlocking(true)
+          try {
+            await buyUnlock(settings, user.id, unlockProduct, id)
+            await load()
+          } catch (err) {
+            if (!(err instanceof PurchaseCancelled)) Alert.alert(t('agency.buyerFile.unlockFailed'), errorMessage(err))
+          } finally {
+            setUnlocking(false)
+          }
+        },
+      },
+    ])
+  }
+
   const unlock = () =>
-    Alert.alert(
+    storeBilling && price > 0
+      ? storeUnlock()
+      : Alert.alert(
       t('agency.buyerFile.unlockTitle'),
       price > 0 ? t('agency.buyerFile.unlockPaid', { price }) : t('agency.buyerFile.unlockFree'),
       [
@@ -280,7 +323,15 @@ export default function BuyerDossierScreen() {
           />
           {!unlocked ? (
             <Button
-              title={price > 0 ? t('agency.buyerFile.unlockWithPrice', { price }) : t('agency.buyerFile.unlock')}
+              title={
+                price <= 0
+                  ? t('agency.buyerFile.unlock')
+                  : storeBilling
+                    ? storePrice
+                      ? t('agency.store.unlockBuy', { price: storePrice })
+                      : t('agency.buyerFile.unlock')
+                    : t('agency.buyerFile.unlockWithPrice', { price })
+              }
               icon={Unlock}
               variant="accent"
               size="lg"

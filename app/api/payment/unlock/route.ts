@@ -44,15 +44,6 @@ export async function POST(request: NextRequest) {
         const settings = await getAppSettings()
 
         // Initialize Stripe
-        if (!settings.stripe_secret_key) {
-            console.error("Stripe key missing");
-            return NextResponse.json({ error: 'Configuration error: Missing Stripe Key' }, { status: 500 })
-        }
-
-        const stripe = new Stripe(settings.stripe_secret_key, {
-            apiVersion: '2023-10-16' as any,
-        })
-
         // Fetch buyer search to calculate price
         const buyer = await prisma.user.findUnique({
             where: { id: buyerId },
@@ -92,6 +83,16 @@ export async function POST(request: NextRequest) {
             })
             return NextResponse.json({ success: true, message: t('api.payment.unlockedFree') })
         }
+
+        // Déblocage payant : Stripe n'est nécessaire qu'à partir d'ici (le gratuit n'en dépend pas).
+        if (!settings.stripe_secret_key) {
+            console.error("Stripe key missing");
+            return NextResponse.json({ error: 'Configuration error: Missing Stripe Key' }, { status: 500 })
+        }
+
+        const stripe = new Stripe(settings.stripe_secret_key, {
+            apiVersion: '2023-10-16' as any,
+        })
 
         const priceCents = Math.round(priceEur * 100)
 

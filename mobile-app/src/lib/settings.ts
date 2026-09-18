@@ -26,6 +26,23 @@ export interface PublicSettings {
   text_home_cta_subtitle: string
   text_home_about_content: string
   text_footer_copyright: string
+  // Achats intégrés (App Store / Google Play) — cf. publicPaymentSettings (web).
+  payment_stripe_web_enabled: boolean
+  iap_enabled: boolean
+  iap_apple_product_monthly: string
+  iap_apple_product_yearly: string
+  iap_google_product_monthly: string
+  iap_google_product_yearly: string
+  iap_google_base_plan_monthly: string
+  iap_google_base_plan_yearly: string
+  iap_unlock_tiers: IapUnlockTier[]
+}
+
+export interface IapUnlockTier {
+  /** Budget maximum de l'acquéreur (euros) couvert par ce palier ; null = dernier palier. */
+  maxBudget: number | null
+  apple: string
+  google: string
 }
 
 export const DEFAULT_SETTINGS: PublicSettings = {
@@ -81,6 +98,15 @@ Pourquoi IMMOCIBLE ?
 
 IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
   text_footer_copyright: '© 2024 IMMOCIBLE. Tous droits réservés.',
+  payment_stripe_web_enabled: true,
+  iap_enabled: false,
+  iap_apple_product_monthly: '',
+  iap_apple_product_yearly: '',
+  iap_google_product_monthly: '',
+  iap_google_product_yearly: '',
+  iap_google_base_plan_monthly: '',
+  iap_google_base_plan_yearly: '',
+  iap_unlock_tiers: [],
 }
 
 /**
@@ -151,6 +177,7 @@ export function mergeSettings(data: Partial<PublicSettings> | null | undefined, 
   const merged: any = { ...defaultSettings(locale) }
   if (!data) return merged
   for (const [key, value] of Object.entries(data)) {
+    // `false` doit remplacer un défaut `true` : seuls null / undefined / '' sont ignorés.
     if (value !== null && value !== undefined && value !== '') merged[key] = value
   }
   return merged

@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/session'
 import { LEGAL_LAST_UPDATED_KEY } from '@/lib/legal'
+import { isSecretSetting, SECRET_PLACEHOLDER } from '@/lib/settings'
 
 export async function GET() {
     try {
@@ -15,10 +16,16 @@ export async function GET() {
             orderBy: { key: 'asc' }
         })
 
+        // Les secrets (clés Stripe, Apple, Google) ne quittent jamais le serveur :
+        // l'admin ne reçoit qu'un marqueur « configuré ».
+        const masked = settings.map((setting) =>
+            isSecretSetting(setting) && setting.value ? { ...setting, value: SECRET_PLACEHOLDER } : setting
+        )
+
         // Transform to object for easier consumption if needed, 
         // but array is good for admin table.
         // Let's return the array.
-        return NextResponse.json(settings)
+        return NextResponse.json(masked)
     } catch (error) {
         console.error('Error fetching settings:', error)
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
@@ -34,7 +41,6 @@ export async function PUT(req: Request) {
         }
 
         const body = await req.json()
-        console.log('Settings update request body:', body)
 
         const { updates } = body // Expecting [{ key, value }, ...]
 
@@ -54,10 +60,10 @@ export async function PUT(req: Request) {
 
         const results = await Promise.all(
             updates
-                .filter(update => update.key)
+                // Marqueur renvoyé tel quel : secret inchangé.
+                .filter(update => update.key && update.value !== SECRET_PLACEHOLDER)
                 .map(async (update) => {
                     const { key, value } = update
-                    console.log(`Updating setting: ${key} = ${value}`)
                     try {
                         return await prisma.systemSetting.update({
                             where: { key },

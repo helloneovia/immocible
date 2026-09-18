@@ -1,4 +1,4 @@
-import { getAppSettings, localizeSettings } from '@/lib/settings'
+import { getAppSettings, localizeSettings, publicPaymentSettings } from '@/lib/settings'
 import { getLocale } from '@/lib/i18n/server'
 import { NextResponse } from 'next/server'
 
@@ -36,7 +36,9 @@ export async function GET() {
             price_monthly: settings.price_monthly,
             price_yearly: settings.price_yearly,
             feature_list_monthly: settings.feature_list_monthly,
-            feature_list_yearly: settings.feature_list_yearly
+            feature_list_yearly: settings.feature_list_yearly,
+            // Stripe sur le site, achats intégrés dans les applications (sans aucun secret)
+            ...publicPaymentSettings(settings),
         }
 
         return NextResponse.json(publicSettings)

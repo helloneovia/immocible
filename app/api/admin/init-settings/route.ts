@@ -63,7 +63,7 @@ const DEFAULT_SETTINGS = [
     {
         key: 'stripe_secret_key',
         value: process.env.STRIPE_SECRET_KEY || '',
-        type: 'string',
+        type: 'secret',
         label: 'Clé Secrète Stripe',
         description: 'Clé secrète Stripe utilisée pour les paiements (STRIPE_SECRET_KEY).'
     },
@@ -259,6 +259,22 @@ IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
         label: 'Message de bienvenue (Acquéreur)',
         description: "Message automatique envoyé par IMMOCIBLE dans la messagerie de chaque nouvel acquéreur, à l'inscription."
     },
+    // Paiements : Stripe sur le site, achats intégrés (App Store / Google Play) dans les applications
+    { key: 'payment_stripe_web_enabled', value: 'true', type: 'boolean', label: 'Paiement Stripe sur le site', description: "Désactivé : le site masque tous les paiements Stripe (abonnements, codes promo, déblocages payants) et invite à souscrire depuis l'application." },
+    { key: 'iap_enabled', value: 'false', type: 'boolean', label: 'Achats intégrés dans les applications', description: "Activé : les applications iOS et Android vendent les abonnements et les déblocages via l'App Store et Google Play (obligatoire pour la publication sur les stores). Désactivé : les applications utilisent Stripe." },
+    { key: 'iap_apple_product_monthly', value: '', type: 'string', label: 'Apple — produit abonnement mensuel', description: "Identifiant du produit (Product ID) de l'abonnement auto-renouvelable mensuel dans App Store Connect, ex. com.immocible.agence.mensuel." },
+    { key: 'iap_apple_product_yearly', value: '', type: 'string', label: 'Apple — produit abonnement annuel', description: "Identifiant du produit de l'abonnement auto-renouvelable annuel dans App Store Connect (même groupe d'abonnements que le mensuel)." },
+    { key: 'iap_google_product_monthly', value: '', type: 'string', label: 'Google Play — produit abonnement mensuel', description: "Identifiant de l'abonnement mensuel dans la Play Console (Monétiser › Abonnements)." },
+    { key: 'iap_google_base_plan_monthly', value: '', type: 'string', label: 'Google Play — forfait de base mensuel', description: 'Identifiant du forfait de base (base plan) mensuel. Obligatoire si les deux formules utilisent le même produit Google ; sinon facultatif (vide : le premier forfait actif du produit).' },
+    { key: 'iap_google_product_yearly', value: '', type: 'string', label: 'Google Play — produit abonnement annuel', description: "Identifiant de l'abonnement annuel dans la Play Console." },
+    { key: 'iap_google_base_plan_yearly', value: '', type: 'string', label: 'Google Play — forfait de base annuel', description: 'Identifiant du forfait de base (base plan) annuel. Obligatoire si les deux formules utilisent le même produit Google ; sinon facultatif.' },
+    { key: 'iap_unlock_tiers', value: '[]', type: 'json', label: 'Paliers de prix des déblocages (applications)', description: 'Les stores imposent des prix fixes : chaque palier associe un budget maximum de l\'acquéreur (maxBudget, en euros ; null pour le dernier palier) à un produit consommable Apple et Google. Ex. [{"maxBudget": 2000000, "apple": "com.immocible.deblocage.1", "google": "deblocage_1"}, {"maxBudget": null, "apple": "com.immocible.deblocage.2", "google": "deblocage_2"}]. Les déblocages gratuits (budget sous le seuil) restent gratuits.' },
+    { key: 'iap_apple_bundle_id', value: 'com.immocible.app', type: 'string', label: 'Apple — Bundle ID', description: "Identifiant de l'application iOS, vérifié sur chaque achat." },
+    { key: 'iap_apple_issuer_id', value: '', type: 'string', label: 'Apple — Issuer ID (API App Store Server)', description: 'App Store Connect › Utilisateurs et accès › Intégrations › Achats intégrés : identifiant émetteur.' },
+    { key: 'iap_apple_key_id', value: '', type: 'string', label: 'Apple — Key ID (API App Store Server)', description: "Identifiant de la clé d'achats intégrés générée dans App Store Connect." },
+    { key: 'iap_apple_private_key', value: '', type: 'secret', label: 'Apple — clé privée .p8', description: 'Contenu complet du fichier .p8 (-----BEGIN PRIVATE KEY----- …). Utilisé uniquement par le serveur pour vérifier les achats.' },
+    { key: 'iap_google_package_name', value: 'com.immocible.app', type: 'string', label: 'Google Play — nom du package', description: "Identifiant de l'application Android, vérifié sur chaque achat." },
+    { key: 'iap_google_service_account', value: '', type: 'secret', label: 'Google Play — compte de service (JSON)', description: "Contenu du fichier JSON d'un compte de service Google Cloud ayant accès à l'API Google Play Developer (Play Console › Utilisateurs et autorisations). Utilisé uniquement par le serveur." },
     // Versions anglaises des textes administrables (vides : textes anglais par défaut du site).
     ...TRANSLATABLE_SETTING_KEYS.map((key) => ({
         key: `${key}_en`,

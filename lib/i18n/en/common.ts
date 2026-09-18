@@ -44,6 +44,9 @@ const common: typeof fr = {
     preparing: 'Preparing your secure payment...',
     title: 'Secure payment',
     stripe: 'Secured by Stripe',
+    appOnlyTitle: 'IMMOCIBLE mobile app',
+    appOnlySubscription: 'Subscriptions are available from the IMMOCIBLE mobile app (iOS and Android).',
+    appOnlyUnlock: 'This contact can be unlocked from the IMMOCIBLE mobile app (iOS and Android).',
   },
   loading: 'Loading...',
   pagination: {

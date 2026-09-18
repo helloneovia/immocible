@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+// Marqueur envoyé par l'API à la place d'un secret configuré (voir lib/settings.ts).
+const SECRET_PLACEHOLDER = '__secret_configured__'
+
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +13,11 @@ import {
     AlertCircle, CheckCircle2, Save,
     RefreshCw, DollarSign, List, Key, Sparkles, AlertTriangle,
     AlignLeft, CreditCard, LayoutTemplate, Settings2, FileText,
-    ChevronRight, Layers, Scale
+    ChevronRight, Layers, Scale, Smartphone, Plus, Trash2, Pencil, EyeOff
 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 interface SystemSetting {
     key: string
@@ -22,7 +27,249 @@ interface SystemSetting {
     description: string
 }
 
-type TabType = 'content' | 'legal' | 'pricing' | 'features' | 'config'
+type TabType = 'content' | 'legal' | 'pricing' | 'features' | 'config' | 'stores'
+
+/** Réglages de l'onglet « App Store / Google Play » (paiements et achats intégrés). */
+const isStoreSettingKey = (key: string) => key.startsWith('iap_') || key.startsWith('payment_')
+
+const STORE_GROUPS: { title: string; desc: string; keys: string[] }[] = [
+    {
+        title: 'Interrupteurs',
+        desc: 'Moyens de paiement proposés sur le site et dans les applications.',
+        keys: ['payment_stripe_web_enabled', 'iap_enabled'],
+    },
+    {
+        title: 'Produits des abonnements',
+        desc: 'Identifiants des abonnements créés dans App Store Connect et la Play Console.',
+        keys: [
+            'iap_apple_product_monthly', 'iap_apple_product_yearly',
+            'iap_google_product_monthly', 'iap_google_base_plan_monthly',
+            'iap_google_product_yearly', 'iap_google_base_plan_yearly',
+        ],
+    },
+    {
+        title: 'Déblocages',
+        desc: 'Produits consommables vendus pour débloquer un contact, par palier de budget.',
+        keys: ['iap_unlock_tiers'],
+    },
+    {
+        title: 'Vérification des achats',
+        desc: 'Identifiants utilisés par le serveur pour vérifier les achats auprès des stores.',
+        keys: [
+            'iap_apple_bundle_id', 'iap_apple_issuer_id', 'iap_apple_key_id', 'iap_apple_private_key',
+            'iap_google_package_name', 'iap_google_service_account',
+        ],
+    },
+]
+
+interface UnlockTierRow {
+    maxBudget: string
+    apple: string
+    google: string
+}
+
+/** Budget saisi : vide = sans limite (null) ; une saisie non numérique est conservée telle quelle pour être signalée. */
+function parseTierBudget(text: string): number | string | null {
+    const trimmed = text.trim()
+    if (!trimmed) return null
+    const n = Number(trimmed.replace(/\s/g, '').replace(',', '.'))
+    return Number.isFinite(n) ? n : trimmed
+}
+
+function tiersFromValue(value: string): UnlockTierRow[] {
+    try {
+        const parsed = JSON.parse(value || '[]')
+        if (!Array.isArray(parsed)) return []
+        return parsed.map((tier: any) => ({
+            maxBudget: tier?.maxBudget === null || tier?.maxBudget === undefined ? '' : String(tier.maxBudget),
+            apple: typeof tier?.apple === 'string' ? tier.apple : '',
+            google: typeof tier?.google === 'string' ? tier.google : '',
+        }))
+    } catch {
+        return []
+    }
+}
+
+function tiersToValue(rows: UnlockTierRow[]) {
+    return JSON.stringify(rows.map((row) => ({
+        maxBudget: parseTierBudget(row.maxBudget),
+        apple: row.apple.trim(),
+        google: row.google.trim(),
+    })))
+}
+
+/** Erreurs de saisie des paliers de déblocage (liste vide = valide). */
+function validateUnlockTiers(value: string): string[] {
+    let parsed: any
+    try {
+        parsed = JSON.parse(value || '[]')
+    } catch {
+        return ['JSON invalide.']
+    }
+    if (!Array.isArray(parsed)) return ['La valeur doit être une liste de paliers.']
+    const errors: string[] = []
+    let unlimited = 0
+    let previous = -Infinity
+    parsed.forEach((tier: any, index: number) => {
+        const line = `Ligne ${index + 1}`
+        const budget = tier?.maxBudget
+        if (budget === null || budget === undefined) {
+            unlimited += 1
+            if (index !== parsed.length - 1) errors.push(`${line} : le palier sans limite doit être le dernier.`)
+            previous = Infinity
+        } else if (typeof budget !== 'number' || !Number.isFinite(budget) || budget <= 0) {
+            errors.push(`${line} : budget max invalide.`)
+        } else {
+            if (budget <= previous) errors.push(`${line} : les budgets doivent être classés par ordre croissant.`)
+            previous = budget
+        }
+        if (!tier?.apple || !String(tier.apple).trim()) errors.push(`${line} : produit Apple requis.`)
+        if (!tier?.google || !String(tier.google).trim()) errors.push(`${line} : produit Google requis.`)
+    })
+    if (unlimited > 1) errors.push('Un seul palier peut être sans limite de budget.')
+    return errors
+}
+
+/** Éditeur des paliers de déblocage (iap_unlock_tiers), enregistrés en JSON. */
+function UnlockTiersEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+    const [rows, setRows] = useState<UnlockTierRow[]>(() => tiersFromValue(value))
+    const lastEmitted = useRef(value)
+
+    // Valeur remplacée de l'extérieur (rechargement, annulation) : on relit les lignes.
+    useEffect(() => {
+        if (value !== lastEmitted.current) {
+            lastEmitted.current = value
+            setRows(tiersFromValue(value))
+        }
+    }, [value])
+
+    const update = (next: UnlockTierRow[]) => {
+        setRows(next)
+        const json = tiersToValue(next)
+        lastEmitted.current = json
+        onChange(json)
+    }
+    const setCell = (index: number, field: keyof UnlockTierRow, text: string) =>
+        update(rows.map((row, i) => (i === index ? { ...row, [field]: text } : row)))
+
+    const errors = validateUnlockTiers(value)
+
+    return (
+        <div className="space-y-3">
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-44">Budget max (€)</TableHead>
+                            <TableHead>Produit Apple</TableHead>
+                            <TableHead>Produit Google</TableHead>
+                            <TableHead className="w-12" />
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {rows.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center text-sm text-gray-400 py-6">
+                                    Aucun palier : les déblocages payants ne sont pas proposés dans les applications.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {rows.map((row, index) => (
+                            <TableRow key={index}>
+                                <TableCell>
+                                    <Input
+                                        value={row.maxBudget}
+                                        inputMode="numeric"
+                                        placeholder="Sans limite"
+                                        onChange={(e) => setCell(index, 'maxBudget', e.target.value)}
+                                        className="h-9"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Input
+                                        value={row.apple}
+                                        placeholder="com.immocible.deblocage.1"
+                                        onChange={(e) => setCell(index, 'apple', e.target.value)}
+                                        className="h-9 font-mono text-sm"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Input
+                                        value={row.google}
+                                        placeholder="deblocage_1"
+                                        onChange={(e) => setCell(index, 'google', e.target.value)}
+                                        className="h-9 font-mono text-sm"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label="Supprimer le palier"
+                                        onClick={() => update(rows.filter((_, i) => i !== index))}
+                                        className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => update([...rows, { maxBudget: '', apple: '', google: '' }])}>
+                    <Plus className="h-4 w-4" /> Ajouter un palier
+                </Button>
+                <p className="text-xs text-gray-400">Budget vide = sans limite (dernier palier). Budgets classés par ordre croissant.</p>
+            </div>
+            {errors.length > 0 && (
+                <ul className="text-sm text-red-600 space-y-1 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+                    {errors.map((message, i) => <li key={i}>{message}</li>)}
+                </ul>
+            )}
+        </div>
+    )
+}
+
+/** Secret (clé privée, compte de service) : masqué par défaut, affiché seulement sur « Modifier ». */
+function SecretField({ setting, onChange }: { setting: SystemSetting; onChange: (value: string) => void }) {
+    const [editing, setEditing] = useState(false)
+    const hasValue = setting.value.trim() !== ''
+    // Le serveur ne renvoie qu'un marqueur pour un secret configuré : champ vide à la modification.
+    const displayValue = setting.value === SECRET_PLACEHOLDER ? '' : setting.value
+
+    if (hasValue && !editing) {
+        return (
+            <div className="flex items-center justify-between gap-3 rounded-md border border-gray-200 bg-slate-50/50 px-4 py-3">
+                <span className="font-mono text-sm text-gray-500">•••• (configurée)</span>
+                <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => setEditing(true)}>
+                    <Pencil className="h-4 w-4" /> Modifier
+                </Button>
+            </div>
+        )
+    }
+
+    return (
+        <div className="space-y-2">
+            <Textarea
+                id={setting.key}
+                value={displayValue}
+                spellCheck={false}
+                autoComplete="off"
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="Collez ici le contenu complet du fichier"
+                className="font-mono text-sm min-h-[140px] bg-slate-50/50 border-gray-200 focus:bg-white focus:border-indigo-500 transition-all resize-y"
+            />
+            {hasValue && (
+                <Button type="button" variant="ghost" size="sm" className="gap-2 text-gray-500" onClick={() => setEditing(false)}>
+                    <EyeOff className="h-4 w-4" /> Masquer
+                </Button>
+            )}
+        </div>
+    )
+}
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(false)
@@ -46,7 +293,7 @@ export default function AdminSettingsPage() {
             if (res.ok) {
                 const data = await res.json()
                 // Nouvelles définitions (ex. informations légales) : synchronisées automatiquement.
-                if (Array.isArray(data) && ['legal_company_name', 'text_home_hero_title_1_en'].every((key) => data.some((s: SystemSetting) => s.key === key))) {
+                if (Array.isArray(data) && ['legal_company_name', 'text_home_hero_title_1_en', 'iap_enabled'].every((key) => data.some((s: SystemSetting) => s.key === key))) {
                     setSettings(data)
                 } else {
                     await initSettings()
@@ -77,9 +324,16 @@ export default function AdminSettingsPage() {
     }
 
     const saveSettings = async () => {
-        setLoading(true)
         setSuccess(false)
         setError(null)
+        const tiers = settings.find(s => s.key === 'iap_unlock_tiers')
+        const tierErrors = tiers ? validateUnlockTiers(tiers.value) : []
+        if (tierErrors.length > 0) {
+            setActiveTab('stores')
+            setError(`Paliers de déblocage invalides : ${tierErrors.join(' ')}`)
+            return
+        }
+        setLoading(true)
         try {
             const updates = settings.map(s => ({ key: s.key, value: s.value }))
             const res = await fetch('/api/admin/settings', {
@@ -109,7 +363,21 @@ export default function AdminSettingsPage() {
     const textSettings = settings.filter(s => s.key.startsWith('text_'))
     // legal_last_updated est tenu à jour automatiquement à l'enregistrement.
     const legalSettings = settings.filter(s => s.key.startsWith('legal_') && s.key !== 'legal_last_updated')
+    const storeSettings = settings.filter(s => isStoreSettingKey(s.key))
+    const storeGroups = [
+        ...STORE_GROUPS.map(group => ({
+            ...group,
+            settings: group.keys.map(key => storeSettings.find(s => s.key === key)).filter((s): s is SystemSetting => Boolean(s)),
+        })),
+        {
+            title: 'Autres',
+            desc: '',
+            keys: [] as string[],
+            settings: storeSettings.filter(s => !STORE_GROUPS.some(group => group.keys.includes(s.key))),
+        },
+    ].filter(group => group.settings.length > 0)
     const otherSettings = settings.filter(s =>
+        !isStoreSettingKey(s.key) &&
         !s.key.startsWith('price_') &&
         !s.key.startsWith('feature_') &&
         !s.key.startsWith('text_') &&
@@ -121,6 +389,7 @@ export default function AdminSettingsPage() {
         { id: 'legal', label: 'Informations légales', icon: Scale, desc: 'Société, hébergeur, CGU et confidentialité (site et application)', count: legalSettings.length },
         { id: 'pricing', label: 'Tarification', icon: CreditCard, desc: 'Prix des abonnements et déblocages', count: priceSettings.length },
         { id: 'features', label: 'Fonctionnalités', icon: Layers, desc: 'Listes des avantages par plan', count: featureSettings.length },
+        { id: 'stores', label: 'App Store / Google Play', icon: Smartphone, desc: 'Achats intégrés des applications et paiement Stripe du site', count: storeSettings.length },
         { id: 'config', label: 'Configuration API', icon: Settings2, desc: 'Clés API Stripe et config système', count: otherSettings.length },
     ]
 
@@ -142,7 +411,21 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="mt-1">
-                    {setting.type === 'json' || setting.value.length > 80 ? (
+                    {setting.type === 'boolean' ? (
+                        <Select value={setting.value.trim() === 'true' ? 'true' : 'false'} onValueChange={(v) => handleSettingChange(setting.key, v)}>
+                            <SelectTrigger id={setting.key} className="h-11 w-full sm:w-60 bg-slate-50/50 border-gray-200">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="true">Activé</SelectItem>
+                                <SelectItem value="false">Désactivé</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    ) : setting.type === 'secret' ? (
+                        <SecretField setting={setting} onChange={(v) => handleSettingChange(setting.key, v)} />
+                    ) : setting.key === 'iap_unlock_tiers' ? (
+                        <UnlockTiersEditor value={setting.value} onChange={(v) => handleSettingChange(setting.key, v)} />
+                    ) : setting.type === 'json' || setting.value.length > 80 ? (
                         <Textarea
                             id={setting.key}
                             value={setting.value}
@@ -275,8 +558,35 @@ export default function AdminSettingsPage() {
                                         {activeTab === 'pricing' && priceSettings.map(renderField)}
                                         {activeTab === 'features' && featureSettings.map(renderField)}
                                         {activeTab === 'config' && otherSettings.map(renderField)}
+                                        {activeTab === 'stores' && storeSettings.length > 0 && (
+                                            <>
+                                                <Alert className="bg-indigo-50/60 border-indigo-100 text-slate-800">
+                                                    <Smartphone className="h-5 w-5 text-indigo-600" />
+                                                    <AlertTitle>Mise en place des achats intégrés</AlertTitle>
+                                                    <AlertDescription>
+                                                        <ol className="list-decimal pl-5 mt-2 space-y-1.5 text-sm text-slate-600">
+                                                            <li>Créez les abonnements mensuel et annuel (dans le même groupe d&apos;abonnements) et les produits consommables de déblocage dans App Store Connect et dans la Play Console.</li>
+                                                            <li>Reportez ici les identifiants des produits (abonnements et paliers de déblocage).</li>
+                                                            <li>Renseignez les clés API : Issuer ID, Key ID et clé privée .p8 d&apos;Apple, compte de service Google Play.</li>
+                                                            <li>Configurez les notifications serveur Apple (App Store Server Notifications, version 2) vers <code className="font-mono text-xs bg-white px-1 py-0.5 rounded border">https://immocible.com/api/iap/apple/notifications</code>.</li>
+                                                            <li>Configurez les notifications Google (Real-time developer notifications) : un sujet Pub/Sub avec un abonnement en push vers <code className="font-mono text-xs bg-white px-1 py-0.5 rounded border">https://immocible.com/api/iap/google/notifications</code>.</li>
+                                                            <li>Activez enfin « Achats intégrés dans les applications ».</li>
+                                                        </ol>
+                                                    </AlertDescription>
+                                                </Alert>
+                                                {storeGroups.map(group => (
+                                                    <section key={group.title} className="space-y-4">
+                                                        <div className="pt-2">
+                                                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-900">{group.title}</h3>
+                                                            {group.desc && <p className="text-sm text-gray-500 mt-0.5">{group.desc}</p>}
+                                                        </div>
+                                                        {group.settings.map(renderField)}
+                                                    </section>
+                                                ))}
+                                            </>
+                                        )}
 
-                                        {[textSettings, legalSettings, priceSettings, featureSettings, otherSettings][['content', 'legal', 'pricing', 'features', 'config'].indexOf(activeTab)].length === 0 && (
+                                        {[textSettings, legalSettings, priceSettings, featureSettings, otherSettings, storeSettings][['content', 'legal', 'pricing', 'features', 'config', 'stores'].indexOf(activeTab)].length === 0 && (
                                             <div className="py-12 text-center">
                                                 <p className="text-gray-400">Aucun paramètre dans cette section.</p>
                                             </div>
