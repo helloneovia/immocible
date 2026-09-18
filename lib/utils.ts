@@ -14,8 +14,8 @@ export function formatPrice(price: number): string {
 }
 
 /** Tarif d'abonnement : « 49,90 » ou « 399 » (décimales seulement si nécessaires). */
-export function formatPlanPrice(price: number): string {
-  return new Intl.NumberFormat('fr-FR', {
+export function formatPlanPrice(price: number, locale: 'fr' | 'en' = 'fr'): string {
+  return new Intl.NumberFormat(locale === 'en' ? 'en-GB' : 'fr-FR', {
     minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(price)

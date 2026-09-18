@@ -3,14 +3,16 @@ import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
 import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+    const t = getT()
     try {
         const buyerId = params.id
         const currentUser = await getCurrentUser()
 
         if (!currentUser || currentUser.role !== 'agence') {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         })
 
         if (!buyer) {
-            return NextResponse.json({ error: 'Buyer not found' }, { status: 404 })
+            return NextResponse.json({ error: t('api.agency.buyerNotFound') }, { status: 404 })
         }
 
         const search = buyer.recherches[0]
@@ -86,6 +88,6 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         return NextResponse.json(data)
     } catch (error) {
         console.error('Error fetching buyer details:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

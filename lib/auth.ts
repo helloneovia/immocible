@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { UserRole } from '@prisma/client'
+import { getT } from '@/lib/i18n/server'
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -28,7 +29,7 @@ export async function createUser(
   })
 
   if (existingUser) {
-    throw new Error('Un utilisateur avec cet email existe déjà')
+    throw new Error(getT()('api.auth.emailAlreadyExists'))
   }
 
   // Create user and profile in a transaction
@@ -64,8 +65,10 @@ export async function authenticateUser(email: string, password: string, role?: U
     },
   })
 
+  const t = getT()
+
   if (!user) {
-    throw new Error('Email ou mot de passe incorrect')
+    throw new Error(t('api.auth.invalidCredentials'))
   }
 
   // On vérifie d'abord le mot de passe : tant qu'il n'est pas validé, on ne
@@ -73,16 +76,16 @@ export async function authenticateUser(email: string, password: string, role?: U
   const isValid = await verifyPassword(password, user.password)
 
   if (!isValid) {
-    throw new Error('Email ou mot de passe incorrect')
+    throw new Error(t('api.auth.invalidCredentials'))
   }
 
   // Le mot de passe est correct : indiquer un éventuel mauvais portail est ici
   // sans risque, l'appelant s'est authentifié.
   if (role && user.role !== role) {
-    const roleName = role === 'acquereur' ? 'acquéreur' : 'agence'
-    const actualRoleName = user.role === 'acquereur' ? 'acquéreur' : user.role === 'agence' ? 'agence' : 'admin'
+    const roleName = role === 'acquereur' ? t('api.auth.roles.acquereur') : t('api.auth.roles.agence')
+    const actualRoleName = user.role === 'acquereur' ? t('api.auth.roles.acquereur') : user.role === 'agence' ? t('api.auth.roles.agence') : t('api.auth.roles.admin')
 
-    throw new Error(`Ce compte est un compte ${actualRoleName}, pas un compte ${roleName}. Veuillez vous connecter sur le bon portail.`)
+    throw new Error(t('api.auth.wrongPortal', { actual: actualRoleName, expected: roleName }))
   }
 
   // Remove password from returned user

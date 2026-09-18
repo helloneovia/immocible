@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { EmptyState, LoadingView } from '@/components/ui/Layout'
 import { pushedScreenOptions } from '@/lib/navigation'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { fetchArticles } from '@/lib/blog'
 import { useStatusBar } from '@/lib/hooks'
 import { openInApp } from '@/lib/links'
@@ -37,7 +38,7 @@ export default function BlogScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ ...pushedScreenOptions, title: 'Conseils' }} />
+      <Stack.Screen options={{ ...pushedScreenOptions, title: t('profile.blog.title') }} />
       {loading ? (
         <LoadingView />
       ) : (
@@ -57,15 +58,15 @@ export default function BlogScreen() {
           ListHeaderComponent={
             <View style={styles.hero}>
               <PhotoBackdrop uri={PHOTOS.blog} opacity={0.7} />
-              <Text style={styles.heroTitle}>Le Blog IMMOCIBLE</Text>
-              <Text style={styles.heroText}>Actualités, conseils et analyses du marché de l'immobilier d'exception.</Text>
+              <Text style={styles.heroTitle}>{t('profile.blog.heroTitle')}</Text>
+              <Text style={styles.heroText}>{t('profile.blog.heroText')}</Text>
             </View>
           }
           ListEmptyComponent={
             <EmptyState
               icon={BookOpen}
-              title="Bientôt disponible"
-              message="Nos premiers articles arrivent très bientôt. Revenez prochainement !"
+              title={t('profile.blog.comingSoon')}
+              message={t('profile.blog.comingSoonMessage')}
               style={styles.padded}
             />
           }
@@ -91,7 +92,7 @@ export default function BlogScreen() {
                   </Text>
                 ) : null}
                 <View style={styles.readMore}>
-                  <Text style={styles.readText}>Lire l'article</Text>
+                  <Text style={styles.readText}>{t('profile.blog.readArticle')}</Text>
                   <ArrowRight size={16} color={colors.ink} />
                 </View>
               </View>

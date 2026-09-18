@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const limited = enforceRateLimit(request, 'reset-password', 10, 15 * 60_000)
         if (limited) return limited
@@ -12,14 +14,14 @@ export async function POST(request: NextRequest) {
 
         if (!token || !password) {
             return NextResponse.json(
-                { error: 'Token et mot de passe requis' },
+                { error: t('api.auth.resetPassword.tokenPasswordRequired') },
                 { status: 400 }
             )
         }
 
         if (password.length < 8) {
             return NextResponse.json(
-                { error: 'Le mot de passe doit contenir au moins 8 caractères' },
+                { error: t('api.auth.resetPassword.passwordTooShort') },
                 { status: 400 }
             )
         }
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         if (!verificationToken) {
             return NextResponse.json(
-                { error: 'Lien invalide ou expiré' },
+                { error: t('api.auth.resetPassword.invalidLink') },
                 { status: 400 }
             )
         }
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
                 where: { identifier_token: { identifier: verificationToken.identifier, token: verificationToken.token } } 
             })
             return NextResponse.json(
-                { error: 'Lien expiré' },
+                { error: t('api.auth.resetPassword.linkExpired') },
                 { status: 400 }
             )
         }
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('Password reset error:', error)
         return NextResponse.json(
-            { error: 'Erreur lors de la réinitialisation' },
+            { error: t('api.auth.resetPassword.failed') },
             { status: 500 }
         )
     }

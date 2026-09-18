@@ -7,8 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ArrowRight, Shield, AlertCircle, Mail } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
+import { useI18n } from '@/lib/i18n/client'
 
 export default function ForgotPassword() {
+    const { t } = useI18n()
     const [email, setEmail] = useState('')
     const [loading, setLoading] = useState(false)
     const [submitted, setSubmitted] = useState(false)
@@ -29,12 +31,12 @@ export default function ForgotPassword() {
             })
 
             if (!response.ok) {
-                throw new Error('Une erreur est survenue.')
+                throw new Error(t('auth.forgotPassword.errorWithDot'))
             }
 
             setSubmitted(true)
         } catch (err: any) {
-            setError(err.message || 'Une erreur est survenue')
+            setError(err.message || t('auth.forgotPassword.error'))
         } finally {
             setLoading(false)
         }
@@ -75,10 +77,10 @@ export default function ForgotPassword() {
                                 <Shield className="h-7 w-7 text-amber-400" />
                             </div>
                             <h1 className="text-2xl font-bold text-slate-900 mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                                Mot de passe oublié ?
+                                {t('auth.forgotPassword.title')}
                             </h1>
                             <p className="text-slate-500 text-sm font-medium">
-                                Entrez votre email pour recevoir un lien de réinitialisation.
+                                {t('auth.forgotPassword.subtitle')}
                             </p>
                         </div>
 
@@ -88,9 +90,9 @@ export default function ForgotPassword() {
                                     <Mail className="h-7 w-7" />
                                 </div>
                                 <div className="space-y-2">
-                                    <h3 className="font-semibold text-lg text-slate-900">Email envoyé !</h3>
+                                    <h3 className="font-semibold text-lg text-slate-900">{t('auth.forgotPassword.sentTitle')}</h3>
                                     <p className="text-slate-500 text-sm leading-relaxed">
-                                        Si un compte existe avec cette adresse email ({email}), vous recevrez un lien pour réinitialiser votre mot de passe d'ici quelques minutes.
+                                        {t('auth.forgotPassword.sentText', { email })}
                                     </p>
                                 </div>
                                 <Button
@@ -98,12 +100,12 @@ export default function ForgotPassword() {
                                     className="w-full h-12 rounded-xl border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-all"
                                     onClick={() => setSubmitted(false)}
                                 >
-                                    Retour
+                                    {t('auth.forgotPassword.back')}
                                 </Button>
                                 
                                 <div className="text-center text-sm pt-2">
                                     <Link href="/agence/connexion" className="text-slate-500 hover:text-slate-900 font-medium hover:underline transition-colors">
-                                        Retour à la connexion
+                                        {t('auth.common.backToLogin')}
                                     </Link>
                                 </div>
                             </div>
@@ -117,11 +119,11 @@ export default function ForgotPassword() {
                                 )}
                                 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-sm font-semibold text-slate-700">Email</Label>
+                                    <Label htmlFor="email" className="text-sm font-semibold text-slate-700">{t('auth.common.email')}</Label>
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="exemple@email.com"
+                                        placeholder={t('auth.forgotPassword.emailPlaceholder')}
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -135,20 +137,20 @@ export default function ForgotPassword() {
                                     className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 group disabled:opacity-50"
                                     size="lg"
                                 >
-                                    {loading ? 'Envoi...' : 'Réinitialiser le mot de passe'}
+                                    {loading ? t('auth.common.sending') : t('auth.forgotPassword.submit')}
                                     {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                                 </Button>
 
                                 <div className="relative py-2 mt-4">
                                     <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
                                     <div className="relative flex justify-center text-xs uppercase">
-                                        <span className="bg-white px-3 text-slate-400 font-medium">Ou</span>
+                                        <span className="bg-white px-3 text-slate-400 font-medium">{t('auth.common.or')}</span>
                                     </div>
                                 </div>
 
                                 <div className="text-center text-sm pt-2">
                                     <Link href="/agence/connexion" className="text-slate-500 hover:text-slate-900 font-medium hover:underline transition-colors">
-                                        Retour à la connexion
+                                        {t('auth.common.backToLogin')}
                                     </Link>
                                 </div>
                             </form>
@@ -156,7 +158,7 @@ export default function ForgotPassword() {
                         
                         <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
                             <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                            <span>Connexion sécurisée SSL</span>
+                            <span>{t('auth.common.sslSecure')}</span>
                         </div>
                     </div>
                 </div>

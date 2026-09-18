@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react'
 import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native'
 import { Eye, EyeOff, type LucideIcon } from 'lucide-react-native'
 import { Text } from './Text'
+import { t } from '@/i18n'
 import { colors, fonts, radius } from '@/theme'
 
 interface Props extends TextInputProps {
@@ -60,7 +61,7 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
         {secure ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={hidden ? 'Afficher le mot de passe' : 'Masquer le mot de passe'}
+            accessibilityLabel={hidden ? t('common.actions.showPassword') : t('common.actions.hidePassword')}
             hitSlop={10}
             onPress={() => setHidden((h) => !h)}
           >

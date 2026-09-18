@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/client'
+import { intlLocale } from '@/lib/i18n/core'
 
 interface Message {
     id: string
@@ -25,6 +27,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ conversationId, currentUserId, recipientName, recipientRole, onBack }: ChatWindowProps) {
+    const { t, locale } = useI18n()
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
     const [loading, setLoading] = useState(true)
@@ -133,7 +136,7 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                         <div className="p-3 bg-gray-100 rounded-full">
                             <UserIcon className="h-6 w-6" />
                         </div>
-                        <p className="text-sm">Démarrez la conversation avec {recipientName}</p>
+                        <p className="text-sm">{t('chat.window.startConversation', { name: recipientName })}</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
@@ -151,7 +154,7 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                                     >
                                         <p className="whitespace-pre-wrap break-words">{message.content}</p>
                                         <span className={cn("text-[10px] opacity-70 block text-right mt-1", isMe ? "text-blue-100" : "text-gray-400")}>
-                                            {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(message.createdAt).toLocaleTimeString(intlLocale(locale), { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                 </div>
@@ -168,13 +171,13 @@ export function ChatWindow({ conversationId, currentUserId, recipientName, recip
                     <Input
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Écrivez votre message..."
+                        placeholder={t('chat.window.placeholder')}
                         className="flex-1"
                         disabled={sending}
                     />
                     <Button type="submit" disabled={sending || !newMessage.trim()} size="icon" className="bg-slate-900 hover:bg-blue-700">
                         {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                        <span className="sr-only">Envoyer</span>
+                        <span className="sr-only">{t('chat.window.send')}</span>
                     </Button>
                 </form>
             </div>

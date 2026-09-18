@@ -3,6 +3,7 @@ import { Alert, Linking } from 'react-native'
 import * as Location from 'expo-location'
 import { LocateFixed } from 'lucide-react-native'
 import { Button } from '@/components/ui/Button'
+import { t } from '@/i18n'
 
 async function cityFromCoords(latitude: number, longitude: number): Promise<string | null> {
   try {
@@ -25,11 +26,11 @@ export async function getCurrentCoords() {
   const permission = await Location.requestForegroundPermissionsAsync()
   if (permission.status !== 'granted') {
     Alert.alert(
-      'Localisation désactivée',
-      "Autorisez l'accès à votre position dans les réglages pour utiliser cette fonction.",
+      t('questionnaire.location.disabledTitle'),
+      t('questionnaire.location.disabledMessage'),
       [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Réglages', onPress: () => Linking.openSettings() },
+        { text: t('questionnaire.location.cancel'), style: 'cancel' },
+        { text: t('questionnaire.location.settings'), onPress: () => Linking.openSettings() },
       ],
     )
     return null
@@ -49,9 +50,9 @@ export function LocationButton({ onCity, compact }: { onCity: (city: string) => 
       if (!coords) return
       const city = await cityFromCoords(coords.latitude, coords.longitude)
       if (city) onCity(city)
-      else Alert.alert('Position', 'Impossible de déterminer votre ville.')
+      else Alert.alert(t('questionnaire.location.alertTitle'), t('questionnaire.location.cityNotFound'))
     } catch {
-      Alert.alert('Position', 'Erreur lors de la récupération de la position.')
+      Alert.alert(t('questionnaire.location.alertTitle'), t('questionnaire.location.error'))
     } finally {
       setLoading(false)
     }
@@ -59,7 +60,7 @@ export function LocationButton({ onCity, compact }: { onCity: (city: string) => 
 
   return (
     <Button
-      title={compact ? 'Position' : 'Ma position'}
+      title={compact ? t('questionnaire.location.short') : t('questionnaire.location.myPosition')}
       icon={LocateFixed}
       variant="outline"
       size="sm"

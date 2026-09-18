@@ -4,6 +4,7 @@ import { router } from 'expo-router'
 import { ChevronLeft, type LucideIcon } from 'lucide-react-native'
 import { Text } from './Text'
 import { Button } from './Button'
+import { t } from '@/i18n'
 import { colors, fonts, radius, spacing } from '@/theme'
 
 /** En-tête d'écran empilé : retour + titre centré + action optionnelle. */
@@ -30,7 +31,7 @@ export function ScreenHeader({
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Retour"
+        accessibilityLabel={t('common.actions.back')}
         hitSlop={10}
         onPress={() => (onBack ? onBack() : router.canGoBack() ? router.back() : router.replace('/'))}
         style={[styles.headerButton, { backgroundColor: dark ? 'rgba(255,255,255,0.1)' : colors.white }]}
@@ -65,7 +66,7 @@ export function LargeTitle({ title, subtitle, right }: { title: string; subtitle
   )
 }
 
-export function LoadingView({ label = 'Chargement...' }: { label?: string }) {
+export function LoadingView({ label = t('common.loadingEllipsis') }: { label?: string }) {
   return (
     <View style={styles.center}>
       <ActivityIndicator size="large" color={colors.ink} />
@@ -126,7 +127,7 @@ export function ProgressBar({ value, dark }: { value: number; dark?: boolean }) 
 /** Indicateur d'étapes des inscriptions (1 — 2 — 3). */
 export function Stepper({ steps, current }: { steps: number; current: number }) {
   return (
-    <View style={styles.stepper} accessibilityLabel={`Étape ${current} sur ${steps}`}>
+    <View style={styles.stepper} accessibilityLabel={t('common.stepOf', { current, total: steps })}>
       {Array.from({ length: steps }, (_, i) => i + 1).map((s) => (
         <View key={s} style={styles.stepRow}>
           <View style={[styles.stepDot, current >= s ? styles.stepDotActive : null]}>
@@ -145,7 +146,7 @@ export function OrDivider() {
   return (
     <View style={styles.divider}>
       <View style={styles.dividerLine} />
-      <Text variant="overline">Ou</Text>
+      <Text variant="overline">{t('common.or')}</Text>
       <View style={styles.dividerLine} />
     </View>
   )

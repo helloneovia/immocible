@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/client'
 
 const PAGE_SIZE_OPTIONS = [50, 100, 200, 500]
 
@@ -14,6 +15,7 @@ interface PaginationControlsProps {
 export function PaginationControls({ totalCount, pageSize }: PaginationControlsProps) {
     const router = useRouter()
     const searchParams = useSearchParams()
+    const { t } = useI18n()
 
     const page = Number(searchParams.get('page') ?? '1')
     const totalPages = Math.ceil(totalCount / pageSize)
@@ -36,12 +38,12 @@ export function PaginationControls({ totalCount, pageSize }: PaginationControlsP
             <div className="flex items-center gap-3 text-sm text-gray-500">
                 <span>
                     {totalPages > 0
-                        ? `Affichage de ${(page - 1) * pageSize + 1} à ${Math.min(page * pageSize, totalCount)} sur ${totalCount} résultats`
-                        : `0 résultats`}
+                        ? t('common.pagination.showing', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, totalCount), total: totalCount })
+                        : t('common.pagination.zero')}
                 </span>
                 <span className="text-gray-300">|</span>
                 <span className="flex items-center gap-1.5">
-                    Résultats par page :
+                    {t('common.pagination.perPage')}
                     <select
                         value={pageSize}
                         onChange={(e) => handleLimitChange(Number(e.target.value))}
@@ -63,7 +65,7 @@ export function PaginationControls({ totalCount, pageSize }: PaginationControlsP
                     disabled={page <= 1}
                 >
                     <ChevronLeft className="h-4 w-4 mr-2" />
-                    Précédent
+                    {t('common.pagination.previous')}
                 </Button>
                 <Button
                     variant="outline"
@@ -71,7 +73,7 @@ export function PaginationControls({ totalCount, pageSize }: PaginationControlsP
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page >= totalPages}
                 >
-                    Suivant
+                    {t('common.pagination.next')}
                     <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
             </div>

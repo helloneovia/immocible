@@ -1,71 +1,105 @@
+import { t, type TKey, type TParams } from '@/i18n'
+
 // Options du questionnaire : mêmes valeurs que app/acquereur/questionnaire/page.tsx.
+// Les valeurs sont envoyées à l'API telles quelles ; seuls les libellés sont traduits.
 export type Option = { value: string; label: string }
 
+/**
+ * Option dont le libellé est traduit à la lecture (getter) : les listes restent des
+ * constantes de module sans appeler t() au chargement, et suivent la langue active.
+ */
+function option(value: string, key: TKey, params?: TParams): Option {
+  return {
+    value,
+    get label() {
+      return t(key, params)
+    },
+  }
+}
+
 export const SITUATION_FAMILIALE: Option[] = [
-  { value: 'celibataire', label: 'Célibataire' },
-  { value: 'marie', label: 'Marié(e)' },
-  { value: 'pacs', label: 'Pacsé(e)' },
-  { value: 'concubinage', label: 'En concubinage' },
-  { value: 'divorce', label: 'Divorcé(e)' },
-  { value: 'veuf', label: 'Veuf(ve)' },
+  option('celibataire', 'labels.situationFamiliale.celibataire'),
+  option('marie', 'labels.situationFamiliale.marie'),
+  option('pacs', 'labels.situationFamiliale.pacs'),
+  option('concubinage', 'labels.situationFamiliale.concubinage'),
+  option('divorce', 'labels.situationFamiliale.divorce'),
+  option('veuf', 'labels.situationFamiliale.veuf'),
 ]
 
 export const NOMBRE_ENFANTS: Option[] = [
-  { value: '0', label: 'Aucun' },
-  { value: '1', label: '1 enfant' },
-  { value: '2', label: '2 enfants' },
-  { value: '3', label: '3 enfants' },
-  { value: '4+', label: '4 enfants ou plus' },
+  option('0', 'labels.nombreEnfants.none'),
+  option('1', 'labels.nombreEnfants.one'),
+  option('2', 'labels.nombreEnfants.many', { count: 2 }),
+  option('3', 'labels.nombreEnfants.many', { count: 3 }),
+  option('4+', 'labels.nombreEnfants.fourPlus'),
 ]
 
 export const SITUATION_PRO: Option[] = [
-  { value: 'cdi', label: 'CDI' },
-  { value: 'cdd', label: 'CDD' },
-  { value: 'freelance', label: 'Freelance / Indépendant' },
-  { value: 'retraite', label: 'Retraité(e)' },
-  { value: 'chomage', label: "En recherche d'emploi" },
-  { value: 'etudiant', label: 'Étudiant(e)' },
-  { value: 'autre', label: 'Autre' },
+  option('cdi', 'labels.situationPro.cdi'),
+  option('cdd', 'labels.situationPro.cdd'),
+  option('freelance', 'labels.situationPro.freelance'),
+  option('retraite', 'labels.situationPro.retraite'),
+  option('chomage', 'labels.situationPro.chomage'),
+  option('etudiant', 'labels.situationPro.etudiant'),
+  option('autre', 'labels.situationPro.autre'),
 ]
 
 export const FINANCEMENT: Option[] = [
-  { value: 'pret-bancaire', label: 'Prêt bancaire' },
-  { value: 'pret-relais', label: 'Prêt relais' },
-  { value: 'cash', label: 'Achat au comptant' },
-  { value: 'mixte', label: 'Financement mixte' },
-  { value: 'autre', label: 'Autre' },
+  option('pret-bancaire', 'labels.financement.pretBancaire'),
+  option('pret-relais', 'labels.financement.pretRelais'),
+  option('cash', 'labels.financement.cash'),
+  option('mixte', 'labels.financement.mixte'),
+  option('autre', 'labels.financement.autre'),
 ]
 
-export const DUREE_PRET: Option[] = ['10', '15', '20', '25', '30'].map((v) => ({ value: v, label: `${v} ans` }))
+export const DUREE_PRET: Option[] = ['10', '15', '20', '25', '30'].map((v) => option(v, 'labels.dureePret', { years: v }))
 
 export const DELAI_RECHERCHE: Option[] = [
-  { value: 'urgent', label: 'Urgent (moins de 1 mois)' },
-  { value: '1-3', label: '1 à 3 mois' },
-  { value: '3-6', label: '3 à 6 mois' },
-  { value: '6-12', label: '6 à 12 mois' },
-  { value: '12+', label: 'Plus de 12 mois' },
+  option('urgent', 'labels.delaiRecherche.urgent'),
+  option('1-3', 'labels.delaiRecherche.oneToThree'),
+  option('3-6', 'labels.delaiRecherche.threeToSix'),
+  option('6-12', 'labels.delaiRecherche.sixToTwelve'),
+  option('12+', 'labels.delaiRecherche.twelvePlus'),
 ]
 
 export const FLEXIBILITE: Option[] = [
-  { value: 'strict', label: 'Strict (tous les critères doivent être respectés)' },
-  { value: 'modere', label: 'Modéré (quelques ajustements possibles)' },
-  { value: 'flexible', label: 'Flexible (ouvert aux opportunités)' },
+  option('strict', 'labels.flexibilite.strict'),
+  option('modere', 'labels.flexibilite.modere'),
+  option('flexible', 'labels.flexibilite.flexible'),
 ]
 
-export const TYPES_BIEN = ['Appartement', 'Maison', 'Terrain', 'Studio', 'Loft', 'Duplex', 'Penthouse']
+/** Types de bien : valeurs en minuscules, comme enregistrées par l'API. */
+export const TYPES_BIEN: Option[] = [
+  option('appartement', 'labels.typeBien.appartement'),
+  option('maison', 'labels.typeBien.maison'),
+  option('terrain', 'labels.typeBien.terrain'),
+  option('studio', 'labels.typeBien.studio'),
+  option('loft', 'labels.typeBien.loft'),
+  option('duplex', 'labels.typeBien.duplex'),
+  option('penthouse', 'labels.typeBien.penthouse'),
+]
+
+/** Libellé d'un type de bien enregistré (« appartement » → « Appartement » / « Apartment »). */
+export function typeBienLabel(value: string) {
+  return TYPES_BIEN.find((o) => o.value === value?.toLowerCase())?.label ?? capitalize(value)
+}
 
 export const NOMBRE_PIECES = ['1', '2', '3', '4', '5', '6+']
 
-export const EXTRAS = [
-  { key: 'balcon', label: 'Balcon' },
-  { key: 'terrasse', label: 'Terrasse' },
-  { key: 'jardin', label: 'Jardin' },
-  { key: 'parking', label: 'Parking' },
-  { key: 'cave', label: 'Cave' },
-  { key: 'ascenseur', label: 'Ascenseur' },
-] as const
+type ExtraKey = 'balcon' | 'terrasse' | 'jardin' | 'parking' | 'cave' | 'ascenseur'
 
-export function labelFor(options: Option[], value?: string | null, fallback = 'Non spécifié') {
+function extra(key: ExtraKey) {
+  return {
+    key,
+    get label() {
+      return t(`labels.extras.${key}`)
+    },
+  }
+}
+
+export const EXTRAS = [extra('balcon'), extra('terrasse'), extra('jardin'), extra('parking'), extra('cave'), extra('ascenseur')] as const
+
+export function labelFor(options: Option[], value?: string | null, fallback = t('labels.notSpecified')) {
   if (!value) return fallback
   return options.find((o) => o.value === value)?.label ?? value
 }
@@ -73,17 +107,17 @@ export function labelFor(options: Option[], value?: string | null, fallback = 'N
 export function delaiShortLabel(value?: string | null) {
   switch (value) {
     case 'urgent':
-      return 'Urgent (< 1 mois)'
+      return t('labels.delaiShort.urgent')
     case '1-3':
-      return '1 à 3 mois'
+      return t('labels.delaiShort.oneToThree')
     case '3-6':
-      return '3 à 6 mois'
+      return t('labels.delaiShort.threeToSix')
     case '6-12':
-      return '6 à 12 mois'
+      return t('labels.delaiShort.sixToTwelve')
     case '12+':
-      return '+ 12 mois'
+      return t('labels.delaiShort.twelvePlus')
     default:
-      return value || 'Non défini'
+      return value || t('labels.delaiShort.undefined')
   }
 }
 

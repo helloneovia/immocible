@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getT } from '@/lib/i18n/server'
 
 /**
  * Limiteur de débit en mémoire (fenêtre fixe). Simple et sans dépendance.
@@ -52,7 +53,7 @@ export function enforceRateLimit(
   const { ok, retryAfter } = rateLimit(`${scope}:${ip}`, limit, windowMs)
   if (ok) return null
   return NextResponse.json(
-    { error: 'Trop de tentatives. Veuillez réessayer plus tard.' },
+    { error: getT()('api.common.tooManyAttempts') },
     { status: 429, headers: { 'Retry-After': String(retryAfter) } },
   )
 }

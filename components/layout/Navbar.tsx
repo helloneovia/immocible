@@ -8,6 +8,8 @@ import { NotificationBell } from '@/components/ui/NotificationBell'
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Settings, LogOut, Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { useI18n } from '@/lib/i18n/client'
 
 interface NavbarProps {
     role: 'agence' | 'acquereur' | 'admin'
@@ -17,6 +19,7 @@ export function Navbar({ role }: NavbarProps) {
     const { signOut } = useAuth()
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
+    const { t } = useI18n()
 
     const homeLink = role === 'agence' ? '/agence/dashboard' : (role === 'admin' ? '/admin/dashboard' : '/acquereur/dashboard')
     const messagesLink = role === 'agence' ? '/agence/messages' : '/acquereur/messages'
@@ -29,7 +32,7 @@ export function Navbar({ role }: NavbarProps) {
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex h-20 items-center justify-between">
                     {/* Logo */}
-                    <Link href={homeLink} className="group" aria-label="IMMOCIBLE — accueil">
+                    <Link href={homeLink} className="group" aria-label={t('common.brand.homeAria')}>
                         <Logo
                             className="text-slate-900"
                             iconClassName="h-14 w-14 transition-transform duration-300 group-hover:scale-105"
@@ -39,6 +42,7 @@ export function Navbar({ role }: NavbarProps) {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center space-x-1">
+                        <LanguageSwitcher className="mr-2" />
                         {role !== 'admin' && <NotificationBell role={role} />}
 
                         {role !== 'admin' && (
@@ -48,7 +52,7 @@ export function Navbar({ role }: NavbarProps) {
                                     className={`font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${isMessagesActive ? 'bg-slate-100 text-slate-900' : ''}`}
                                 >
                                     <MessageSquare className="h-5 w-5 mr-2" />
-                                    Messagerie
+                                    {t('common.nav.messages')}
                                 </Button>
                             </Link>
                         )}
@@ -59,7 +63,7 @@ export function Navbar({ role }: NavbarProps) {
                                 className={`font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 ${isSettingsActive ? 'bg-slate-100 text-slate-900' : ''}`}
                             >
                                 <Settings className="h-5 w-5 mr-2" />
-                                Paramètres
+                                {t('common.nav.settings')}
                             </Button>
                         </Link>
 
@@ -69,7 +73,7 @@ export function Navbar({ role }: NavbarProps) {
                             onClick={signOut}
                         >
                             <LogOut className="h-5 w-5 mr-2" />
-                            Déconnexion
+                            {t('common.nav.logout')}
                         </Button>
                     </div>
 
@@ -94,7 +98,7 @@ export function Navbar({ role }: NavbarProps) {
                                     className={`w-full justify-start font-medium text-slate-600 hover:text-slate-900 ${isMessagesActive ? 'bg-slate-100 text-slate-900' : ''}`}
                                 >
                                     <MessageSquare className="h-5 w-5 mr-3" />
-                                    Messagerie
+                                    {t('common.nav.messages')}
                                 </Button>
                             </Link>
                         )}
@@ -105,9 +109,13 @@ export function Navbar({ role }: NavbarProps) {
                                 className={`w-full justify-start font-medium text-slate-600 hover:text-slate-900 ${isSettingsActive ? 'bg-slate-100 text-slate-900' : ''}`}
                             >
                                 <Settings className="h-5 w-5 mr-3" />
-                                Paramètres
+                                {t('common.nav.settings')}
                             </Button>
                         </Link>
+
+                        <div className="px-4 py-2">
+                            <LanguageSwitcher />
+                        </div>
 
                         <div className="pt-2 border-t border-slate-100 mt-2">
                             <Button
@@ -116,7 +124,7 @@ export function Navbar({ role }: NavbarProps) {
                                 onClick={() => { setIsOpen(false); signOut(); }}
                             >
                                 <LogOut className="h-5 w-5 mr-3" />
-                                Déconnexion
+                                {t('common.nav.logout')}
                             </Button>
                         </div>
                     </div>

@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { MessageSquare, Search } from 'lucide-react'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Navbar } from '@/components/layout/Navbar'
+import { useI18n } from '@/lib/i18n/client'
 
 interface Conversation {
     id: string
@@ -24,6 +25,7 @@ interface Conversation {
 
 function MessagesContent() {
     const { user } = useAuth()
+    const { t } = useI18n()
     const router = useRouter()
     const [conversations, setConversations] = useState<Conversation[]>([])
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -48,8 +50,8 @@ function MessagesContent() {
 
     const getRecipient = (conv: Conversation) => {
         return {
-            name: conv.agency?.profile?.nomAgence || 'Agence',
-            role: 'Agence'
+            name: conv.agency?.profile?.nomAgence || t('chat.roles.agency'),
+            role: t('chat.roles.agency')
         }
     }
 
@@ -58,7 +60,7 @@ function MessagesContent() {
             <Navbar role="acquereur" />
 
             <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">Messagerie</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('chat.list.title')}</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[600px]">
                     {/* List */}
@@ -68,18 +70,18 @@ function MessagesContent() {
                                 <div className="relative">
                                     <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                                     <input
-                                        placeholder="Rechercher..."
+                                        placeholder={t('chat.list.search')}
                                         className="w-full pl-9 pr-4 py-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                     />
                                 </div>
                             </div>
                             <div className="flex-1 overflow-y-auto bg-white">
                                 {loading ? (
-                                    <div className="p-4 text-center text-sm text-muted-foreground">Chargement...</div>
+                                    <div className="p-4 text-center text-sm text-muted-foreground">{t('chat.list.loading')}</div>
                                 ) : conversations.length === 0 ? (
                                     <div className="p-8 text-center text-muted-foreground">
                                         <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p>Aucune conversation</p>
+                                        <p>{t('chat.list.empty')}</p>
                                     </div>
                                 ) : (
                                     <div className="divide-y">
@@ -105,7 +107,7 @@ function MessagesContent() {
                                                                 )}
                                                             </div>
                                                             <p className="text-xs text-muted-foreground truncate">
-                                                                Cliquez pour voir les messages
+                                                                {t('chat.list.clickToView')}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -133,8 +135,8 @@ function MessagesContent() {
                                 <div className="h-16 w-16 bg-amber-50 rounded-full flex items-center justify-center mb-4">
                                     <MessageSquare className="h-8 w-8 text-amber-500" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900">Vos messages</h3>
-                                <p>Sélectionnez une conversation pour commencer à discuter.</p>
+                                <h3 className="text-lg font-semibold text-gray-900">{t('chat.list.yourMessages')}</h3>
+                                <p>{t('chat.list.selectConversation')}</p>
                             </div>
                         )}
                     </div>

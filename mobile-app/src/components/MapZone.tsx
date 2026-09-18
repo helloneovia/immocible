@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Text'
 import { getCurrentCoords } from '@/components/LocationButton'
 import { searchCities } from '@/components/LocationAutocomplete'
+import { t } from '@/i18n'
 import { API_URL } from '@/lib/api'
 import type { DrawnArea } from '@/lib/types'
 import { colors, fonts, radius, shadow } from '@/theme'
@@ -102,7 +103,7 @@ function LeafletView({
     return (
       <View style={styles.fallback}>
         <Text variant="caption" center>
-          La carte n'est pas disponible. Utilisez la recherche de villes pour préciser vos zones.
+          {t('questionnaire.map.unavailable')}
         </Text>
       </View>
     )
@@ -154,7 +155,7 @@ export function MapZonePreview({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="Ouvrir la carte en plein écran"
+      accessibilityLabel={t('questionnaire.map.openFullScreen')}
       onPress={onPress}
       style={[styles.preview, { height }]}
     >
@@ -218,14 +219,14 @@ export function MapZoneModal({
   }
 
   const hint = readOnly
-    ? 'Zone de recherche précise'
+    ? t('questionnaire.map.hintReadOnly')
     : area
-      ? 'Zone enregistrée. Effacez-la pour en dessiner une nouvelle.'
+      ? t('questionnaire.map.hintSaved')
       : draftCount === 0
-        ? 'Touchez la carte pour placer les points de votre zone.'
+        ? t('questionnaire.map.hintStart')
         : draftCount < 3
-          ? `Encore ${3 - draftCount} point${3 - draftCount > 1 ? 's' : ''} minimum.`
-          : 'Ajoutez des points ou validez la zone.'
+          ? t(3 - draftCount > 1 ? 'questionnaire.map.hintMore' : 'questionnaire.map.hintOneMore', { count: 3 - draftCount })
+          : t('questionnaire.map.hintReady')
 
   return (
     <Modal
@@ -243,7 +244,7 @@ export function MapZoneModal({
         {visible ? <LeafletView initial={value} readOnly={!!readOnly} webRef={webRef} onMessage={handleMessage} /> : null}
 
         <View style={[styles.topBar, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
-          <Pressable accessibilityRole="button" accessibilityLabel="Fermer la carte" onPress={onClose} style={styles.roundButton}>
+          <Pressable accessibilityRole="button" accessibilityLabel={t('questionnaire.map.closeMap')} onPress={onClose} style={styles.roundButton}>
             <X size={22} color={colors.ink} />
           </Pressable>
           <View style={styles.hint}>
@@ -251,7 +252,7 @@ export function MapZoneModal({
             <Text style={styles.hintText}>{hint}</Text>
           </View>
           {!readOnly ? (
-            <Pressable accessibilityRole="button" accessibilityLabel="Centrer sur ma position" onPress={locate} style={styles.roundButton}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('questionnaire.map.centerOnMe')} onPress={locate} style={styles.roundButton}>
               <LocateFixed size={20} color={colors.ink} />
             </Pressable>
           ) : null}
@@ -261,13 +262,13 @@ export function MapZoneModal({
           <View style={[styles.toolbar, { paddingBottom: insets.bottom + 16 }]}>
             {area ? (
               <View style={styles.toolbarRow}>
-                <Button title="Effacer la zone" icon={Eraser} variant="danger" onPress={() => command({ type: 'clear' })} style={styles.flex} />
-                <Button title="Terminé" icon={Check} onPress={onClose} style={styles.flex} />
+                <Button title={t('questionnaire.map.clearArea')} icon={Eraser} variant="danger" onPress={() => command({ type: 'clear' })} style={styles.flex} />
+                <Button title={t('questionnaire.map.done')} icon={Check} onPress={onClose} style={styles.flex} />
               </View>
             ) : (
               <View style={styles.toolbarRow}>
                 <Button
-                  title="Annuler"
+                  title={t('questionnaire.map.undo')}
                   icon={Undo2}
                   variant="outline"
                   disabled={draftCount === 0}
@@ -275,7 +276,7 @@ export function MapZoneModal({
                   style={styles.flex}
                 />
                 <Button
-                  title="Valider la zone"
+                  title={t('questionnaire.map.validateArea')}
                   icon={Check}
                   variant="accent"
                   disabled={draftCount < 3}

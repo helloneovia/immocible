@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors, fonts } from '@/theme'
 
@@ -41,8 +42,8 @@ export default function InscriptionAcquereurScreen() {
     } else if (step === 2) {
       if (await verification.verifyCode(code)) setStep(3)
     } else if (step === 3) {
-      if (!firstName.trim() || !lastName.trim()) return setError('Indiquez votre prénom et votre nom.')
-      if (telephone.replace(/\D/g, '').length < 10) return setError('Indiquez un numéro de téléphone à 10 chiffres.')
+      if (!firstName.trim() || !lastName.trim()) return setError(t('auth.errors.nameRequired'))
+      if (telephone.replace(/\D/g, '').length < 10) return setError(t('auth.errors.phoneInvalid'))
       setStep(4)
     } else {
       await register()
@@ -50,8 +51,8 @@ export default function InscriptionAcquereurScreen() {
   }
 
   const register = async () => {
-    if (password.length < 8) return setError('Choisissez un mot de passe d’au moins 8 caractères.')
-    if (password !== confirmPassword) return setError('Les deux mots de passe ne correspondent pas.')
+    if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+    if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
     setSubmitting(true)
     try {
       await api('/api/auth/register', {
@@ -69,9 +70,9 @@ export default function InscriptionAcquereurScreen() {
       setPendingHref('/questionnaire')
       await refresh()
     } catch (err) {
-      const message = errorMessage(err, "L'inscription a échoué. Réessayez.")
+      const message = errorMessage(err, t('auth.errors.signupFailed'))
       if (message.includes('existe déjà') || message.includes('already exists')) {
-        setError('Un compte existe déjà avec cet e-mail. Connectez-vous.')
+        setError(t('auth.errors.accountExists'))
       } else {
         setError(message)
       }
@@ -80,18 +81,18 @@ export default function InscriptionAcquereurScreen() {
   }
 
   const copy = {
-    1: { title: settings.text_signup_buyer_title || 'Créer mon compte', subtitle: 'Commencez par votre e-mail. Le compte acquéreur est gratuit.' },
-    2: { title: 'Code de vérification', subtitle: `Saisissez le code à 6 chiffres envoyé à ${verification.normalized}.` },
-    3: { title: 'Faisons connaissance', subtitle: 'Les agences ne voient vos coordonnées que si elles les débloquent.' },
-    4: { title: 'Sécurisez votre compte', subtitle: 'Choisissez un mot de passe d’au moins 8 caractères.' },
+    1: { title: settings.text_signup_buyer_title || t('auth.signup.buyer.title'), subtitle: t('auth.signup.buyer.subtitle') },
+    2: { title: t('auth.signup.codeTitle'), subtitle: t('auth.signup.codeSubtitle', { email: verification.normalized }) },
+    3: { title: t('auth.signup.buyer.aboutTitle'), subtitle: t('auth.signup.buyer.aboutSubtitle') },
+    4: { title: t('auth.signup.buyer.securityTitle'), subtitle: t('auth.signup.buyer.securitySubtitle') },
   }[step as 1 | 2 | 3 | 4]
 
-  const cta = step === 4 ? 'Créer mon compte' : step === 2 ? 'Vérifier' : 'Continuer'
+  const cta = step === 4 ? t('auth.signup.buyer.submit') : step === 2 ? t('auth.signup.verify') : t('auth.signup.continue')
   const disabled = (step === 1 && !email.trim()) || (step === 2 && code.length < 6)
 
   return (
     <AuthScaffold
-      eyebrow={`Étape ${step} sur ${STEPS}`}
+      eyebrow={t('auth.signup.stepOf', { step, total: STEPS })}
       title={copy.title}
       subtitle={copy.subtitle}
       progress={step / STEPS}
@@ -102,7 +103,7 @@ export default function InscriptionAcquereurScreen() {
           {step === 1 ? (
             <Pressable accessibilityRole="link" onPress={() => router.replace('/connexion?role=acquereur')} hitSlop={8}>
               <Text variant="subhead" center>
-                Déjà un compte ? <Text style={styles.link}>Se connecter</Text>
+                {t('auth.signup.alreadyAccount')} <Text style={styles.link}>{t('auth.signup.signIn')}</Text>
               </Text>
             </Pressable>
           ) : null}
@@ -114,11 +115,11 @@ export default function InscriptionAcquereurScreen() {
 
       {step === 1 ? (
         <TextField
-          label="E-mail"
+          label={t('auth.fields.email')}
           icon={Mail}
           value={email}
           onChangeText={setEmail}
-          placeholder="prenom@exemple.fr"
+          placeholder={t('auth.fields.placeholderEmail')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
@@ -140,10 +141,10 @@ export default function InscriptionAcquereurScreen() {
           />
           <View style={styles.codeActions}>
             <Pressable accessibilityRole="button" onPress={() => verification.sendCode(true)} hitSlop={8}>
-              <Text style={styles.link}>Renvoyer le code</Text>
+              <Text style={styles.link}>{t('auth.signup.resendCode')}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" onPress={() => setStep(1)} hitSlop={8}>
-              <Text style={styles.linkMuted}>Modifier l'e-mail</Text>
+              <Text style={styles.linkMuted}>{t('auth.signup.changeEmail')}</Text>
             </Pressable>
           </View>
         </View>
@@ -154,18 +155,18 @@ export default function InscriptionAcquereurScreen() {
           <VerifiedEmail email={email} />
           <View style={styles.row}>
             <View style={styles.flex}>
-              <TextField label="Prénom" icon={User} value={firstName} onChangeText={setFirstName} placeholder="Camille" autoComplete="given-name" textContentType="givenName" autoFocus />
+              <TextField label={t('auth.fields.firstName')} icon={User} value={firstName} onChangeText={setFirstName} placeholder={t('auth.fields.placeholderFirstName')} autoComplete="given-name" textContentType="givenName" autoFocus />
             </View>
             <View style={styles.flex}>
-              <TextField label="Nom" value={lastName} onChangeText={setLastName} placeholder="Martin" autoComplete="family-name" textContentType="familyName" />
+              <TextField label={t('auth.fields.lastName')} value={lastName} onChangeText={setLastName} placeholder={t('auth.fields.placeholderLastName')} autoComplete="family-name" textContentType="familyName" />
             </View>
           </View>
           <TextField
-            label="Téléphone mobile"
+            label={t('auth.fields.mobilePhone')}
             icon={Phone}
             value={telephone}
             onChangeText={setTelephone}
-            placeholder="06 12 34 56 78"
+            placeholder={t('auth.fields.placeholderPhone')}
             keyboardType="phone-pad"
             autoComplete="tel"
             textContentType="telephoneNumber"
@@ -176,23 +177,23 @@ export default function InscriptionAcquereurScreen() {
       {step === 4 ? (
         <>
           <TextField
-            label="Mot de passe"
+            label={t('auth.fields.password')}
             icon={Lock}
             secure
             value={password}
             onChangeText={setPassword}
-            placeholder="Au moins 8 caractères"
+            placeholder={t('auth.fields.placeholderNewPassword')}
             autoComplete="new-password"
             textContentType="newPassword"
             autoFocus
           />
           <TextField
-            label="Confirmer"
+            label={t('auth.fields.confirm')}
             icon={Lock}
             secure
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="Retapez le mot de passe"
+            placeholder={t('auth.fields.placeholderConfirm')}
             autoComplete="new-password"
             returnKeyType="go"
             onSubmitEditing={next}

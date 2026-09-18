@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { BienType } from '@prisma/client'
+import { getT } from '@/lib/i18n/server'
 
 export const dynamic = 'force-dynamic';
 
@@ -44,11 +45,12 @@ interface QuestionnaireData {
 }
 
 export async function GET() {
+    const t = getT()
     try {
         const user = await getCurrentUser()
 
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         // Find the user's active search
@@ -128,16 +130,17 @@ export async function GET() {
         return NextResponse.json({ data })
     } catch (error) {
         console.error('[API] Error fetching questionnaire:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }
 
 export async function POST(request: Request) {
+    const t = getT()
     try {
         const user = await getCurrentUser()
 
         if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         const body: QuestionnaireData = await request.json()
@@ -221,6 +224,6 @@ export async function POST(request: Request) {
 
     } catch (error) {
         console.error('[API] Error saving questionnaire:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

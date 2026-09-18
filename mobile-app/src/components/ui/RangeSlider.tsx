@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { PanResponder, StyleSheet, View, type LayoutChangeEvent } from 'react-native'
 import * as Haptics from 'expo-haptics'
+import { t } from '@/i18n'
 import { colors } from '@/theme'
 
 const THUMB = 30
@@ -85,7 +86,7 @@ export function RangeSlider({
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={accessibilityLabel}
-      accessibilityValue={{ text: `${formatValue(steps[lowIndex])} à ${formatValue(steps[highIndex])}` }}
+      accessibilityValue={{ text: t('questionnaire.slider.range', { low: formatValue(steps[lowIndex]), high: formatValue(steps[highIndex]) }) }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(event) => {
         if (event.nativeEvent.actionName === 'increment' && highIndex < last) onChange(steps[lowIndex], steps[highIndex + 1])

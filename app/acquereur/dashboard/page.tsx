@@ -27,9 +27,11 @@ import {
 } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { AppSettings } from '@/lib/settings'
+import { useI18n } from '@/lib/i18n/client'
 
 function DashboardContent() {
   const { signOut } = useAuth()
+  const { t } = useI18n()
   const [profileCompleted, setProfileCompleted] = useState(false)
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [showSearchPopup, setShowSearchPopup] = useState(false)
@@ -73,8 +75,8 @@ function DashboardContent() {
     checkProfileStatus()
   }, [])
 
-  const popupTitle = settings?.text_buyer_dashboard_popup_title || "Recherche de biens en cours 🔍"
-  const popupDesc = settings?.text_buyer_dashboard_popup_description || "Votre profil a bien été enregistré. Nos agences partenaires analysent actuellement vos critères et nous vous contacterons dès qu'une opportunité off-market correspondante sera disponible."
+  const popupTitle = settings?.text_buyer_dashboard_popup_title || t('buyer.dashboard.popupTitle')
+  const popupDesc = settings?.text_buyer_dashboard_popup_description || t('buyer.dashboard.popupDescription')
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -99,7 +101,7 @@ function DashboardContent() {
               onClick={() => setShowSearchPopup(false)}
               className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 px-8 shadow-lg hover:-translate-y-0.5 transition-all duration-300"
             >
-              C'est compris, merci
+              {t('buyer.dashboard.popupButton')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -109,10 +111,10 @@ function DashboardContent() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Mes matches
+            {t('buyer.dashboard.title')}
           </h1>
           <p className="text-lg text-slate-500 font-light">
-            Opportunités immobilières correspondant à votre profil
+            {t('buyer.dashboard.subtitle')}
           </p>
         </div>
 
@@ -124,13 +126,13 @@ function DashboardContent() {
               <CardHeader className="pb-3">
                 <CardDescription className="text-slate-400 flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Profil complété
+                  {t('buyer.dashboard.profileCompleted')}
                 </CardDescription>
                 <CardTitle className="text-4xl font-bold text-white">{profileCompleted ? '100%' : '0%'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <Progress value={profileCompleted ? 100 : 0} className="h-2 bg-white/10 [&>div]:bg-amber-400" />
-                <p className="text-xs text-slate-400 mt-2">Cliquez pour {profileCompleted ? 'modifier' : 'compléter'} votre profil</p>
+                <p className="text-xs text-slate-400 mt-2">{profileCompleted ? t('buyer.dashboard.clickToEdit') : t('buyer.dashboard.clickToComplete')}</p>
               </CardContent>
             </Card>
           </Link>
@@ -140,10 +142,10 @@ function DashboardContent() {
               <CardHeader className="pb-3">
                 <CardDescription className="text-slate-500 flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Communications
+                  {t('buyer.dashboard.communications')}
                 </CardDescription>
-                <CardTitle className="text-2xl font-bold text-slate-900">Messagerie</CardTitle>
-                <p className="text-sm text-slate-500 mt-1">Discutez avec les agences</p>
+                <CardTitle className="text-2xl font-bold text-slate-900">{t('buyer.dashboard.messaging')}</CardTitle>
+                <p className="text-sm text-slate-500 mt-1">{t('buyer.dashboard.messagingDesc')}</p>
               </CardHeader>
             </Card>
           </Link>
@@ -162,7 +164,7 @@ function DashboardContent() {
               `}
             >
               <FileText className={`${!profileCompleted ? 'mr-3 h-6 w-6' : 'mr-2 h-5 w-5'}`} />
-              {profileCompleted ? 'Modifier mes critères' : 'Compléter mon profil (Obligatoire)'}
+              {profileCompleted ? t('buyer.dashboard.editCriteria') : t('buyer.dashboard.completeProfile')}
               <ArrowRight className={`${!profileCompleted ? 'ml-3 h-6 w-6' : 'ml-2 h-5 w-5'} group-hover:translate-x-1 transition-transform`} />
             </Button>
           </Link>
@@ -175,12 +177,12 @@ function DashboardContent() {
               <Search className="h-9 w-9 text-amber-500" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-              {profileCompleted ? 'Recherche en cours' : 'Bienvenue sur IMMOCIBLE'}
+              {profileCompleted ? t('buyer.dashboard.searchInProgress') : t('buyer.dashboard.welcome')}
             </h3>
             <p className="text-slate-400 max-w-lg mx-auto text-base leading-relaxed font-light">
               {profileCompleted
-                ? 'Votre demande est en cours de traitement, nous vous recommanderons les meilleurs biens selon vos critères.'
-                : 'Veuillez compléter le questionnaire pour nous permettre de vous recommander les meilleurs biens selon vos besoins.'}
+                ? t('buyer.dashboard.searchInProgressDesc')
+                : t('buyer.dashboard.welcomeDesc')}
             </p>
           </div>
         </div>

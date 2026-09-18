@@ -4,12 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
 import Stripe from 'stripe'
 import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
+import { getLocale, getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser || currentUser.role !== 'agence') {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (!buyer) {
-            return NextResponse.json({ error: 'Buyer not found' }, { status: 404 })
+            return NextResponse.json({ error: t('api.agency.buyerNotFound') }, { status: 404 })
         }
 
         const search = buyer.recherches[0]
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
                     amount: 0
                 }
             })
-            return NextResponse.json({ success: true, message: 'Contact débloqué gratuitement' })
+            return NextResponse.json({ success: true, message: t('api.payment.unlockedFree') })
         }
 
         const priceCents = Math.round(priceEur * 100)
@@ -106,8 +108,8 @@ export async function POST(request: NextRequest) {
                     price_data: {
                         currency: 'eur',
                         product_data: {
-                            name: `Déblocage Contact: ${buyer.profile?.prenom || 'Acquéreur'}`,
-                            description: `Accès aux coordonnées complètes (Réf: ${buyerId.substring(0, 8)})`,
+                            name: t('api.payment.unlockProductName', { name: buyer.profile?.prenom || t('api.payment.buyerFallback') }),
+                            description: t('api.payment.unlockProductDescription', { ref: buyerId.substring(0, 8) }),
                         },
                         unit_amount: priceCents,
                     },
@@ -116,6 +118,8 @@ export async function POST(request: NextRequest) {
             ],
             mode: 'payment',
             ui_mode: 'embedded',
+            // Formulaire Stripe dans la langue de l'utilisateur.
+            locale: getLocale(),
             return_url: `${baseUrl}/agence/buyer/${buyerId}?session_id={CHECKOUT_SESSION_ID}`,
             customer_email: currentUser.email, // Agency email
             metadata: {
@@ -130,7 +134,7 @@ export async function POST(request: NextRequest) {
     } catch (e) {
         console.error('Unlock payment init error', e)
         return NextResponse.json({
-            error: 'Internal Error',
+            error: t('api.common.serverError'),
             details: e instanceof Error ? e.message : String(e)
         }, { status: 500 })
     }

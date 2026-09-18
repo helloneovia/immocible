@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/mail'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { getT } from '@/lib/i18n/server'
 
 // Code à 6 chiffres généré via un PRNG cryptographique (non prédictible).
 function generateToken() {
@@ -11,6 +12,7 @@ function generateToken() {
 }
 
 export async function POST(req: Request) {
+    const t = getT()
     try {
         // Limite l'envoi d'OTP : 5 par 10 minutes et par IP.
         const limited = enforceRateLimit(req, 'otp-send', 5, 10 * 60_000)
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
         const email = body.email?.trim().toLowerCase()
 
         if (!email) {
-            return NextResponse.json({ error: 'Email invalide' }, { status: 400 })
+            return NextResponse.json({ error: t('api.auth.verifyEmail.invalidEmail') }, { status: 400 })
         }
 
         // Check if user already exists
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
         })
 
         if (existingUser) {
-            return NextResponse.json({ error: 'Cet email est déjà utilisé.' }, { status: 400 })
+            return NextResponse.json({ error: t('api.auth.verifyEmail.emailInUse') }, { status: 400 })
         }
 
         const token = generateToken()
@@ -60,6 +62,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Error sending verification email:', error)
-        return NextResponse.json({ error: 'Erreur lors de l\'envoi du code.' }, { status: 500 })
+        return NextResponse.json({ error: t('api.auth.verifyEmail.sendFailed') }, { status: 500 })
     }
 }

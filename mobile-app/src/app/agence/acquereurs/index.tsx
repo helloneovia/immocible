@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/contexts/AuthContext'
+import { t } from '@/i18n'
 import { api, ApiError } from '@/lib/api'
 import { compactEuro, formatDate } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
@@ -42,7 +43,7 @@ function applyFilters(searches: Recherche[], f: Filters) {
 
 function LeadCard({ search }: { search: Recherche }) {
   const c = parseCaracteristiques(search)
-  const first = capitalize(search.owner?.profile?.prenom?.trim() || '') || 'Acquéreur'
+  const first = capitalize(search.owner?.profile?.prenom?.trim() || '') || t('agency.buyers.fallbackName')
   const initial = search.owner?.profile?.nom?.trim().charAt(0).toUpperCase()
   const name = initial ? `${first} ${initial}.` : first
   const completion = dossierCompletion(search)
@@ -51,32 +52,32 @@ function LeadCard({ search }: { search: Recherche }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${name}, budget ${compactEuro(search.prixMax)}, ${(search.localisation || []).join(', ')}`}
+      accessibilityLabel={t('agency.buyers.cardA11y', { name, budget: compactEuro(search.prixMax), location: (search.localisation || []).join(', ') })}
       onPress={() => search.owner?.id && router.push({ pathname: '/profil/[id]', params: { id: search.owner.id } })}
       style={({ pressed }) => [styles.card, pressed ? { transform: [{ scale: 0.985 }] } : null]}
     >
       <View style={styles.cardTop}>
-        <ScoreRing value={completion} size={48} label="Dossier" />
+        <ScoreRing value={completion} size={48} label={t('agency.buyers.dossier')} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="headline" numberOfLines={1}>
             {name}
           </Text>
-          <Text variant="footnote">Mis à jour le {formatDate(search.updatedAt)}</Text>
+          <Text variant="footnote">{t('agency.buyers.updatedOn', { date: formatDate(search.updatedAt) })}</Text>
         </View>
         <View style={{ alignItems: 'flex-end' }}>
           <Text style={styles.budget}>{compactEuro(search.prixMax)}</Text>
-          <Text variant="caption">budget max.</Text>
+          <Text variant="caption">{t('agency.buyers.maxBudget')}</Text>
         </View>
       </View>
       <View style={styles.location}>
         <MapPin size={15} color={colors.text3} />
         <Text numberOfLines={1} style={styles.locationText}>
-          {(search.localisation || []).join(', ') || (c.drawnArea ? 'Zone dessinée sur carte' : 'Secteur non précisé')}
+          {(search.localisation || []).join(', ') || (c.drawnArea ? t('agency.buyers.drawnArea') : t('agency.buyers.noArea'))}
         </Text>
       </View>
       <View style={styles.tags}>
         {search.typeBien?.length ? <Text style={styles.tag}>{typesLabel(search.typeBien)}</Text> : null}
-        {search.nombrePieces?.length ? <Text style={styles.tag}>{search.nombrePieces.join(', ')} p.</Text> : null}
+        {search.nombrePieces?.length ? <Text style={styles.tag}>{t('agency.buyers.roomsShort', { rooms: search.nombrePieces.join(', ') })}</Text> : null}
         {search.surfaceMin ? <Text style={styles.tag}>{search.surfaceMin} m²+</Text> : null}
         {c.delaiRecherche ? (
           <Text style={[styles.tag, urgent ? styles.tagUrgent : null]}>{delaiShortLabel(c.delaiRecherche)}</Text>
@@ -136,7 +137,7 @@ export default function AcquereursScreen() {
         <Pressable accessibilityRole="button" onPress={() => router.navigate('/agence/profil/abonnement')} style={styles.alert}>
           <TriangleAlert size={18} color={colors.goldDeep} />
           <Text style={styles.alertText}>
-            {expired ? 'Abonnement expiré : la messagerie est suspendue.' : 'Votre abonnement expire dans moins de 7 jours.'}
+            {expired ? t('agency.buyers.expired') : t('agency.buyers.expiresSoon')}
           </Text>
           <ChevronRight size={16} color={colors.goldDeep} />
         </Pressable>
@@ -149,9 +150,9 @@ export default function AcquereursScreen() {
           </View>
           {/* Sans abonnement (paiement jamais finalisé), proposer l'activation plutôt que l'annuel. */}
           <View style={{ flex: 1 }}>
-            <Text style={styles.upsellTitle}>{end === null ? 'Activez votre abonnement' : "Passez à l'annuel"}</Text>
+            <Text style={styles.upsellTitle}>{end === null ? t('agency.buyers.activateTitle') : t('agency.buyers.upgradeTitle')}</Text>
             <Text style={styles.upsellText}>
-              {end === null ? 'Contactez les acquéreurs qualifiés' : 'Contacts illimités · 2 mois offerts'}
+              {end === null ? t('agency.buyers.activateText') : t('agency.buyers.upgradeText')}
             </Text>
           </View>
           <ChevronRight size={18} color="rgba(255,255,255,0.6)" />
@@ -162,35 +163,37 @@ export default function AcquereursScreen() {
       <>
       <View style={styles.countRow}>
         <Text variant="title3">
-          {loading ? 'Chargement…' : `${filtered.length} acquéreur${filtered.length > 1 ? 's' : ''}`}
+          {loading
+            ? t('agency.buyers.loading')
+            : t(filtered.length > 1 ? 'agency.buyers.countMany' : 'agency.buyers.countOne', { count: filtered.length })}
         </Text>
         {active ? (
           <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setFilters(NO_FILTERS)}>
-            <Text style={styles.reset}>Réinitialiser</Text>
+            <Text style={styles.reset}>{t('agency.buyers.reset')}</Text>
           </Pressable>
         ) : (
-          <Text variant="footnote">Les plus récents d'abord</Text>
+          <Text variant="footnote">{t('agency.buyers.newestFirst')}</Text>
         )}
       </View>
 
       <View style={styles.chipsBleed}>
         <ChipRow>
-          <Chip label="Tous types" selected={filters.type === 'all'} onPress={() => setFilters((f) => ({ ...f, type: 'all' }))} />
-          <Chip label="Appartement" selected={filters.type === 'appartement'} onPress={() => setFilters((f) => ({ ...f, type: 'appartement' }))} />
-          <Chip label="Maison" selected={filters.type === 'maison'} onPress={() => setFilters((f) => ({ ...f, type: 'maison' }))} />
+          <Chip label={t('agency.buyers.allTypes')} selected={filters.type === 'all'} onPress={() => setFilters((f) => ({ ...f, type: 'all' }))} />
+          <Chip label={t('agency.buyers.apartment')} selected={filters.type === 'appartement'} onPress={() => setFilters((f) => ({ ...f, type: 'appartement' }))} />
+          <Chip label={t('agency.buyers.house')} selected={filters.type === 'maison'} onPress={() => setFilters((f) => ({ ...f, type: 'maison' }))} />
           <Chip
-            label={filters.budgetMin ? `Budget ${compactEuro(filters.budgetMin)}+` : 'Budget'}
+            label={filters.budgetMin ? t('agency.buyers.budgetMin', { amount: compactEuro(filters.budgetMin) }) : t('agency.buyers.budget')}
             dropdown
             selected={!!filters.budgetMin}
             onPress={() => setSheet('budget')}
           />
           <Chip
-            label={filters.surfaceMin ? `${filters.surfaceMin} m²+` : 'Surface'}
+            label={filters.surfaceMin ? `${filters.surfaceMin} m²+` : t('agency.buyers.surface')}
             dropdown
             selected={!!filters.surfaceMin}
             onPress={() => setSheet('surface')}
           />
-          <Chip label="Dossier complet" selected={filters.complete} onPress={() => setFilters((f) => ({ ...f, complete: !f.complete }))} />
+          <Chip label={t('agency.buyers.completeFile')} selected={filters.complete} onPress={() => setFilters((f) => ({ ...f, complete: !f.complete }))} />
         </ChipRow>
       </View>
       </>
@@ -206,9 +209,9 @@ export default function AcquereursScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Acquéreurs',
+          title: t('agency.buyers.title'),
           headerSearchBarOptions: {
-            placeholder: 'Ville ou secteur',
+            placeholder: t('agency.buyers.searchPlaceholder'),
             hideWhenScrolling: false,
             onChangeText: (event) => {
               // Lu tout de suite : l'événement natif est vidé avant l'exécution de la mise à jour différée.
@@ -241,17 +244,17 @@ export default function AcquereursScreen() {
           loading ? null : locked ? (
             <EmptyState
               icon={Lock}
-              title="Activez votre abonnement"
-              message="Les dossiers des acquéreurs qualifiés sont réservés aux agences abonnées. Choisissez une offre pour les consulter et les contacter."
-              actionLabel="Voir les offres"
+              title={t('agency.buyers.activateTitle')}
+              message={t('agency.buyers.lockedMessage')}
+              actionLabel={t('agency.buyers.seePlans')}
               onAction={() => router.navigate('/agence/profil/abonnement')}
             />
           ) : (
             <EmptyState
               icon={active ? SearchX : Users}
-              title={active ? 'Aucun acquéreur ne correspond' : 'Aucune recherche active'}
-              message={active ? 'Élargissez les filtres pour voir plus de dossiers.' : 'Les nouveaux projets des acquéreurs apparaîtront ici.'}
-              actionLabel={active ? 'Réinitialiser les filtres' : undefined}
+              title={active ? t('agency.buyers.noMatchTitle') : t('agency.buyers.noSearchTitle')}
+              message={active ? t('agency.buyers.noMatchMessage') : t('agency.buyers.noSearchMessage')}
+              actionLabel={active ? t('agency.buyers.resetFilters') : undefined}
               onAction={active ? () => setFilters(NO_FILTERS) : undefined}
             />
           )
@@ -259,11 +262,16 @@ export default function AcquereursScreen() {
         renderItem={({ item }) => <LeadCard search={item} />}
       />
 
-      <BottomSheet visible={sheet !== null} onClose={() => setSheet(null)} title={sheet === 'budget' ? 'Budget minimum' : 'Surface minimum'}>
+      <BottomSheet visible={sheet !== null} onClose={() => setSheet(null)} title={sheet === 'budget' ? t('agency.buyers.budgetSheet') : t('agency.buyers.surfaceSheet')}>
         <View style={styles.presets}>
           {(sheet === 'budget' ? BUDGET_PRESETS : SURFACE_PRESETS).map((value) => {
             const selected = sheet === 'budget' ? filters.budgetMin === value : filters.surfaceMin === value
-            const label = value === 0 ? 'Indifférent' : sheet === 'budget' ? `${compactEuro(value)} et plus` : `${value} m² et plus`
+            const label =
+              value === 0
+                ? t('agency.buyers.any')
+                : sheet === 'budget'
+                  ? t('agency.buyers.budgetAndMore', { amount: compactEuro(value) })
+                  : t('agency.buyers.surfaceAndMore', { value })
             return (
               <Chip
                 key={value}

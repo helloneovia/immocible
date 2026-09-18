@@ -12,19 +12,22 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { useAuth } from '@/contexts/AuthContext'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
-import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/client'
+import { intlLocale } from '@/lib/i18n/core'
 
 function SettingsContent() {
     const router = useRouter()
     const { signOut } = useAuth()
+    const { t, locale } = useI18n()
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [role, setRole] = useState('')
     const [couponCode, setCouponCode] = useState('')
     const [applyingCoupon, setApplyingCoupon] = useState(false)
     const [isCheckingOut, setIsCheckingOut] = useState(false)
-    const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+    const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
 
     const [formData, setFormData] = useState({
         nom: '',
@@ -61,12 +64,12 @@ function SettingsContent() {
             if (response.ok && data.clientSecret) {
                 window.location.href = '/agence/paiement?client_secret=' + data.clientSecret
             } else {
-                alert("Erreur lors de l'initialisation du paiement.")
+                alert(t('settings.subscription.paymentInitError'))
                 setIsCheckingOut(false)
             }
         } catch (error) {
             console.error("Payment init error", error)
-            alert("Erreur de connexion.")
+            alert(t('settings.subscription.connectionError'))
             setIsCheckingOut(false)
         }
     }
@@ -90,17 +93,17 @@ function SettingsContent() {
             const data = await response.json()
 
             if (response.ok && data.success) {
-                alert(data.message || "Coupon appliqué avec succès !")
+                alert(data.message || t('settings.subscription.couponApplied'))
                 window.location.reload()
             } else if (response.ok && data.clientSecret) {
                 setIsCheckingOut(true)
                 window.location.href = '/agence/paiement?client_secret=' + data.clientSecret
             } else {
-                alert(data.error || "Code promo invalide")
+                alert(data.error || t('settings.subscription.invalidPromo'))
             }
         } catch (error) {
             console.error("Coupon error", error)
-            alert("Erreur lors de l'application du code promo")
+            alert(t('settings.subscription.couponError'))
         } finally {
             setApplyingCoupon(false)
         }
@@ -152,20 +155,20 @@ function SettingsContent() {
         setSaving(true)
 
         if (formData.password && formData.password !== formData.confirmPassword) {
-            alert("Les mots de passe ne correspondent pas.")
+            alert(t('settings.passwordsMismatch'))
             setSaving(false)
             return
         }
 
         if (formData.password && formData.password.length < 8) {
-            alert("Le mot de passe doit contenir au moins 8 caractères.")
+            alert(t('settings.passwordTooShort'))
             setSaving(false)
             return
         }
 
         const emailChanged = formData.email.trim().toLowerCase() !== savedEmail.trim().toLowerCase()
         if ((formData.password || emailChanged) && !formData.currentPassword) {
-            alert("Saisissez votre mot de passe actuel pour modifier l'e-mail ou le mot de passe.")
+            alert(t('settings.currentPasswordRequired'))
             setSaving(false)
             return
         }
@@ -178,16 +181,16 @@ function SettingsContent() {
             })
 
             if (response.ok) {
-                alert('Profil mis à jour avec succès !')
+                alert(t('settings.profileUpdated'))
                 setSavedEmail(formData.email.trim().toLowerCase())
                 setFormData(prev => ({ ...prev, password: '', confirmPassword: '', currentPassword: '' }))
             } else {
                 const errorData = await response.json()
-                alert(`Erreur: ${errorData.error || 'Impossible de mettre à jour le profil'}`)
+                alert(t('settings.updateError', { error: errorData.error || t('settings.updateFailed') }))
             }
         } catch (error) {
             console.error('Error updating profile:', error)
-            alert('Une erreur est survenue.')
+            alert(t('settings.genericError'))
         } finally {
             setSaving(false)
         }
@@ -207,15 +210,15 @@ function SettingsContent() {
 
             <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">
                 <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">Paramètres du compte</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Informations personnelles</CardTitle>
+                            <CardTitle>{t('settings.personalInfo')}</CardTitle>
                             <CardDescription>
-                                Mettez à jour vos coordonnées et vos informations de connexion.
+                                {t('settings.personalInfoDescription')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
@@ -223,24 +226,24 @@ function SettingsContent() {
                                 <div className="space-y-2">
                                     <Label htmlFor="prenom" className="flex items-center gap-2">
                                         <User className="h-4 w-4 text-gray-400" />
-                                        Prénom
+                                        {t('settings.firstName')}
                                     </Label>
                                     <Input
                                         id="prenom"
                                         name="prenom"
                                         value={formData.prenom}
                                         onChange={handleChange}
-                                        placeholder="Votre prénom"
+                                        placeholder={t('settings.firstNamePlaceholder')}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="nom">Nom</Label>
+                                    <Label htmlFor="nom">{t('settings.lastName')}</Label>
                                     <Input
                                         id="nom"
                                         name="nom"
                                         value={formData.nom}
                                         onChange={handleChange}
-                                        placeholder="Votre nom"
+                                        placeholder={t('settings.lastNamePlaceholder')}
                                     />
                                 </div>
                             </div>
@@ -248,7 +251,7 @@ function SettingsContent() {
                             <div className="space-y-2">
                                 <Label htmlFor="email" className="flex items-center gap-2">
                                     <Mail className="h-4 w-4 text-gray-400" />
-                                    Email
+                                    {t('settings.email')}
                                 </Label>
                                 <Input
                                     id="email"
@@ -256,7 +259,7 @@ function SettingsContent() {
                                     type="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    placeholder="exemple@email.com"
+                                    placeholder={t('settings.emailPlaceholder')}
                                     required
                                 />
                             </div>
@@ -264,7 +267,7 @@ function SettingsContent() {
                             <div className="space-y-2">
                                 <Label htmlFor="telephone" className="flex items-center gap-2">
                                     <Phone className="h-4 w-4 text-gray-400" />
-                                    Téléphone
+                                    {t('settings.phone')}
                                 </Label>
                                 <Input
                                     id="telephone"
@@ -272,7 +275,7 @@ function SettingsContent() {
                                     type="tel"
                                     value={formData.telephone}
                                     onChange={handleChange}
-                                    placeholder="06 12 34 56 78"
+                                    placeholder={t('settings.phonePlaceholder')}
                                 />
                             </div>
 
@@ -280,14 +283,14 @@ function SettingsContent() {
                                 <div className="space-y-2">
                                     <Label htmlFor="nomAgence" className="flex items-center gap-2">
                                         <Building className="h-4 w-4 text-gray-400" />
-                                        Nom de l'agence
+                                        {t('settings.agencyName')}
                                     </Label>
                                     <Input
                                         id="nomAgence"
                                         name="nomAgence"
                                         value={formData.nomAgence}
                                         onChange={handleChange}
-                                        placeholder="Nom de votre agence"
+                                        placeholder={t('settings.agencyNamePlaceholder')}
                                     />
                                 </div>
                             )}
@@ -296,30 +299,30 @@ function SettingsContent() {
                                 <div className="pt-6 border-t">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                                         <CreditCard className="h-5 w-5 text-gray-500" />
-                                        Abonnement
+                                        {t('settings.subscription.title')}
                                     </h3>
                                     <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                                         <div>
                                             <p className="font-semibold text-indigo-900">
-                                                Plan Actuel : {plan === 'yearly' ? 'Annuel (Premium)' : 'Mensuel'}
+                                                {t('settings.subscription.currentPlan', { plan: plan === 'yearly' ? t('settings.subscription.yearlyPremium') : t('settings.subscription.monthly') })}
                                             </p>
                                             {(subscriptionEndDate) && (
                                                 <div className="text-sm font-medium text-indigo-800 mt-1">
-                                                    <p>Période : Du {(() => {
-                                                        if (subscriptionStartDate) return new Date(subscriptionStartDate).toLocaleDateString();
+                                                    <p>{t('settings.subscription.period', { start: (() => {
+                                                        if (subscriptionStartDate) return new Date(subscriptionStartDate).toLocaleDateString(intlLocale(locale));
 
                                                         const end = new Date(subscriptionEndDate);
                                                         const start = new Date(end);
                                                         if (plan === 'yearly') start.setFullYear(start.getFullYear() - 1);
                                                         else start.setMonth(start.getMonth() - 1);
-                                                        return start.toLocaleDateString();
-                                                    })()} au {new Date(subscriptionEndDate).toLocaleDateString()}</p>
+                                                        return start.toLocaleDateString(intlLocale(locale));
+                                                    })(), end: new Date(subscriptionEndDate).toLocaleDateString(intlLocale(locale)) })}</p>
                                                 </div>
                                             )}
                                             <p className="text-sm text-indigo-700 mt-1">
                                                 {plan === 'yearly'
-                                                    ? 'Vous bénéficiez de tous les avantages Premium.'
-                                                    : 'Passez au plan annuel pour économiser 2 mois.'}
+                                                    ? t('settings.subscription.premiumBenefits')
+                                                    : t('settings.subscription.upgradeHint')}
                                             </p>
                                         </div>
                                         <div className="flex flex-col gap-3 items-end w-full sm:w-auto">
@@ -330,7 +333,7 @@ function SettingsContent() {
                                                     className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md hover:shadow-lg whitespace-nowrap w-full"
                                                 >
                                                     <Crown className="mr-2 h-4 w-4" />
-                                                    Passer à l'annuel ({formatPlanPrice(settings.price_yearly)}€/an)
+                                                    {t('settings.subscription.upgrade', { price: formatPlanPrice(settings.price_yearly, locale) })}
                                                 </Button>
                                             )}
                                             {plan !== 'yearly' && (
@@ -341,7 +344,7 @@ function SettingsContent() {
                                                             <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-indigo-500/70" />
                                                             <input
                                                                 type="text"
-                                                                placeholder="CODE PROMO"
+                                                                placeholder={t('settings.subscription.promoPlaceholder')}
                                                                 value={couponCode}
                                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                                                 className="w-full pl-10 pr-3 py-2 bg-transparent text-sm font-bold text-gray-900 placeholder:text-gray-300 focus:outline-none uppercase tracking-widest font-mono"
@@ -359,7 +362,7 @@ function SettingsContent() {
                                                                     : 'bg-gray-100 text-gray-400'}
                                                             `}
                                                         >
-                                                            {applyingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : 'APPLIQUER'}
+                                                            {applyingCoupon ? <Loader2 className="h-3 w-3 animate-spin" /> : t('settings.subscription.apply')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -372,33 +375,33 @@ function SettingsContent() {
                             <div className="pt-6 border-t">
                                 <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                                     <Key className="h-5 w-5 text-gray-500" />
-                                    Sécurité
+                                    {t('settings.security.title')}
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label htmlFor="password">Nouveau mot de passe</Label>
+                                        <Label htmlFor="password">{t('settings.security.newPassword')}</Label>
                                         <Input
                                             id="password"
                                             name="password"
                                             type="password"
                                             value={formData.password}
                                             onChange={handleChange}
-                                            placeholder="Laisser vide pour ne pas changer"
+                                            placeholder={t('settings.security.newPasswordPlaceholder')}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                                        <Label htmlFor="confirmPassword">{t('settings.security.confirmPassword')}</Label>
                                         <Input
                                             id="confirmPassword"
                                             name="confirmPassword"
                                             type="password"
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
-                                            placeholder="Confirmer le nouveau mot de passe"
+                                            placeholder={t('settings.security.confirmPasswordPlaceholder')}
                                         />
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="currentPassword">Mot de passe actuel</Label>
+                                        <Label htmlFor="currentPassword">{t('settings.security.currentPassword')}</Label>
                                         <Input
                                             id="currentPassword"
                                             name="currentPassword"
@@ -406,7 +409,7 @@ function SettingsContent() {
                                             autoComplete="current-password"
                                             value={formData.currentPassword}
                                             onChange={handleChange}
-                                            placeholder="Requis pour changer l'e-mail ou le mot de passe"
+                                            placeholder={t('settings.security.currentPasswordPlaceholder')}
                                         />
                                     </div>
                                 </div>
@@ -416,7 +419,7 @@ function SettingsContent() {
                         <CardFooter className="flex justify-end bg-gray-50/50 p-6">
                             <Button type="submit" disabled={saving} className="bg-slate-900 hover:bg-blue-700 w-full sm:w-auto">
                                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                Enregistrer les modifications
+                                {t('settings.save')}
                             </Button>
                         </CardFooter>
                     </Card>

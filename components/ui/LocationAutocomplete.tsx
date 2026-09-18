@@ -5,6 +5,7 @@ import { Check, ChevronsUpDown, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/client'
 
 interface LocationAutocompleteProps {
     value: string
@@ -24,8 +25,9 @@ interface CityResult {
 export function LocationAutocomplete({
     value,
     onChange,
-    placeholder = "Rechercher une ville..."
+    placeholder
 }: LocationAutocompleteProps) {
+    const { t } = useI18n()
     const [query, setQuery] = React.useState(value)
     const [results, setResults] = React.useState<CityResult[]>([])
     const [isOpen, setIsOpen] = React.useState(false)
@@ -91,7 +93,7 @@ export function LocationAutocomplete({
                             onChange('')
                         }
                     }}
-                    placeholder={placeholder}
+                    placeholder={placeholder ?? t('buyer.location.searchCity')}
                     className="pl-10 h-12"
                     onFocus={() => {
                         if (results.length > 0) setIsOpen(true)

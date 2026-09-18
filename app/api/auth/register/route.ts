@@ -4,9 +4,11 @@ import { createSession } from '@/lib/session'
 import { UserRole } from '@prisma/client'
 import { sendWelcomeEmail } from '@/lib/mail'
 import { prisma } from '@/lib/prisma'
-import { getAppSettings } from '@/lib/settings'
+import { getAppSettings, localizeSettings } from '@/lib/settings'
+import { getLocale, getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+  const t = getT()
   try {
     const body = await request.json()
     console.log('[Register] Attempt for:', body.email)
@@ -16,21 +18,21 @@ export async function POST(request: NextRequest) {
     // Validation
     if (!email || !password || !role) {
       return NextResponse.json(
-        { error: 'Email, password, and role are required' },
+        { error: t('api.auth.register.requiredFields') },
         { status: 400 }
       )
     }
 
     if (password.length < 8) {
       return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
+        { error: t('api.auth.register.passwordTooShort') },
         { status: 400 }
       )
     }
 
     if (!['acquereur', 'agence'].includes(role)) {
       return NextResponse.json(
-        { error: 'Invalid role' },
+        { error: t('api.auth.register.invalidRole') },
         { status: 400 }
       )
     }
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (platformUser) {
-          const settings = await getAppSettings()
+          const settings = localizeSettings(await getAppSettings(), getLocale())
           const conversation = await prisma.conversation.upsert({
             where: { agencyId_buyerId: { agencyId: platformUser.id, buyerId: user.id } },
             update: {},
@@ -101,7 +103,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Registration error:', error)
     return NextResponse.json(
-      { error: error.message || 'Registration failed' },
+      { error: error.message || t('api.auth.register.failed') },
       { status: 400 }
     )
   }

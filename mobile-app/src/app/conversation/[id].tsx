@@ -10,6 +10,7 @@ import { pushedScreenOptions } from '@/lib/navigation'
 import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUnread } from '@/contexts/UnreadContext'
+import { t } from '@/i18n'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { formatDayLabel, formatTime, isSameDay } from '@/lib/format'
 import { useFocusedInterval, useStatusBar } from '@/lib/hooks'
@@ -19,7 +20,7 @@ import { colors, fonts, radius, spacing } from '@/theme'
 type Item = { type: 'day'; key: string; label: string } | { type: 'message'; key: string; message: Message }
 
 export default function ConversationScreen() {
-  const { id, name = 'Conversation', role } = useLocalSearchParams<{ id: string; name?: string; role?: string }>()
+  const { id, name = t('messages.conversation.defaultTitle'), role } = useLocalSearchParams<{ id: string; name?: string; role?: string }>()
   const { user } = useAuth()
   const { refresh: refreshUnread } = useUnread()
   const insets = useSafeAreaInsets()
@@ -101,7 +102,7 @@ export default function ConversationScreen() {
       }
     } catch (err) {
       const subscription = err instanceof ApiError && err.status === 403 && user?.role === 'agence'
-      setSendError({ message: errorMessage(err, "Le message n'a pas pu être envoyé."), subscription })
+      setSendError({ message: errorMessage(err, t('messages.conversation.sendFailed')), subscription })
     } finally {
       setSending(false)
     }
@@ -137,7 +138,7 @@ export default function ConversationScreen() {
               <UserIcon size={24} color={colors.slate500} />
             </View>
             <Text variant="bodyLight" center>
-              Démarrez la conversation avec {name}
+              {t('messages.conversation.start', { name })}
             </Text>
           </View>
         ) : (
@@ -179,7 +180,7 @@ export default function ConversationScreen() {
               {sendError.message}
             </Text>
             {sendError.subscription ? (
-              <Button title="Gérer mon abonnement" variant="outline" size="sm" fullWidth={false} onPress={() => router.navigate('/agence/profil/abonnement')} />
+              <Button title={t('messages.conversation.manageSubscription')} variant="outline" size="sm" fullWidth={false} onPress={() => router.navigate('/agence/profil/abonnement')} />
             ) : null}
           </View>
         ) : null}
@@ -188,15 +189,15 @@ export default function ConversationScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder="Écrivez votre message..."
+            placeholder={t('messages.conversation.placeholder')}
             placeholderTextColor={colors.slate400}
             multiline
             style={styles.input}
-            accessibilityLabel="Message"
+            accessibilityLabel={t('messages.conversation.inputA11y')}
           />
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Envoyer"
+            accessibilityLabel={t('messages.conversation.send')}
             disabled={!draft.trim() || sending}
             onPress={send}
             style={[styles.sendButton, !draft.trim() || sending ? { opacity: 0.4 } : null]}

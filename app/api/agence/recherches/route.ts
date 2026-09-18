@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/session'
 import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET() {
+    const t = getT()
     try {
         const session = await getSession()
 
         if (!session || !session.user || session.user.role !== 'agence') {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
@@ -47,7 +49,7 @@ export async function GET() {
     } catch (error) {
         console.error('Error fetching recherches:', error)
         return NextResponse.json(
-            { error: 'Internal Server Error' },
+            { error: t('api.common.serverError') },
             { status: 500 }
         )
     }

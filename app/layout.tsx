@@ -7,51 +7,48 @@ import { CookieConsent } from '@/components/CookieConsent'
 import { CapacitorHardwareBack } from '@/components/CapacitorHardwareBack'
 import { CapacitorNativeShell } from '@/components/CapacitorNativeShell'
 import { NativePushEnabler } from '@/components/NativePushEnabler'
+import { I18nProvider } from '@/lib/i18n/client'
+import { getLocale, getT } from '@/lib/i18n/server'
 
 const inter = Inter({ subsets: ['latin'] })
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://immocible.com'
 
-const description =
-  "IMMOCIBLE connecte les acquéreurs qualifiés avec des opportunités immobilières off-market exclusives. Définissez votre projet, notre réseau d'agences partenaires vous propose les biens qui correspondent — avant tout le monde."
-
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "IMMOCIBLE — Le moteur de recherche inversé de l'immobilier",
-    template: '%s | IMMOCIBLE',
-  },
-  description,
-  applicationName: 'IMMOCIBLE',
-  keywords: [
-    'immobilier',
-    'off-market',
-    'recherche inversée',
-    'acquéreur',
-    'agence immobilière',
-    'bien immobilier',
-    'matching immobilier',
-  ],
-  authors: [{ name: 'IMMOCIBLE' }],
-  creator: 'IMMOCIBLE',
-  alternates: { canonical: '/' },
-  openGraph: {
-    type: 'website',
-    locale: 'fr_FR',
-    url: siteUrl,
-    siteName: 'IMMOCIBLE',
-    title: "IMMOCIBLE — Le moteur de recherche inversé de l'immobilier",
+export function generateMetadata(): Metadata {
+  const t = getT()
+  const locale = getLocale()
+  const title = t('home.meta.title')
+  const description = t('home.meta.description')
+  return {
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: title,
+      template: '%s | IMMOCIBLE',
+    },
     description,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: "IMMOCIBLE — Le moteur de recherche inversé de l'immobilier",
-    description,
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+    applicationName: 'IMMOCIBLE',
+    keywords: t('home.meta.keywords').split(','),
+    authors: [{ name: 'IMMOCIBLE' }],
+    creator: 'IMMOCIBLE',
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      locale: locale === 'en' ? 'en_GB' : 'fr_FR',
+      url: siteUrl,
+      siteName: 'IMMOCIBLE',
+      title,
+      description,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  }
 }
 
 export const viewport: Viewport = {
@@ -65,9 +62,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const locale = getLocale()
   return (
-    <html lang="fr">
+    <html lang={locale}>
       <body className={inter.className}>
+        <I18nProvider locale={locale}>
         <AuthProvider>
           <TrackingProvider />
           <CapacitorHardwareBack />
@@ -76,6 +75,7 @@ export default function RootLayout({
           {children}
           <CookieConsent />
         </AuthProvider>
+        </I18nProvider>
       </body>
     </html>
   )

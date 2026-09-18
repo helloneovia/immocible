@@ -14,6 +14,7 @@ import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold'
 import { PlayfairDisplay_600SemiBold } from '@expo-google-fonts/playfair-display/600SemiBold'
 import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display/700Bold'
 import { AuthProvider, useAuth } from '@/contexts/AuthContext'
+import { I18nProvider, useI18n } from '@/i18n'
 import { SettingsProvider } from '@/contexts/SettingsContext'
 import { UnreadProvider } from '@/contexts/UnreadContext'
 import { OfflineBanner } from '@/components/OfflineBanner'
@@ -36,16 +37,24 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <AuthProvider>
-          <SettingsProvider>
-            <UnreadProvider>
-              <RootNavigator fontsReady={fontsLoaded || !!fontError} />
-            </UnreadProvider>
-          </SettingsProvider>
-        </AuthProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <SettingsProvider>
+              <UnreadProvider>
+                <LocalizedNavigator fontsReady={fontsLoaded || !!fontError} />
+              </UnreadProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </I18nProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )
+}
+
+/** Changer de langue remonte la navigation : tous les écrans et en-têtes natifs sont retraduits. */
+function LocalizedNavigator({ fontsReady }: { fontsReady: boolean }) {
+  const { locale } = useI18n()
+  return <RootNavigator key={locale} fontsReady={fontsReady} />
 }
 
 function RootNavigator({ fontsReady }: { fontsReady: boolean }) {

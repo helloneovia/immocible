@@ -4,8 +4,10 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
 import { getCurrentUser } from '@/lib/session'
+import { getLocale, getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const settings = await getAppSettings()
 
@@ -21,11 +23,11 @@ export async function POST(request: NextRequest) {
         const PLANS = {
             monthly: {
                 price: Math.round(settings.price_monthly * 100), // Convert to cents
-                name: 'Formule Mensuelle (Agence)',
+                name: t('api.payment.productMonthly'),
             },
             yearly: {
                 price: Math.round(settings.price_yearly * 100), // Convert to cents
-                name: 'Formule Annuelle (Agence)',
+                name: t('api.payment.productYearly'),
             },
         }
 
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
 
         if (!email || !plan) {
             return NextResponse.json(
-                { error: 'Email and plan are required' },
+                { error: t('api.payment.emailPlanRequired') },
                 { status: 400 }
             )
         }
@@ -47,7 +49,7 @@ export async function POST(request: NextRequest) {
         const selectedPlan = PLANS[plan as keyof typeof PLANS]
         if (!selectedPlan) {
             return NextResponse.json(
-                { error: 'Invalid plan' },
+                { error: t('api.payment.invalidPlan') },
                 { status: 400 }
             )
         }
@@ -61,16 +63,16 @@ export async function POST(request: NextRequest) {
             })
 
             if (!coupon || !coupon.isActive) {
-                return NextResponse.json({ error: 'Code promo invalide' }, { status: 400 })
+                return NextResponse.json({ error: t('api.payment.invalidCoupon') }, { status: 400 })
             }
             if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
-                return NextResponse.json({ error: 'Ce code promo a atteint sa limite d\'utilisation' }, { status: 400 })
+                return NextResponse.json({ error: t('api.payment.couponLimitReached') }, { status: 400 })
             }
             if (coupon.validUntil && new Date() > coupon.validUntil) {
-                return NextResponse.json({ error: 'Ce code promo a expiré' }, { status: 400 })
+                return NextResponse.json({ error: t('api.payment.couponExpired') }, { status: 400 })
             }
             if (coupon.planType && coupon.planType !== 'all' && coupon.planType !== plan) {
-                return NextResponse.json({ error: `Ce code est valide uniquement pour le plan ${coupon.planType === 'monthly' ? 'Mensuel' : 'Annuel'}` }, { status: 400 })
+                return NextResponse.json({ error: t('api.payment.couponPlanOnly', { plan: coupon.planType === 'monthly' ? t('api.payment.planMonthly') : t('api.payment.planYearly') }) }, { status: 400 })
             }
 
             // Handle FREE_TRIAL (Bypass Stripe)
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
                 // et uniquement pour son propre compte (email forcé ci-dessus).
                 if (!currentUser) {
                     return NextResponse.json(
-                        { error: 'Veuillez vous connecter pour activer cette offre.' },
+                        { error: t('api.payment.loginToActivate') },
                         { status: 401 }
                     )
                 }
@@ -121,7 +123,7 @@ export async function POST(request: NextRequest) {
                         data: { usedCount: { increment: 1 } }
                     })
 
-                    return NextResponse.json({ success: true, message: `Offre activée : ${days} jours offerts !` })
+                    return NextResponse.json({ success: true, message: t('api.payment.offerActivated', { days }) })
                 }
             } else {
                 // Handle Percentage/Fixed via Stripe
@@ -142,7 +144,7 @@ export async function POST(request: NextRequest) {
                     })
                 } catch (e) {
                     console.error("Stripe coupon creation failed", e);
-                    return NextResponse.json({ error: 'Erreur lors de l\'application de la réduction' }, { status: 400 })
+                    return NextResponse.json({ error: t('api.payment.discountFailed') }, { status: 400 })
                 }
             }
         }
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
                         currency: 'eur',
                         product_data: {
                             name: selectedPlan.name,
-                            description: `Accès IMMOCIBLE pour l'agence ${nomAgence || ''}`,
+                            description: t('api.payment.productDescription', { agency: nomAgence || '' }).trim(),
                         },
                         unit_amount: selectedPlan.price,
                     },
@@ -176,6 +178,8 @@ export async function POST(request: NextRequest) {
             ],
             mode: 'payment',
             ui_mode: 'embedded',
+            // Formulaire Stripe dans la langue de l'utilisateur (et non celle de l'appareil).
+            locale: getLocale(),
             return_url: `${returnUrlBase}?session_id={CHECKOUT_SESSION_ID}`,
             customer_email: email,
             metadata: {
@@ -189,7 +193,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('Stripe error:', error)
         return NextResponse.json(
-            { error: error.message || 'Payment initiation failed' },
+            { error: error.message || t('api.payment.initiationFailed') },
             { status: 500 }
         )
     }

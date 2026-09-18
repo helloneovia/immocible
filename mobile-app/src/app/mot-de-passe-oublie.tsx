@@ -7,6 +7,7 @@ import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
+import { t } from '@/i18n'
 import { api } from '@/lib/api'
 import { colors } from '@/theme'
 
@@ -24,7 +25,7 @@ export default function ForgotPasswordScreen() {
       await api('/api/auth/forgot-password', { method: 'POST', body: { email: email.trim().toLowerCase() } })
       setSubmitted(true)
     } catch {
-      setError("L'envoi a échoué. Vérifiez votre connexion puis réessayez.")
+      setError(t('auth.forgot.sendFailed'))
     } finally {
       setLoading(false)
     }
@@ -33,9 +34,9 @@ export default function ForgotPasswordScreen() {
   if (submitted) {
     return (
       <AuthScaffold
-        title="Vérifiez vos e-mails"
-        subtitle={`Si un compte existe pour ${email.trim()}, un lien pour choisir un nouveau mot de passe vient d'être envoyé. Il est valable une heure.`}
-        footer={<Button title="Retour à la connexion" size="lg" onPress={() => router.back()} />}
+        title={t('auth.forgot.sentTitle')}
+        subtitle={t('auth.forgot.sentSubtitle', { email: email.trim() })}
+        footer={<Button title={t('auth.forgot.backToLogin')} size="lg" onPress={() => router.back()} />}
       >
         <View style={styles.illustration}>
           <MailCheck size={44} color={colors.success} />
@@ -46,17 +47,17 @@ export default function ForgotPasswordScreen() {
 
   return (
     <AuthScaffold
-      title="Mot de passe oublié"
-      subtitle="Indiquez l'e-mail de votre compte : nous vous envoyons un lien pour en choisir un nouveau."
-      footer={<Button title="Envoyer le lien" size="lg" loading={loading} disabled={!email.trim()} onPress={submit} />}
+      title={t('auth.forgot.title')}
+      subtitle={t('auth.forgot.subtitle')}
+      footer={<Button title={t('auth.forgot.submit')} size="lg" loading={loading} disabled={!email.trim()} onPress={submit} />}
     >
       <Banner message={error} />
       <TextField
-        label="E-mail"
+        label={t('auth.fields.email')}
         icon={Mail}
         value={email}
         onChangeText={setEmail}
-        placeholder="prenom@exemple.fr"
+        placeholder={t('auth.fields.placeholderEmail')}
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
@@ -65,7 +66,7 @@ export default function ForgotPasswordScreen() {
         autoFocus
       />
       <Text variant="footnote" color={colors.text3}>
-        Le lien s'ouvre dans votre navigateur ou dans l'application.
+        {t('auth.forgot.hint')}
       </Text>
     </AuthScaffold>
   )

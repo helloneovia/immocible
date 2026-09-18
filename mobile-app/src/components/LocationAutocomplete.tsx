@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Keyboard, Pressable, StyleSheet, View } from 'react-native'
 import { MapPin } from 'lucide-react-native'
 import { TextField } from '@/components/ui/TextField'
+import { t } from '@/i18n'
 import { Text } from '@/components/ui/Text'
 import { colors, radius } from '@/theme'
 
@@ -21,7 +22,7 @@ export async function searchCities(query: string, limit = 5): Promise<CityResult
 /** Recherche de communes (API Adresse du gouvernement), résultats affichés sous le champ. */
 export function LocationAutocomplete({
   onSelect,
-  placeholder = 'Ajouter une ville...',
+  placeholder = t('questionnaire.location.addCity'),
 }: {
   onSelect: (label: string) => void
   placeholder?: string

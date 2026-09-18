@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET(request: NextRequest) {
+    const t = getT()
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         const conversations = await prisma.conversation.findMany({
@@ -80,6 +82,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ conversations: sanitizedConversations })
     } catch (error) {
         console.error('Get conversations error:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

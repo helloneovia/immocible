@@ -9,11 +9,13 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, Building2, CheckCircle2, Shield, AlertCircle, Ticket } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
-import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n/client'
 
 export default function InscriptionAgence() {
   const router = useRouter()
+  const { t, locale } = useI18n()
   const [couponCode, setCouponCode] = useState('')
   const [step, setStep] = useState(1)
   const [otp, setOtp] = useState('')
@@ -25,7 +27,7 @@ export default function InscriptionAgence() {
   const [loading, setLoading] = useState(false)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
 
   useEffect(() => {
     fetch('/api/public/settings')
@@ -77,8 +79,8 @@ export default function InscriptionAgence() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (password !== confirmPassword) { setError('Les mots de passe ne correspondent pas'); return }
-    if (password.length < 8) { setError('Le mot de passe doit contenir au moins 8 caractères'); return }
+    if (password !== confirmPassword) { setError(t('auth.common.passwordsMismatch')); return }
+    if (password.length < 8) { setError(t('auth.common.passwordTooShort')); return }
     setLoading(true)
     try {
       const registerResponse = await fetch('/api/auth/register', {
@@ -87,7 +89,7 @@ export default function InscriptionAgence() {
         body: JSON.stringify({ email, password, role: 'agence', nomAgence, plan }),
       })
       const registerData = await registerResponse.json()
-      if (!registerResponse.ok) throw new Error(registerData.error || 'Une erreur est survenue lors de l\'inscription')
+      if (!registerResponse.ok) throw new Error(registerData.error || t('auth.common.registerError'))
 
       const checkoutResponse = await fetch('/api/payment/create-checkout-session', {
         method: 'POST',
@@ -95,17 +97,17 @@ export default function InscriptionAgence() {
         body: JSON.stringify({ email, plan, nomAgence, couponCode, returnUrl: window.location.origin + '/agence/inscription/success' })
       })
       const checkoutData = await checkoutResponse.json()
-      if (!checkoutResponse.ok) throw new Error(checkoutData.error || 'Erreur lors de l\'initialisation du paiement')
+      if (!checkoutResponse.ok) throw new Error(checkoutData.error || t('auth.agencySignup.paymentInitError'))
       
       setIsCheckingOut(true) // Show the secure payment screen before redirecting
       
       if (checkoutData.clientSecret) { 
         window.location.href = '/agence/paiement?client_secret=' + checkoutData.clientSecret
       } else { 
-        throw new Error('Url de paiement invalide') 
+        throw new Error(t('auth.agencySignup.invalidPaymentUrl')) 
       }
     } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue lors de l\'inscription')
+      setError(err.message || t('auth.common.registerError'))
       setLoading(false)
       setIsCheckingOut(false)
     }
@@ -139,7 +141,7 @@ export default function InscriptionAgence() {
         <div className="flex justify-center mb-6">
           <span className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-semibold px-4 py-1.5 rounded-full backdrop-blur-sm">
             <Building2 className="h-3.5 w-3.5" />
-            Espace Professionnel Agence
+            {t('auth.common.agencyBadge')}
           </span>
         </div>
 
@@ -165,10 +167,10 @@ export default function InscriptionAgence() {
                 <Building2 className="h-7 w-7 text-amber-400" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900 mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                {settings.text_signup_agency_title || 'Créer mon compte agence'}
+                {settings.text_signup_agency_title || t('auth.agencySignup.title')}
               </h1>
               <p className="text-slate-500 text-sm font-medium">
-                {settings.text_signup_agency_subtitle || 'Accédez à des acquéreurs vérifiés. Choisissez votre plan.'}
+                {settings.text_signup_agency_subtitle || t('auth.agencySignup.subtitle')}
               </p>
             </div>
 
@@ -181,14 +183,14 @@ export default function InscriptionAgence() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">Email professionnel</Label>
-                  <Input id="email" type="email" placeholder="contact@agence.com" required value={email}
+                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">{t('auth.common.proEmail')}</Label>
+                  <Input id="email" type="email" placeholder={t('auth.common.agencyEmailPlaceholder')} required value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white transition-colors" />
                 </div>
                 <Button type="submit" disabled={loading || !email}
                   className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
-                  {loading ? 'Envoi...' : 'Continuer'}
+                  {loading ? t('auth.common.sending') : t('auth.common.continue')}
                   {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </form>
@@ -203,11 +205,11 @@ export default function InscriptionAgence() {
                   </div>
                 )}
                 <div className="text-center mb-4 p-4 bg-amber-50 rounded-xl border border-amber-100">
-                  <p className="text-sm text-slate-600">Code envoyé à <strong className="text-slate-900">{email}</strong></p>
-                  <button type="button" onClick={() => setStep(1)} className="text-xs text-amber-600 hover:underline mt-1 font-medium">Modifier l&apos;email</button>
+                  <p className="text-sm text-slate-600">{t('auth.common.codeSentTo')} <strong className="text-slate-900">{email}</strong></p>
+                  <button type="button" onClick={() => setStep(1)} className="text-xs text-amber-600 hover:underline mt-1 font-medium">{t('auth.common.changeEmail')}</button>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="otp" className="text-sm font-semibold text-slate-700">Code de vérification</Label>
+                  <Label htmlFor="otp" className="text-sm font-semibold text-slate-700">{t('auth.common.verificationCode')}</Label>
                   <Input id="otp" type="text" placeholder="123456" required value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white text-center text-2xl tracking-widest font-mono"
@@ -215,7 +217,7 @@ export default function InscriptionAgence() {
                 </div>
                 <Button type="submit" disabled={loading || otp.length < 6}
                   className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300">
-                  {loading ? 'Vérification...' : 'Vérifier le code'}
+                  {loading ? t('auth.common.verifying') : t('auth.common.verifyCode')}
                 </Button>
               </form>
             )}
@@ -229,29 +231,29 @@ export default function InscriptionAgence() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-semibold text-slate-700">Nom de l&apos;agence</Label>
-                  <Input id="name" type="text" placeholder="Mon Agence Immobilière" required value={nomAgence}
+                  <Label htmlFor="name" className="text-sm font-semibold text-slate-700">{t('auth.agencySignup.agencyName')}</Label>
+                  <Input id="name" type="text" placeholder={t('auth.agencySignup.agencyNamePlaceholder')} required value={nomAgence}
                     onChange={(e) => setNomAgence(e.target.value)}
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white" />
                 </div>
                 <div className="space-y-2 opacity-60 pointer-events-none">
-                  <Label className="text-sm font-semibold text-slate-700">Email vérifié</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{t('auth.common.verifiedEmail')}</Label>
                   <div className="flex items-center gap-2 h-12 px-3 border-2 border-slate-200 rounded-xl bg-slate-50 text-slate-700">
                     <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                     <span className="text-sm">{email}</span>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">{t('auth.common.password')}</Label>
                   <Input id="password" type="password" placeholder="••••••••" required value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white" />
                   <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" /> Minimum 8 caractères
+                    <CheckCircle2 className="h-3 w-3" /> {t('auth.common.minChars')}
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">Confirmer le mot de passe</Label>
+                  <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">{t('auth.common.confirmPassword')}</Label>
                   <Input id="confirmPassword" type="password" placeholder="••••••••" required value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className="h-12 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white" />
@@ -259,15 +261,15 @@ export default function InscriptionAgence() {
 
                 {/* Plan selector */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-700">Choisir votre offre</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{t('auth.agencySignup.choosePlan')}</Label>
                   <div className="grid grid-cols-2 gap-3">
                     <div
                       className={`relative flex flex-col p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${plan === 'monthly' ? 'border-slate-900 bg-slate-50 shadow-md' : 'border-slate-200 hover:border-slate-300'}`}
                       onClick={() => setPlan('monthly')}
                     >
                       {plan === 'monthly' && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center"><CheckCircle2 className="h-3 w-3 text-white" /></div>}
-                      <div className="font-bold text-slate-900">Mensuel</div>
-                      <div className="text-sm text-slate-500 mt-1">{formatPlanPrice(settings.price_monthly)}€ / mois</div>
+                      <div className="font-bold text-slate-900">{t('auth.agencySignup.monthly')}</div>
+                      <div className="text-sm text-slate-500 mt-1">{t('auth.agencySignup.perMonth', { price: formatPlanPrice(settings.price_monthly, locale) })}</div>
                       <ul className="mt-3 space-y-1.5 text-xs text-slate-500">
                         {settings.feature_list_monthly.map((feature, i) => (
                           <li key={i} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" /> {feature}</li>
@@ -279,9 +281,9 @@ export default function InscriptionAgence() {
                       onClick={() => setPlan('yearly')}
                     >
                       {plan === 'yearly' && <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center"><CheckCircle2 className="h-3 w-3 text-white" /></div>}
-                      <div className="font-bold text-slate-900">Annuel</div>
-                      <div className="text-sm text-slate-500 mt-1">{formatPlanPrice(settings.price_yearly)}€ / an</div>
-                      <div className="text-[10px] text-amber-600 font-semibold">2 mois offerts</div>
+                      <div className="font-bold text-slate-900">{t('auth.agencySignup.yearly')}</div>
+                      <div className="text-sm text-slate-500 mt-1">{t('auth.agencySignup.perYear', { price: formatPlanPrice(settings.price_yearly, locale) })}</div>
+                      <div className="text-[10px] text-amber-600 font-semibold">{t('auth.agencySignup.twoMonthsFree')}</div>
                       <ul className="mt-2 space-y-1.5 text-xs text-slate-500">
                         {settings.feature_list_yearly.map((feature, i) => (
                           <li key={i} className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" /> {feature}</li>
@@ -293,10 +295,10 @@ export default function InscriptionAgence() {
 
                 {/* Coupon */}
                 <div className="space-y-2">
-                  <Label htmlFor="coupon" className="text-sm font-semibold text-slate-700">Code Promo (Optionnel)</Label>
+                  <Label htmlFor="coupon" className="text-sm font-semibold text-slate-700">{t('auth.agencySignup.promoCode')}</Label>
                   <div className="relative">
                     <Ticket className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input id="coupon" type="text" placeholder="CODE PROMO" value={couponCode}
+                    <Input id="coupon" type="text" placeholder={t('auth.agencySignup.promoPlaceholder')} value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       className="pl-10 h-10 border-2 border-slate-200 focus:border-slate-900 rounded-xl bg-slate-50 focus:bg-white uppercase font-mono tracking-wider text-sm" />
                   </div>
@@ -305,7 +307,7 @@ export default function InscriptionAgence() {
                 <Button type="submit" disabled={loading}
                   className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 group disabled:opacity-50"
                   size="lg">
-                  {loading ? 'Création en cours...' : settings.text_signup_agency_title || 'Créer mon compte agence'}
+                  {loading ? t('auth.common.creating') : settings.text_signup_agency_title || t('auth.agencySignup.title')}
                   {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </form>
@@ -314,28 +316,28 @@ export default function InscriptionAgence() {
             <div className="relative py-4">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-200" /></div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 font-medium">Ou</span>
+                <span className="bg-white px-3 text-slate-400 font-medium">{t('auth.common.or')}</span>
               </div>
             </div>
 
             <div className="text-center text-sm text-slate-500">
-              Déjà un compte ?{' '}
-              <Link href="/agence/connexion" className="text-slate-900 hover:text-amber-600 underline font-semibold transition-colors">Se connecter</Link>
+              {t('auth.common.alreadyAccount')}{' '}
+              <Link href="/agence/connexion" className="text-slate-900 hover:text-amber-600 underline font-semibold transition-colors">{t('auth.common.signIn')}</Link>
             </div>
             <div className="text-center text-sm pt-2">
               <Link href="/acquereur/inscription" className="text-slate-400 hover:text-slate-700 transition-colors font-medium">
-                Vous êtes un acquéreur ? Inscrivez-vous ici →
+                {t('auth.agencySignup.buyerLink')}
               </Link>
             </div>
 
             <div className="mt-6 pt-5 border-t border-slate-100 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                <span>{settings.text_trust_payment || 'Paiement sécurisé'}</span>
+                <span>{settings.text_trust_payment || t('auth.agencySignup.trustPayment')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-amber-500" />
-                <span>{settings.text_trust_trial || 'Essai gratuit 14 jours'}</span>
+                <span>{settings.text_trust_trial || t('auth.agencySignup.trustTrial')}</span>
               </div>
             </div>
           </div>

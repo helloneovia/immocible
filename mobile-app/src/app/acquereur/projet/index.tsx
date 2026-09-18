@@ -9,6 +9,7 @@ import { ListRow, ListSection } from '@/components/ui/List'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Text } from '@/components/ui/Text'
 import { api } from '@/lib/api'
+import { t } from '@/i18n'
 import { formatEuro } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
 import {
@@ -21,7 +22,7 @@ import {
   NOMBRE_ENFANTS,
   SITUATION_FAMILIALE,
   SITUATION_PRO,
-  capitalize,
+  typeBienLabel,
 } from '@/lib/labels'
 import { largeTitleScrollProps } from '@/lib/navigation'
 import {
@@ -35,9 +36,8 @@ import {
 import type { QuestionnaireData } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
 
-const NOT_SET = 'À préciser'
-
 export default function ProjetScreen() {
+  const NOT_SET = t('project.summary.notSet')
   const [project, setProject] = useState<QuestionnaireData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -68,11 +68,11 @@ export default function ProjetScreen() {
   const header = (
     <Stack.Screen
       options={{
-        title: 'Mon projet',
+        title: t('project.summary.title'),
         headerRight: project
           ? () => (
               <Pressable accessibilityRole="button" onPress={() => edit()} hitSlop={10}>
-                <Text style={styles.headerAction}>Tout modifier</Text>
+                <Text style={styles.headerAction}>{t('project.summary.editAll')}</Text>
               </Pressable>
             )
           : undefined,
@@ -98,14 +98,13 @@ export default function ProjetScreen() {
         <TargetRing rings={projectRings(normalizeProject(null))} size={168} dark={false} />
         <View style={{ gap: 8 }}>
           <Text variant="title2" center>
-            Définissez votre projet
+            {t('project.summary.emptyTitle')}
           </Text>
           <Text variant="subhead" center>
-            Le bien, le budget, le lieu : quelques questions, une par écran. Les agences partenaires s'en servent pour
-            vous proposer des biens off-market.
+            {t('project.summary.emptyText')}
           </Text>
         </View>
-        <Button title="Commencer" size="lg" onPress={() => edit()} />
+        <Button title={t('project.summary.start')} size="lg" onPress={() => edit()} />
       </ScrollView>
     )
   }
@@ -139,34 +138,34 @@ export default function ProjetScreen() {
           </Text>
           <Text variant="subhead">{budgetLabel(p.budgetMin, p.budgetMax)}</Text>
           <Text style={[styles.pct, pct >= 100 ? { color: colors.success } : null]}>
-            {pct >= 100 ? 'Projet complet' : `Complet à ${pct} %`}
+            {pct >= 100 ? t('project.summary.complete') : t('project.summary.completePct', { pct })}
           </Text>
         </View>
       </View>
 
-      <ListSection title="Le bien" action={{ label: 'Modifier', onPress: () => edit('bien') }}>
-        <ListRow title="Type" value={p.typeBien.map(capitalize).join(', ') || NOT_SET} />
-        <ListRow title="Pièces" value={p.nombrePieces.length ? p.nombrePieces.join(', ') : NOT_SET} />
+      <ListSection title={t('project.summary.property')} action={{ label: t('project.summary.edit'), onPress: () => edit('bien') }}>
+        <ListRow title={t('project.summary.type')} value={p.typeBien.map(typeBienLabel).join(', ') || NOT_SET} />
+        <ListRow title={t('project.summary.rooms')} value={p.nombrePieces.length ? p.nombrePieces.join(', ') : NOT_SET} />
         <ListRow
-          title="Surface"
+          title={t('project.summary.surface')}
           value={
             p.surfaceMin || p.surfaceMax
-              ? `${p.surfaceMin || '—'} à ${p.surfaceMax || '—'} m²`
+              ? t('project.summary.surfaceRange', { min: p.surfaceMin || '—', max: p.surfaceMax || '—' })
               : NOT_SET
           }
         />
       </ListSection>
 
-      <ListSection title="Budget et financement" action={{ label: 'Modifier', onPress: () => edit('budget') }}>
-        <ListRow title="Budget" value={budgetLabel(p.budgetMin, p.budgetMax)} />
-        <ListRow title="Apport" value={p.apport ? formatEuro(p.apport) : NOT_SET} />
-        <ListRow title="Financement" value={labelFor(FINANCEMENT, p.financement, NOT_SET)} />
-        {p.financement !== 'cash' ? <ListRow title="Durée du prêt" value={labelFor(DUREE_PRET, p.dureePret, NOT_SET)} /> : null}
+      <ListSection title={t('project.summary.budgetSection')} action={{ label: t('project.summary.edit'), onPress: () => edit('budget') }}>
+        <ListRow title={t('project.summary.budget')} value={budgetLabel(p.budgetMin, p.budgetMax)} />
+        <ListRow title={t('project.summary.deposit')} value={p.apport ? formatEuro(p.apport) : NOT_SET} />
+        <ListRow title={t('project.summary.financing')} value={labelFor(FINANCEMENT, p.financement, NOT_SET)} />
+        {p.financement !== 'cash' ? <ListRow title={t('project.summary.loanDuration')} value={labelFor(DUREE_PRET, p.dureePret, NOT_SET)} /> : null}
       </ListSection>
 
-      <ListSection title="Localisation" action={{ label: 'Modifier', onPress: () => edit('lieu') }}>
-        <ListRow title="Villes" subtitle={p.localisation.join(' · ') || NOT_SET} multiline />
-        <ListRow title="Zone dessinée" value={p.drawnArea ? 'Oui' : 'Aucune'} />
+      <ListSection title={t('project.summary.location')} action={{ label: t('project.summary.edit'), onPress: () => edit('lieu') }}>
+        <ListRow title={t('project.summary.cities')} subtitle={p.localisation.join(' · ') || NOT_SET} multiline />
+        <ListRow title={t('project.summary.drawnArea')} value={p.drawnArea ? t('project.summary.yes') : t('project.summary.none')} />
       </ListSection>
       {p.drawnArea ? (
         <>
@@ -175,28 +174,28 @@ export default function ProjetScreen() {
         </>
       ) : null}
 
-      <ListSection title="Équipements souhaités" action={{ label: 'Modifier', onPress: () => edit('criteres') }}>
-        <ListRow title="Équipements" subtitle={extras.join(' · ') || 'Aucun en particulier'} multiline />
-        {p.commentaires ? <ListRow title="Précisions" subtitle={p.commentaires} multiline /> : null}
+      <ListSection title={t('project.summary.extrasSection')} action={{ label: t('project.summary.edit'), onPress: () => edit('criteres') }}>
+        <ListRow title={t('project.summary.extras')} subtitle={extras.join(' · ') || t('project.summary.noExtras')} multiline />
+        {p.commentaires ? <ListRow title={t('project.summary.details')} subtitle={p.commentaires} multiline /> : null}
       </ListSection>
 
-      <ListSection title="Votre situation" action={{ label: 'Modifier', onPress: () => edit('situation') }}>
-        <ListRow title="Situation familiale" value={labelFor(SITUATION_FAMILIALE, p.situationFamiliale, NOT_SET)} />
-        <ListRow title="Enfants" value={labelFor(NOMBRE_ENFANTS, p.nombreEnfants, NOT_SET)} />
-        <ListRow title="Profession" value={labelFor(SITUATION_PRO, p.situationProfessionnelle, NOT_SET)} />
-        <ListRow title="Revenus nets / mois" value={p.salaire ? formatEuro(p.salaire) : NOT_SET} />
-        <ListRow title="Patrimoine" value={p.patrimoine ? formatEuro(p.patrimoine) : NOT_SET} />
+      <ListSection title={t('project.summary.situationSection')} action={{ label: t('project.summary.edit'), onPress: () => edit('situation') }}>
+        <ListRow title={t('project.summary.family')} value={labelFor(SITUATION_FAMILIALE, p.situationFamiliale, NOT_SET)} />
+        <ListRow title={t('project.summary.children')} value={labelFor(NOMBRE_ENFANTS, p.nombreEnfants, NOT_SET)} />
+        <ListRow title={t('project.summary.profession')} value={labelFor(SITUATION_PRO, p.situationProfessionnelle, NOT_SET)} />
+        <ListRow title={t('project.summary.income')} value={p.salaire ? formatEuro(p.salaire) : NOT_SET} />
+        <ListRow title={t('project.summary.assets')} value={p.patrimoine ? formatEuro(p.patrimoine) : NOT_SET} />
       </ListSection>
 
-      <ListSection title="Calendrier" action={{ label: 'Modifier', onPress: () => edit('calendrier') }}>
-        <ListRow title="Délai" value={labelFor(DELAI_RECHERCHE, p.delaiRecherche, NOT_SET)} />
-        <ListRow title="Flexibilité" value={labelFor(FLEXIBILITE, p.flexibilite, NOT_SET).split(' (')[0]} />
+      <ListSection title={t('project.summary.timingSection')} action={{ label: t('project.summary.edit'), onPress: () => edit('calendrier') }}>
+        <ListRow title={t('project.summary.delay')} value={labelFor(DELAI_RECHERCHE, p.delaiRecherche, NOT_SET)} />
+        <ListRow title={t('project.summary.flexibility')} value={labelFor(FLEXIBILITE, p.flexibilite, NOT_SET).split(' (')[0]} />
       </ListSection>
 
       <View style={styles.privacy}>
         <ShieldCheck size={18} color={colors.success} />
         <Text variant="footnote" style={{ flex: 1 }}>
-          Vos coordonnées restent masquées tant qu'une agence ne les a pas débloquées.
+          {t('project.summary.privacy')}
         </Text>
       </View>
     </ScrollView>

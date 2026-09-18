@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics'
 import { BottomSheet } from './BottomSheet'
 import { Text } from './Text'
 import type { Option } from '@/lib/labels'
+import { t } from '@/i18n'
 import { colors, fonts, radius } from '@/theme'
 
 interface Props {
@@ -16,7 +17,7 @@ interface Props {
 }
 
 /** Remplace le <Select> Radix du web par une feuille de choix native. */
-export function SelectField({ label, placeholder = 'Sélectionnez', value, options, onChange }: Props) {
+export function SelectField({ label, placeholder = t('common.select'), value, options, onChange }: Props) {
   const [open, setOpen] = useState(false)
   const selected = options.find((o) => o.value === value)
 

@@ -1,6 +1,7 @@
 import type { RingValue } from '@/components/brand/TargetRing'
+import { t } from '@/i18n'
 import { formatNumber } from '@/lib/format'
-import { capitalize } from '@/lib/labels'
+import { typeBienLabel } from '@/lib/labels'
 import { parseCaracteristiques } from '@/lib/recherche'
 import type { QuestionnaireData, Recherche } from '@/lib/types'
 
@@ -84,9 +85,9 @@ export function projectRings(data: QuestionnaireData): RingValue[] {
   const budget = (filled(data.budgetMax) ? 0.6 : 0) + (filled(data.financement) ? 0.4 : 0)
   const lieu = data.localisation.length || data.drawnArea ? 1 : 0
   return [
-    { label: 'Le bien', value: bien },
-    { label: 'Le budget', value: budget },
-    { label: 'Le lieu', value: lieu },
+    { label: t('project.rings.property'), value: bien },
+    { label: t('project.rings.budget'), value: budget },
+    { label: t('project.rings.location'), value: lieu },
   ]
 }
 
@@ -97,19 +98,24 @@ export function projectCompletion(data: QuestionnaireData) {
 
 /** Titre court du projet : « Appartement ou maison · Lyon ». */
 export function projectHeadline(data: QuestionnaireData) {
-  const types = data.typeBien.map(capitalize)
-  const what = types.length === 0 ? 'Votre futur bien' : types.length === 1 ? types[0] : `${types.slice(0, -1).join(', ')} ou ${types[types.length - 1].toLowerCase()}`
-  const where = data.localisation[0] ?? (data.drawnArea ? 'Zone sur mesure' : null)
+  const types = data.typeBien.map(typeBienLabel)
+  const what =
+    types.length === 0
+      ? t('project.headline.defaultWhat')
+      : types.length === 1
+        ? types[0]
+        : t('project.headline.or', { list: types.slice(0, -1).join(', '), last: types[types.length - 1].toLowerCase() })
+  const where = data.localisation[0] ?? (data.drawnArea ? t('project.headline.customArea') : null)
   return where ? `${what} · ${where}` : what
 }
 
 export function budgetLabel(min?: string | number | null, max?: string | number | null) {
   const hasMin = filled(min != null ? `${min}` : '')
   const hasMax = filled(max != null ? `${max}` : '')
-  if (hasMin && hasMax) return `${formatNumber(min)} – ${formatNumber(max)} €`
-  if (hasMax) return `Jusqu'à ${formatNumber(max)} €`
-  if (hasMin) return `À partir de ${formatNumber(min)} €`
-  return 'Non renseigné'
+  if (hasMin && hasMax) return t('project.budget.range', { min: formatNumber(min), max: formatNumber(max) })
+  if (hasMax) return t('project.budget.upTo', { max: formatNumber(max) })
+  if (hasMin) return t('project.budget.from', { min: formatNumber(min) })
+  return t('project.budget.notSet')
 }
 
 /** Paliers du curseur de budget : fins en dessous d'un million, plus larges au-delà. */

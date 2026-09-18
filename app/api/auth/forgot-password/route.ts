@@ -4,8 +4,10 @@ import { sendPasswordResetEmail } from '@/lib/mail'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const limited = enforceRateLimit(request, 'forgot-password', 5, 15 * 60_000)
         if (limited) return limited
@@ -14,7 +16,7 @@ export async function POST(request: NextRequest) {
 
         if (!email) {
             return NextResponse.json(
-                { error: 'Email is required' },
+                { error: t('api.auth.forgotPassword.emailRequired') },
                 { status: 400 }
             )
         }
@@ -51,7 +53,7 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
         console.error('Password reset error:', error)
         return NextResponse.json(
-            { error: 'Failed to process request' },
+            { error: t('api.auth.forgotPassword.failed') },
             { status: 500 }
         )
     }

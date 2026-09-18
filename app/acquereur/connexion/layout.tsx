@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
+import { getT } from '@/lib/i18n/server'
 
-export const metadata: Metadata = {
-  title: 'Connexion acquéreur',
-  description: 'Accédez à votre espace acquéreur IMMOCIBLE.',
-  alternates: { canonical: '/acquereur/connexion' },
+export function generateMetadata(): Metadata {
+  const t = getT()
+  return {
+    title: t('auth.buyerLogin.metaTitle'),
+    description: t('auth.buyerLogin.metaDescription'),
+    alternates: { canonical: '/acquereur/connexion' },
+  }
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

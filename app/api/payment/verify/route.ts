@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getAppSettings } from '@/lib/settings'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         const { sessionId } = await request.json()
@@ -29,7 +31,7 @@ export async function POST(request: NextRequest) {
         const session = await stripe.checkout.sessions.retrieve(sessionId)
 
         if (session.payment_status !== 'paid') {
-            return NextResponse.json({ error: 'Payment not completed', status: session.payment_status })
+            return NextResponse.json({ error: t('api.payment.notCompleted'), status: session.payment_status })
         }
 
         const { buyerId, agencyId } = session.metadata || {}
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
     } catch (e) {
         console.error('Verify error', e)
         return NextResponse.json({
-            error: 'Verification Error',
+            error: t('api.payment.verificationFailed'),
             details: e instanceof Error ? e.message : String(e)
         }, { status: 500 })
     }

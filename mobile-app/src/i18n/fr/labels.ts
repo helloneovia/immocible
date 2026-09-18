@@ -1,0 +1,81 @@
+/** Textes français — espace de noms « labels ». Référence : l'anglais doit avoir exactement les mêmes clés. */
+const labels = {
+  situationFamiliale: {
+    celibataire: 'Célibataire',
+    marie: 'Marié(e)',
+    pacs: 'Pacsé(e)',
+    concubinage: 'En concubinage',
+    divorce: 'Divorcé(e)',
+    veuf: 'Veuf(ve)',
+  },
+  nombreEnfants: {
+    none: 'Aucun',
+    one: '1 enfant',
+    many: '{count} enfants',
+    fourPlus: '4 enfants ou plus',
+  },
+  situationPro: {
+    cdi: 'CDI',
+    cdd: 'CDD',
+    freelance: 'Freelance / Indépendant',
+    retraite: 'Retraité(e)',
+    chomage: "En recherche d'emploi",
+    etudiant: 'Étudiant(e)',
+    autre: 'Autre',
+  },
+  financement: {
+    pretBancaire: 'Prêt bancaire',
+    pretRelais: 'Prêt relais',
+    cash: 'Achat au comptant',
+    mixte: 'Financement mixte',
+    autre: 'Autre',
+  },
+  dureePret: '{years} ans',
+  delaiRecherche: {
+    urgent: 'Urgent (moins de 1 mois)',
+    oneToThree: '1 à 3 mois',
+    threeToSix: '3 à 6 mois',
+    sixToTwelve: '6 à 12 mois',
+    twelvePlus: 'Plus de 12 mois',
+  },
+  delaiShort: {
+    urgent: 'Urgent (< 1 mois)',
+    oneToThree: '1 à 3 mois',
+    threeToSix: '3 à 6 mois',
+    sixToTwelve: '6 à 12 mois',
+    twelvePlus: '+ 12 mois',
+    undefined: 'Non défini',
+  },
+  flexibilite: {
+    strict: 'Strict (tous les critères doivent être respectés)',
+    modere: 'Modéré (quelques ajustements possibles)',
+    flexible: 'Flexible (ouvert aux opportunités)',
+  },
+  typeBien: {
+    appartement: 'Appartement',
+    maison: 'Maison',
+    terrain: 'Terrain',
+    studio: 'Studio',
+    loft: 'Loft',
+    duplex: 'Duplex',
+    penthouse: 'Penthouse',
+  },
+  extras: {
+    balcon: 'Balcon',
+    terrasse: 'Terrasse',
+    jardin: 'Jardin',
+    parking: 'Parking',
+    cave: 'Cave',
+    ascenseur: 'Ascenseur',
+  },
+  notSpecified: 'Non spécifié',
+  buyer: 'Acquéreur',
+  format: {
+    today: "Aujourd'hui",
+    yesterday: 'Hier',
+    thousands: '{value} k€',
+    millions: '{value} M€',
+  },
+}
+
+export default labels

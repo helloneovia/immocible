@@ -7,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
+import { useI18n } from '@/lib/i18n/client'
 
 export default function PaymentSuccess() {
     const router = useRouter()
     const { refreshUser } = useAuth()
+    const { t } = useI18n()
     const searchParams = useSearchParams()
     const sessionId = searchParams.get('session_id')
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
@@ -50,16 +52,16 @@ export default function PaymentSuccess() {
                         {status === 'error' && <XCircle className="h-16 w-16 text-red-500" />}
                     </div>
                     <CardTitle>
-                        {status === 'loading' && <span>Vérification du paiement...</span>}
-                        {status === 'success' && <span>Paiement réussi !</span>}
-                        {status === 'error' && <span>Erreur de paiement</span>}
+                        {status === 'loading' && <span>{t('auth.agencySignupSuccess.verifying')}</span>}
+                        {status === 'success' && <span>{t('auth.agencySignupSuccess.success')}</span>}
+                        {status === 'error' && <span>{t('auth.agencySignupSuccess.error')}</span>}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         <p className="text-gray-600">
-                            {status === 'success' && <span>Votre compte agence est maintenant actif. Vous allez être redirigé...</span>}
-                            {status === 'error' && <span>Impossible de vérifier le paiement. Veuillez contacter le support.</span>}
+                            {status === 'success' && <span>{t('auth.agencySignupSuccess.successText')}</span>}
+                            {status === 'error' && <span>{t('auth.agencySignupSuccess.errorText')}</span>}
                         </p>
 
                         {status !== 'loading' && (
@@ -67,7 +69,7 @@ export default function PaymentSuccess() {
                                 className="w-full"
                                 onClick={() => router.push(status === 'success' ? '/agence/dashboard' : '/agence/inscription')}
                             >
-                                {status === 'success' ? 'Accéder au Dashboard' : 'Retour'}
+                                {status === 'success' ? t('auth.agencySignupSuccess.dashboard') : t('auth.agencySignupSuccess.back')}
                             </Button>
                         )}
                     </div>

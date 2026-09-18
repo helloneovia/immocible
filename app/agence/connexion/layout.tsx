@@ -1,9 +1,13 @@
 import type { Metadata } from 'next'
+import { getT } from '@/lib/i18n/server'
 
-export const metadata: Metadata = {
-  title: 'Connexion agence',
-  description: 'Accédez à votre espace agence partenaire IMMOCIBLE.',
-  alternates: { canonical: '/agence/connexion' },
+export function generateMetadata(): Metadata {
+  const t = getT()
+  return {
+    title: t('auth.agencyLogin.metaTitle'),
+    description: t('auth.agencyLogin.metaDescription'),
+    alternates: { canonical: '/agence/connexion' },
+  }
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {

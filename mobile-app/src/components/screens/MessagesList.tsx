@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { SkeletonRows } from '@/components/ui/Skeleton'
 import { Text } from '@/components/ui/Text'
 import { useUnread } from '@/contexts/UnreadContext'
+import { t } from '@/i18n'
 import { api } from '@/lib/api'
 import { formatRelative, singleLine } from '@/lib/format'
 import { useFocusedInterval, useStatusBar } from '@/lib/hooks'
@@ -21,10 +22,13 @@ export function recipientOf(conv: Conversation, viewer: Viewer) {
   if (viewer === 'agence') {
     const profile = conv.buyer?.profile
     const name = singleLine(`${profile?.prenom || ''} ${profile?.nom || ''}`)
-    return { name: name || conv.buyer?.email || 'Acquéreur', role: 'Acquéreur' }
+    return { name: name || conv.buyer?.email || t('messages.roles.buyer'), role: t('messages.roles.buyer') }
   }
   // Message de bienvenue : envoyé par la plateforme, pas par une agence.
-  return { name: conv.agency?.profile?.nomAgence || conv.agency?.email || 'Agence', role: conv.isPlatform ? 'Plateforme' : 'Agence' }
+  return {
+    name: conv.agency?.profile?.nomAgence || conv.agency?.email || t('messages.roles.agency'),
+    role: conv.isPlatform ? t('messages.roles.platform') : t('messages.roles.agency'),
+  }
 }
 
 export function openConversation(id: string, name: string, role: string) {
@@ -72,9 +76,9 @@ export function MessagesList({ viewer }: { viewer: Viewer }) {
     <>
       <Stack.Screen
         options={{
-          title: 'Messages',
+          title: t('messages.list.title'),
           headerSearchBarOptions: {
-            placeholder: 'Rechercher',
+            placeholder: t('messages.list.searchPlaceholder'),
             hideWhenScrolling: true,
             onChangeText: (event) => setQuery(event.nativeEvent.text),
             onCancelButtonPress: () => setQuery(''),
@@ -103,15 +107,15 @@ export function MessagesList({ viewer }: { viewer: Viewer }) {
           loading ? null : (
             <EmptyState
               icon={MessagesSquare}
-              title={query ? 'Aucun résultat' : 'Aucune conversation'}
+              title={query ? t('messages.list.noResults') : t('messages.list.noConversations')}
               message={
                 query
-                  ? `Aucune conversation ne correspond à « ${query} ».`
+                  ? t('messages.list.noMatch', { query })
                   : viewer === 'agence'
-                    ? 'Ouvrez un dossier acquéreur puis touchez « Discuter » pour démarrer un échange.'
-                    : "Les agences partenaires vous écrivent ici dès qu'un bien correspond à votre projet."
+                    ? t('messages.list.emptyAgency')
+                    : t('messages.list.emptyBuyer')
               }
-              actionLabel={viewer === 'agence' && !query ? 'Voir les acquéreurs' : undefined}
+              actionLabel={viewer === 'agence' && !query ? t('messages.list.seeBuyers') : undefined}
               onAction={viewer === 'agence' && !query ? () => router.navigate('/agence/acquereurs') : undefined}
             />
           )
@@ -124,7 +128,11 @@ export function MessagesList({ viewer }: { viewer: Viewer }) {
           return (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={`${recipient.name}${unread ? `, ${unread} message${unread > 1 ? 's' : ''} non lu${unread > 1 ? 's' : ''}` : ''}`}
+              accessibilityLabel={
+                unread
+                  ? t(unread > 1 ? 'messages.list.unreadMany' : 'messages.list.unreadOne', { name: recipient.name, count: unread })
+                  : recipient.name
+              }
               onPress={() => openConversation(item.id, recipient.name, recipient.role)}
               style={({ pressed }) => [styles.row, pressed ? { backgroundColor: colors.slate50 } : null]}
             >
@@ -140,7 +148,7 @@ export function MessagesList({ viewer }: { viewer: Viewer }) {
                 </View>
                 <View style={styles.line}>
                   <Text numberOfLines={2} style={[styles.preview, unread ? styles.previewUnread : null]}>
-                    {last?.content ? singleLine(last.content) : `Conversation avec ${recipient.role.toLowerCase()}`}
+                    {last?.content ? singleLine(last.content) : t('messages.list.conversationWith', { role: recipient.role.toLowerCase() })}
                   </Text>
                   {unread > 0 ? (
                     <View style={styles.badge}>

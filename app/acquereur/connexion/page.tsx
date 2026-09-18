@@ -12,10 +12,13 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, LogIn, Shield, AlertCircle, Loader2 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/contexts/AuthContext'
+import { useI18n } from '@/lib/i18n/client'
+import type { TKey } from '@/lib/i18n/core'
 
+// Les messages de validation sont des clés de traduction, traduites à l'affichage.
 const loginSchema = z.object({
-  email: z.string().email('Email invalide'),
-  password: z.string().min(1, 'Le mot de passe est requis'),
+  email: z.string().email('auth.buyerLogin.invalidEmail'),
+  password: z.string().min(1, 'auth.buyerLogin.passwordRequired'),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -23,6 +26,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 export default function ConnexionAcquereur() {
   const router = useRouter()
   const { refreshUser } = useAuth()
+  const { t } = useI18n()
   const [globalError, setGlobalError] = useState<string | null>(null)
 
   const {
@@ -42,13 +46,13 @@ export default function ConnexionAcquereur() {
         body: JSON.stringify({ email: data.email, password: data.password, role: 'acquereur' }),
       })
       const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Identifiants incorrects')
-      if (result.user.role !== 'acquereur') throw new Error('Ce compte n\'est pas un compte acquéreur')
+      if (!response.ok) throw new Error(result.error || t('auth.buyerLogin.invalidCredentials'))
+      if (result.user.role !== 'acquereur') throw new Error(t('auth.buyerLogin.notBuyerAccount'))
       await refreshUser()
       router.push('/acquereur/dashboard')
       router.refresh()
     } catch (err: any) {
-      setGlobalError(err.message || 'Une erreur est survenue lors de la connexion')
+      setGlobalError(err.message || t('auth.buyerLogin.loginError'))
     }
   }
 
@@ -88,9 +92,9 @@ export default function ConnexionAcquereur() {
                 <LogIn className="h-7 w-7 text-amber-400" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900 mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Connexion acquéreur
+                {t('auth.buyerLogin.title')}
               </h1>
-              <p className="text-slate-500 text-sm font-medium">Accédez à votre espace personnel</p>
+              <p className="text-slate-500 text-sm font-medium">{t('auth.buyerLogin.subtitle')}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -102,22 +106,22 @@ export default function ConnexionAcquereur() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">Email</Label>
+                <Label htmlFor="email" className="text-sm font-semibold text-slate-700">{t('auth.common.email')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="votre@email.com"
+                  placeholder={t('auth.common.emailPlaceholder')}
                   className={`h-12 border-2 rounded-xl transition-colors bg-slate-50 focus:bg-white ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-slate-900'}`}
                   {...register('email')}
                 />
-                {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>}
+                {errors.email && <p className="text-xs text-red-500 font-medium">{t(errors.email.message as TKey)}</p>}
               </div>
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">Mot de passe</Label>
+                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">{t('auth.common.password')}</Label>
                   <Link href="/forgot-password" className="text-xs text-slate-500 hover:text-slate-900 font-medium hover:underline transition-colors">
-                    Mot de passe oublié ?
+                    {t('auth.common.forgotPassword')}
                   </Link>
                 </div>
                 <Input
@@ -127,7 +131,7 @@ export default function ConnexionAcquereur() {
                   className={`h-12 border-2 rounded-xl transition-colors bg-slate-50 focus:bg-white ${errors.password ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-slate-900'}`}
                   {...register('password')}
                 />
-                {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password.message}</p>}
+                {errors.password && <p className="text-xs text-red-500 font-medium">{t(errors.password.message as TKey)}</p>}
               </div>
 
               <Button
@@ -139,11 +143,11 @@ export default function ConnexionAcquereur() {
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Connexion...
+                    {t('auth.common.signingIn')}
                   </div>
                 ) : (
                   <>
-                    Se connecter
+                    {t('auth.common.signIn')}
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -154,20 +158,20 @@ export default function ConnexionAcquereur() {
                   <span className="w-full border-t border-slate-200" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-3 text-slate-400 font-medium">Ou</span>
+                  <span className="bg-white px-3 text-slate-400 font-medium">{t('auth.common.or')}</span>
                 </div>
               </div>
 
               <div className="text-center text-sm text-slate-500">
-                Pas encore de compte ?{' '}
+                {t('auth.buyerLogin.noAccount')}{' '}
                 <Link href="/acquereur/inscription" className="text-slate-900 hover:text-amber-600 underline font-semibold transition-colors">
-                  Créer un compte
+                  {t('auth.common.createAccount')}
                 </Link>
               </div>
 
               <div className="text-center text-sm">
                 <Link href="/agence/connexion" className="text-slate-400 hover:text-slate-700 transition-colors font-medium">
-                  Vous êtes une agence ? Connectez-vous ici →
+                  {t('auth.buyerLogin.agencyLink')}
                 </Link>
               </div>
             </form>
@@ -175,7 +179,7 @@ export default function ConnexionAcquereur() {
             {/* Trust indicators */}
             <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
               <Shield className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Connexion sécurisée SSL</span>
+              <span>{t('auth.common.sslSecure')}</span>
             </div>
           </div>
         </div>

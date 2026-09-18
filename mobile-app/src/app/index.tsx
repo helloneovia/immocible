@@ -17,6 +17,7 @@ import { RoleSheet } from '@/components/RoleSheet'
 import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Text'
 import { useSettings } from '@/contexts/SettingsContext'
+import { LOCALES, t, useI18n } from '@/i18n'
 import { capitalize } from '@/lib/labels'
 import { useStatusBar } from '@/lib/hooks'
 import { openLegal } from '@/lib/links'
@@ -44,6 +45,7 @@ function Dot({ index, scrollX, width }: { index: number; scrollX: SharedValue<nu
 /** Accueil : pages plein écran à faire défiler, puis création de compte ou connexion. */
 export default function OnboardingScreen() {
   const settings = useSettings()
+  const { locale, setLocale } = useI18n()
   const insets = useSafeAreaInsets()
   const { width, height } = useWindowDimensions()
   const [roleOpen, setRoleOpen] = useState(false)
@@ -56,23 +58,26 @@ export default function OnboardingScreen() {
       photo: PHOTOS.home,
       title: settings.text_home_hero_title_1,
       highlight: settings.text_home_hero_title_highlight,
-      body: `${capitalize(settings.text_home_hero_title_2 || '')}. Décrivez votre projet une fois : les agences viennent à vous.`,
+      body: `${capitalize(settings.text_home_hero_title_2 || '')}. ${t('auth.onboarding.buyerBody')}`,
     },
     {
       key: 'offmarket',
       photo: PHOTOS.cta,
-      title: 'Des biens off-market,',
-      highlight: 'avant tout le monde.',
-      body: 'Les agences partenaires vous proposent leurs opportunités avant leur mise en vente publique.',
+      title: t('auth.onboarding.offmarketTitle'),
+      highlight: t('auth.onboarding.offmarketHighlight'),
+      body: t('auth.onboarding.offmarketBody'),
     },
     {
       key: 'agency',
       photo: PHOTOS.agence,
-      title: 'Agences : des acquéreurs',
-      highlight: 'déjà qualifiés.',
-      body: 'Budget, financement, délai : chaque dossier est renseigné avant le premier échange.',
+      title: t('auth.onboarding.agencyTitle'),
+      highlight: t('auth.onboarding.agencyHighlight'),
+      body: t('auth.onboarding.agencyBody'),
     },
   ]
+
+  // Bascule vers l'autre langue (le français reste la langue par défaut).
+  const nextLocale = LOCALES.find((item) => item.value !== locale) ?? LOCALES[0]
 
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollX.value = event.contentOffset.x
@@ -129,29 +134,39 @@ export default function OnboardingScreen() {
             <Dot key={slide.key} index={index} scrollX={scrollX} width={width} />
           ))}
         </View>
-        <Button title="Créer un compte" variant="accent" size="lg" onPress={() => setRoleOpen(true)} />
-        <Button title="J'ai déjà un compte" variant="glass" size="lg" onPress={() => router.push('/connexion')} />
+        <Button title={t('auth.onboarding.createAccount')} variant="accent" size="lg" onPress={() => setRoleOpen(true)} />
+        <Button title={t('auth.onboarding.haveAccount')} variant="glass" size="lg" onPress={() => router.push('/connexion')} />
         <Text style={styles.legal}>
-          En continuant, vous acceptez les{' '}
+          {t('auth.onboarding.legalPrefix')}{' '}
           <Text style={styles.legalLink} onPress={() => openLegal('cgu')}>
-            conditions générales
+            {t('auth.onboarding.legalTerms')}
           </Text>{' '}
-          et la{' '}
+          {t('auth.onboarding.legalAnd')}{' '}
           <Text style={styles.legalLink} onPress={() => openLegal('confidentialite')}>
-            politique de confidentialité
+            {t('auth.onboarding.legalPrivacy')}
           </Text>
-          .
+          {t('auth.onboarding.legalSuffix')}
         </Text>
       </View>
 
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel="Lire le blog"
-        onPress={() => router.push('/blog')}
-        style={[styles.blog, { top: insets.top + 12 }]}
-      >
-        <Text style={styles.blogText}>Blog</Text>
-      </Pressable>
+      <View style={[styles.topActions, { top: insets.top + 12 }]}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={nextLocale.label}
+          onPress={() => setLocale(nextLocale.value)}
+          style={styles.blog}
+        >
+          <Text style={styles.blogText}>{nextLocale.value.toUpperCase()}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={t('auth.onboarding.readBlog')}
+          onPress={() => router.push('/blog')}
+          style={styles.blog}
+        >
+          <Text style={styles.blogText}>{t('auth.onboarding.blog')}</Text>
+        </Pressable>
+      </View>
 
       <RoleSheet visible={roleOpen} onClose={() => setRoleOpen(false)} />
     </View>
@@ -161,9 +176,8 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.navyDeep },
   top: { position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: spacing.xxl },
+  topActions: { position: 'absolute', right: spacing.xxl, flexDirection: 'row', gap: 8 },
   blog: {
-    position: 'absolute',
-    right: spacing.xxl,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,

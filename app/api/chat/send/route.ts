@@ -4,12 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { sanitizeContent } from '@/lib/utils'
 import { sendNewMessageNotification } from '@/lib/mail'
 import { hasActiveSubscription } from '@/lib/subscription'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         const { conversationId, content } = await request.json()
@@ -24,17 +26,17 @@ export async function POST(request: NextRequest) {
         })
 
         if (!conversation) {
-            return NextResponse.json({ error: 'Conversation not found' }, { status: 404 })
+            return NextResponse.json({ error: t('api.chat.conversationNotFound') }, { status: 404 })
         }
 
         if (conversation.agencyId !== currentUser.id && conversation.buyerId !== currentUser.id) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 403 })
         }
 
         // Check subscription for agency
         // Statut et échéance : un abonnement remboursé (CANCELLED) ne permet plus d'écrire.
         if (currentUser.role === 'agence' && !hasActiveSubscription(currentUser.profile)) {
-            return NextResponse.json({ error: 'Abonnement expiré ou inactif.', subscriptionRequired: true }, { status: 403 })
+            return NextResponse.json({ error: t('api.chat.subscriptionInactive'), subscriptionRequired: true }, { status: 403 })
         }
 
         const sanitizedContent = sanitizeContent(content)
@@ -105,6 +107,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ message })
     } catch (error) {
         console.error('Send message error:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

@@ -7,6 +7,7 @@ import { CheckCircle2, Lock, ShieldCheck, X, XCircle } from 'lucide-react-native
 import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/contexts/AuthContext'
+import { t } from '@/i18n'
 import { api, API_URL, errorMessage } from '@/lib/api'
 import { useStatusBar } from '@/lib/hooks'
 import { colors, fonts, radius, spacing } from '@/theme'
@@ -16,6 +17,7 @@ type Phase = 'loading' | 'ready' | 'verifying' | 'success' | 'error'
 function checkoutHtml(publishableKey: string, clientSecret: string) {
   const pk = JSON.stringify(publishableKey).replace(/</g, '\\u003c')
   const cs = JSON.stringify(clientSecret).replace(/</g, '\\u003c')
+  const unavailable = JSON.stringify(t('agency.payment.moduleUnavailable')).replace(/</g, '\\u003c')
   return `<!doctype html><html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>html,body{margin:0;background:#fff}#checkout{min-height:100vh;padding:8px 0}</style>
@@ -25,7 +27,7 @@ function checkoutHtml(publishableKey: string, clientSecret: string) {
 (async function(){
   function post(m){ window.ReactNativeWebView.postMessage(JSON.stringify(m)); }
   try {
-    if (!window.Stripe) throw new Error('Le module de paiement est indisponible.');
+    if (!window.Stripe) throw new Error(${unavailable});
     var stripe = Stripe(${pk});
     var checkout = await stripe.initEmbeddedCheckout({ clientSecret: ${cs} });
     checkout.mount('#checkout');
@@ -57,17 +59,17 @@ export default function PaiementScreen() {
   useEffect(() => {
     if (!clientSecret) {
       setPhase('error')
-      setMessage('Informations de session manquantes. Veuillez réessayer.')
+      setMessage(t('agency.payment.missingSession'))
       return
     }
     api<{ stripe_public_key?: string }>('/api/public/settings')
       .then((data) => {
-        if (!data?.stripe_public_key) throw new Error('Paiement non configuré.')
+        if (!data?.stripe_public_key) throw new Error(t('agency.payment.notConfigured'))
         setPublishableKey(data.stripe_public_key)
       })
       .catch((err) => {
         setPhase('error')
-        setMessage(errorMessage(err, "Impossible d'initialiser le paiement."))
+        setMessage(errorMessage(err, t('agency.payment.initFailed')))
       })
   }, [clientSecret])
 
@@ -84,17 +86,17 @@ export default function PaiementScreen() {
           method: 'POST',
           body: { sessionId },
         })
-        if (!result?.success) throw new Error(result?.error || 'Le paiement n’a pas été confirmé.')
-        setMessage('Paiement validé avec succès ! Les coordonnées de cet acquéreur sont débloquées.')
+        if (!result?.success) throw new Error(result?.error || t('agency.payment.notConfirmed'))
+        setMessage(t('agency.payment.unlockSuccess'))
       } else {
         await api(`/api/payment/success?session_id=${encodeURIComponent(sessionId)}`)
         await refresh()
-        setMessage('Votre abonnement agence est maintenant actif.')
+        setMessage(t('agency.payment.subscriptionSuccess'))
       }
       setPhase('success')
     } catch (err) {
       setPhase('error')
-      setMessage(errorMessage(err, 'Impossible de vérifier le paiement. Veuillez contacter le support.'))
+      setMessage(errorMessage(err, t('agency.payment.verifyFailed')))
     }
   }
 
@@ -104,13 +106,13 @@ export default function PaiementScreen() {
   return (
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: topPadding }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Fermer" hitSlop={10} onPress={close} style={styles.close}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('agency.payment.close')} hitSlop={10} onPress={close} style={styles.close}>
           <X size={20} color={colors.ink} />
         </Pressable>
-        <Text style={styles.title}>{isUnlock ? 'Déblocage du contact' : 'Abonnement agence'}</Text>
+        <Text style={styles.title}>{isUnlock ? t('agency.payment.unlockTitle') : t('agency.payment.subscriptionTitle')}</Text>
         <View style={styles.secure}>
           <ShieldCheck size={14} color={colors.emerald700} />
-          <Text style={styles.secureText}>Sécurisé</Text>
+          <Text style={styles.secureText}>{t('agency.payment.secure')}</Text>
         </View>
       </View>
 
@@ -122,12 +124,12 @@ export default function PaiementScreen() {
             <XCircle size={64} color={colors.red500} />
           )}
           <Text variant="title" center>
-            {phase === 'success' ? 'Paiement réussi !' : 'Erreur de paiement'}
+            {phase === 'success' ? t('agency.payment.successTitle') : t('agency.payment.errorTitle')}
           </Text>
           <Text variant="body" center color={colors.slate500}>
             {message}
           </Text>
-          <Button title={phase === 'success' ? 'Continuer' : 'Retour'} onPress={close} style={{ alignSelf: 'stretch' }} />
+          <Button title={phase === 'success' ? t('agency.payment.continue') : t('agency.payment.back')} onPress={close} style={{ alignSelf: 'stretch' }} />
         </View>
       ) : (
         <View style={styles.flex}>
@@ -143,7 +145,7 @@ export default function PaiementScreen() {
                   if (data.type === 'mounted') setPhase('ready')
                   if (data.type === 'error') {
                     setPhase('error')
-                    setMessage(data.message || "Impossible d'initialiser le paiement.")
+                    setMessage(data.message || t('agency.payment.initFailed'))
                   }
                 } catch {
                   // ignoré
@@ -166,9 +168,9 @@ export default function PaiementScreen() {
               </View>
               <ActivityIndicator color={colors.emerald500} />
               <Text variant="subheading" center>
-                {phase === 'verifying' ? 'Vérification du paiement...' : 'Préparation de votre paiement sécurisé...'}
+                {phase === 'verifying' ? t('agency.payment.verifying') : t('agency.payment.preparing')}
               </Text>
-              <Text variant="caption">Sécurisé par Stripe</Text>
+              <Text variant="caption">{t('agency.payment.securedByStripe')}</Text>
             </View>
           ) : null}
         </View>

@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import Svg, { Circle, G } from 'react-native-svg'
 import Animated, { useAnimatedProps, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { colors, fonts } from '@/theme'
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle)
@@ -81,7 +82,7 @@ export function TargetRing({ rings, size = 148, dark = true }: { rings: RingValu
     <View
       accessible
       accessibilityRole="progressbar"
-      accessibilityLabel={rings.map((r) => `${r.label} ${Math.round(r.value * 100)} %`).join(', ')}
+      accessibilityLabel={rings.map((r) => t('project.rings.percent', { label: r.label, pct: Math.round(r.value * 100) })).join(', ')}
       style={{ width: size, height: size }}
     >
       <Svg width={size} height={size}>
@@ -127,7 +128,7 @@ export function ScoreRing({ value, size = 46, label }: { value: number; size?: n
   return (
     <View
       accessible
-      accessibilityLabel={`${label ?? 'Dossier'} complet à ${pct} %`}
+      accessibilityLabel={t('project.rings.score', { label: label ?? t('project.rings.scoreDefault'), pct })}
       style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}
     >
       <Svg width={size} height={size} style={StyleSheet.absoluteFill}>

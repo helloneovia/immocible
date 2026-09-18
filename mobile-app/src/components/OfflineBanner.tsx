@@ -3,6 +3,7 @@ import { useNetInfo } from '@react-native-community/netinfo'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { WifiOff } from 'lucide-react-native'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { colors, fonts } from '@/theme'
 
 export function OfflineBanner() {
@@ -16,7 +17,7 @@ export function OfflineBanner() {
       style={[styles.banner, { paddingTop: insets.top + 6 }]}
     >
       <WifiOff size={16} color={colors.white} />
-      <Text style={styles.text}>Vous êtes hors ligne — vérifiez votre connexion.</Text>
+      <Text style={styles.text}>{t('common.offline')}</Text>
     </View>
   )
 }

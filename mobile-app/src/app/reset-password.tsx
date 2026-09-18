@@ -7,6 +7,7 @@ import { Banner } from '@/components/ui/Banner'
 import { Button } from '@/components/ui/Button'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors } from '@/theme'
 
@@ -19,13 +20,13 @@ export default function ResetPasswordScreen() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(
-    token ? null : 'Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.',
+    token ? null : t('auth.reset.invalidLink'),
   )
 
   const submit = async () => {
     setError(null)
-    if (password.length < 8) return setError('Choisissez un mot de passe d’au moins 8 caractères.')
-    if (password !== confirmPassword) return setError('Les deux mots de passe ne correspondent pas.')
+    if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+    if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
     setLoading(true)
     try {
       await api('/api/auth/reset-password', { method: 'POST', body: { token, password } })
@@ -33,7 +34,7 @@ export default function ResetPasswordScreen() {
       // Le serveur révoque toutes les sessions : on resynchronise l'état local.
       if (user) await refresh()
     } catch (err) {
-      setError(errorMessage(err, 'Ce lien a expiré. Demandez un nouveau lien.'))
+      setError(errorMessage(err, t('auth.reset.expired')))
     } finally {
       setLoading(false)
     }
@@ -42,9 +43,9 @@ export default function ResetPasswordScreen() {
   if (success) {
     return (
       <AuthScaffold
-        title="Mot de passe modifié"
-        subtitle="Vous pouvez vous connecter avec votre nouveau mot de passe."
-        footer={<Button title="Se connecter" size="lg" onPress={() => router.replace('/connexion')} />}
+        title={t('auth.reset.successTitle')}
+        subtitle={t('auth.reset.successSubtitle')}
+        footer={<Button title={t('auth.reset.signIn')} size="lg" onPress={() => router.replace('/connexion')} />}
       >
         <View style={styles.illustration}>
           <CheckCircle2 size={44} color={colors.success} />
@@ -55,31 +56,31 @@ export default function ResetPasswordScreen() {
 
   return (
     <AuthScaffold
-      title="Nouveau mot de passe"
-      subtitle="8 caractères minimum."
+      title={t('auth.reset.title')}
+      subtitle={t('auth.reset.subtitle')}
       footer={
-        <Button title="Enregistrer le mot de passe" size="lg" loading={loading} disabled={!token} onPress={submit} />
+        <Button title={t('auth.reset.submit')} size="lg" loading={loading} disabled={!token} onPress={submit} />
       }
     >
       <Banner message={error} />
       <TextField
-        label="Nouveau mot de passe"
+        label={t('auth.fields.newPassword')}
         icon={Lock}
         secure
         value={password}
         onChangeText={setPassword}
-        placeholder="Au moins 8 caractères"
+        placeholder={t('auth.fields.placeholderNewPassword')}
         autoComplete="new-password"
         textContentType="newPassword"
         editable={!!token && !loading}
       />
       <TextField
-        label="Confirmer"
+        label={t('auth.fields.confirm')}
         icon={Lock}
         secure
         value={confirmPassword}
         onChangeText={setConfirmPassword}
-        placeholder="Retapez le mot de passe"
+        placeholder={t('auth.fields.placeholderConfirm')}
         autoComplete="new-password"
         editable={!!token && !loading}
         returnKeyType="go"

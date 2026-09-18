@@ -2,6 +2,13 @@
 
 import React, { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import { useI18n } from '@/lib/i18n/client'
+
+// Texte de chargement de la carte, traduit.
+function MapLoadingText() {
+  const { t } = useI18n()
+  return <span className="text-gray-500">{t('buyer.location.mapLoading')}</span>
+}
 
 // GeoJSON Polygon: coordinates[0] = exterior ring as [lng, lat][]
 export type DrawnAreaGeoJSON = {
@@ -27,7 +34,7 @@ const LocationMapDrawClient = dynamic(
         className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center"
         style={{ minHeight: '400px' }}
       >
-        <span className="text-gray-500">Chargement de la carte…</span>
+        <MapLoadingText />
       </div>
     ),
   }
@@ -43,7 +50,7 @@ export function LocationMapDraw(props: LocationMapDrawProps) {
         className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center"
         style={{ height: props.height || '400px' }}
       >
-        <span className="text-gray-500">Chargement de la carte…</span>
+        <MapLoadingText />
       </div>
     )
   }

@@ -3,18 +3,20 @@ import { getCurrentUser, getSession } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { validateEmail } from '@/lib/mail'
 import { compare, hash } from 'bcryptjs'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET() {
+    const t = getT()
     try {
         const user = await getCurrentUser()
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        if (!user) return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
 
         const fullUser = await prisma.user.findUnique({
             where: { id: user.id },
             include: { profile: true }
         })
 
-        if (!fullUser) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+        if (!fullUser) return NextResponse.json({ error: t('api.profile.userNotFound') }, { status: 404 })
 
         return NextResponse.json({
             nom: fullUser.profile?.nom || '',
@@ -29,14 +31,15 @@ export async function GET() {
         })
     } catch (error) {
         console.error('[Profile API] Error fetching profile:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }
 
 export async function PUT(request: Request) {
+    const t = getT()
     try {
         const session = await getSession()
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        if (!session) return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         const user = session.user
 
         const body = await request.json()
@@ -44,7 +47,7 @@ export async function PUT(request: Request) {
         const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
 
         if (!email) {
-            return NextResponse.json({ error: 'Email est requis' }, { status: 400 })
+            return NextResponse.json({ error: t('api.profile.emailRequired') }, { status: 400 })
         }
 
         const emailChanged = email !== user.email
@@ -56,7 +59,7 @@ export async function PUT(request: Request) {
             const valid = typeof currentPassword === 'string' && currentPassword.length > 0
                 && await compare(currentPassword, user.password)
             if (!valid) {
-                return NextResponse.json({ error: 'Mot de passe actuel incorrect.' }, { status: 403 })
+                return NextResponse.json({ error: t('api.profile.wrongCurrentPassword') }, { status: 403 })
             }
         }
 
@@ -64,17 +67,17 @@ export async function PUT(request: Request) {
         const userUpdateData: any = { email }
         if (emailChanged) {
             if (!validateEmail(email)) {
-                return NextResponse.json({ error: 'Adresse e-mail invalide.' }, { status: 400 })
+                return NextResponse.json({ error: t('api.profile.invalidEmail') }, { status: 400 })
             }
             const existing = await prisma.user.findUnique({ where: { email } })
             if (existing) {
-                return NextResponse.json({ error: 'Cet email est déjà utilisé.' }, { status: 409 })
+                return NextResponse.json({ error: t('api.profile.emailInUse') }, { status: 409 })
             }
         }
         if (passwordChanged) {
             // Même minimum que l'inscription.
             if (password.length < 8) {
-                return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caractères' }, { status: 400 })
+                return NextResponse.json({ error: t('api.profile.passwordTooShort') }, { status: 400 })
             }
             userUpdateData.password = await hash(password, 10)
         }
@@ -114,6 +117,6 @@ export async function PUT(request: Request) {
 
     } catch (error) {
         console.error('[Profile API] Error updating profile:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

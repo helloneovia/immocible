@@ -1,11 +1,15 @@
+'use client'
+
 import { Loader2, Lock } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/client'
 
 interface SecurePaymentOverlayProps {
   isVisible: boolean
   text?: string
 }
 
-export function SecurePaymentOverlay({ isVisible, text = 'Préparation de votre paiement sécurisé...' }: SecurePaymentOverlayProps) {
+export function SecurePaymentOverlay({ isVisible, text }: SecurePaymentOverlayProps) {
+  const { t } = useI18n()
   if (!isVisible) return null
 
   return (
@@ -20,11 +24,11 @@ export function SecurePaymentOverlay({ isVisible, text = 'Préparation de votre 
             <Loader2 className="w-5 h-5 animate-spin" />
           </div>
         </div>
-        <h3 className="text-xl font-bold text-slate-900 mb-2">Paiement sécurisé</h3>
-        <p className="text-slate-500 text-sm leading-relaxed">{text}</p>
+        <h3 className="text-xl font-bold text-slate-900 mb-2">{t('common.payment.title')}</h3>
+        <p className="text-slate-500 text-sm leading-relaxed">{text || t('common.payment.preparing')}</p>
         <div className="mt-6 flex items-center justify-center space-x-2 text-xs text-slate-400">
           <Lock className="w-3 h-3" />
-          <span>Sécurisé par Stripe</span>
+          <span>{t('common.payment.stripe')}</span>
         </div>
       </div>
     </div>

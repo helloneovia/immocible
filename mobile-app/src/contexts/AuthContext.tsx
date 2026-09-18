@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import NetInfo from '@react-native-community/netinfo'
+import { t } from '@/i18n'
 import { api, ApiError, setUnauthorizedHandler } from '@/lib/api'
 import type { Role, User } from '@/lib/types'
 
@@ -73,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: { email: email.trim().toLowerCase(), password, role },
       })
       if (result?.user?.role !== role) {
-        throw new Error(role === 'agence' ? "Ce compte n'est pas un compte agence" : "Ce compte n'est pas un compte acquéreur")
+        throw new Error(role === 'agence' ? t('auth.errors.notAgencyAccount') : t('auth.errors.notBuyerAccount'))
       }
       await refresh()
     },

@@ -10,6 +10,7 @@ import { SegmentedControl } from '@/components/ui/Chips'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
+import { t } from '@/i18n'
 import { errorMessage } from '@/lib/api'
 import { colors, fonts } from '@/theme'
 
@@ -31,8 +32,8 @@ export default function ConnexionScreen() {
 
   const submit = async () => {
     const errors: typeof fieldErrors = {}
-    if (!EMAIL_RE.test(email.trim())) errors.email = 'Saisissez une adresse e-mail valide.'
-    if (!password) errors.password = 'Saisissez votre mot de passe.'
+    if (!EMAIL_RE.test(email.trim())) errors.email = t('auth.errors.invalidEmail')
+    if (!password) errors.password = t('auth.errors.passwordRequired')
     setFieldErrors(errors)
     if (errors.email || errors.password) return
 
@@ -42,21 +43,21 @@ export default function ConnexionScreen() {
       await signIn(email, password, role)
       // La pile protégée bascule automatiquement vers l'espace du compte.
     } catch (err) {
-      setError(errorMessage(err, 'E-mail ou mot de passe incorrect.'))
+      setError(errorMessage(err, t('auth.errors.badCredentials')))
       setLoading(false)
     }
   }
 
   return (
     <AuthScaffold
-      title="Connexion"
-      subtitle={role === 'agence' ? 'Retrouvez vos acquéreurs et vos échanges.' : 'Retrouvez votre projet et vos échanges.'}
+      title={t('auth.login.title')}
+      subtitle={role === 'agence' ? t('auth.login.subtitleAgency') : t('auth.login.subtitleBuyer')}
       footer={
         <>
-          <Button title="Se connecter" size="lg" loading={loading} onPress={submit} />
+          <Button title={t('auth.login.submit')} size="lg" loading={loading} onPress={submit} />
           <Pressable accessibilityRole="button" onPress={() => setRoleSheet(true)} style={styles.signup} hitSlop={8}>
             <Text variant="subhead" center>
-              Pas encore de compte ? <Text style={styles.signupLink}>Créer un compte</Text>
+              {t('auth.login.noAccount')} <Text style={styles.signupLink}>{t('auth.login.createAccount')}</Text>
             </Text>
           </Pressable>
         </>
@@ -64,8 +65,8 @@ export default function ConnexionScreen() {
     >
       <SegmentedControl
         options={[
-          { value: 'acquereur', label: 'Acquéreur', icon: KeyRound },
-          { value: 'agence', label: 'Agence', icon: Building2 },
+          { value: 'acquereur', label: t('auth.login.roleBuyer'), icon: KeyRound },
+          { value: 'agence', label: t('auth.login.roleAgency'), icon: Building2 },
         ]}
         value={role}
         onChange={(value) => {
@@ -75,11 +76,11 @@ export default function ConnexionScreen() {
       />
       <Banner message={error} />
       <TextField
-        label="E-mail"
+        label={t('auth.fields.email')}
         icon={Mail}
         value={email}
         onChangeText={setEmail}
-        placeholder={role === 'agence' ? 'contact@agence.fr' : 'prenom@exemple.fr'}
+        placeholder={role === 'agence' ? t('auth.fields.placeholderAgencyEmail') : t('auth.fields.placeholderEmail')}
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
@@ -91,12 +92,12 @@ export default function ConnexionScreen() {
       <View style={{ gap: 10 }}>
         <TextField
           ref={passwordRef}
-          label="Mot de passe"
+          label={t('auth.fields.password')}
           icon={Lock}
           secure
           value={password}
           onChangeText={setPassword}
-          placeholder="Votre mot de passe"
+          placeholder={t('auth.fields.placeholderPassword')}
           autoComplete="current-password"
           textContentType="password"
           returnKeyType="go"
@@ -104,7 +105,7 @@ export default function ConnexionScreen() {
           error={fieldErrors.password}
         />
         <Pressable accessibilityRole="link" onPress={() => router.push('/mot-de-passe-oublie')} hitSlop={8} style={{ alignSelf: 'flex-start' }}>
-          <Text style={styles.forgot}>Mot de passe oublié ?</Text>
+          <Text style={styles.forgot}>{t('auth.login.forgot')}</Text>
         </Pressable>
       </View>
       <RoleSheet visible={roleSheet} onClose={() => setRoleSheet(false)} />

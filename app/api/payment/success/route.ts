@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { applyCheckoutSession } from '@/lib/payment'
+import { getT } from '@/lib/i18n/server'
 
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is missing in environment variables')
@@ -12,6 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 })
 
 export async function GET(request: NextRequest) {
+    const t = getT()
     try {
         const { searchParams } = new URL(request.url)
         const sessionId = searchParams.get('session_id')
@@ -29,7 +31,7 @@ export async function GET(request: NextRequest) {
 
         if (session.payment_status !== 'paid') {
             return NextResponse.json(
-                { valid: false, message: 'Payment not completed' },
+                { valid: false, message: t('api.payment.notCompleted') },
                 { status: 400 }
             )
         }
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
         console.error('Payment verification error:', error)
         return NextResponse.json(
-            { error: 'Verification failed' },
+            { error: t('api.payment.verificationFailed') },
             { status: 500 }
         )
     }

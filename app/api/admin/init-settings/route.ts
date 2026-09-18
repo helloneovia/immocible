@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { revalidateTag } from 'next/cache'
 import { requireAdmin } from '@/lib/api-auth'
 import { LEGAL_FIELDS } from '@/lib/legal'
-import { DEFAULT_SETTINGS as APP_DEFAULTS } from '@/lib/settings'
+import { DEFAULT_SETTINGS as APP_DEFAULTS, TRANSLATABLE_SETTING_KEYS } from '@/lib/settings'
 
 const DEFAULT_SETTINGS = [
     {
@@ -259,6 +259,14 @@ IMMOCIBLE, quand les bons projets rencontrent les bonnes opportunités.`,
         label: 'Message de bienvenue (Acquéreur)',
         description: "Message automatique envoyé par IMMOCIBLE dans la messagerie de chaque nouvel acquéreur, à l'inscription."
     },
+    // Versions anglaises des textes administrables (vides : textes anglais par défaut du site).
+    ...TRANSLATABLE_SETTING_KEYS.map((key) => ({
+        key: `${key}_en`,
+        value: '',
+        type: key.startsWith('feature_list') ? 'json' : 'string',
+        label: `${key} (anglais)`,
+        description: 'Version anglaise, affichée aux visiteurs qui ont choisi English. Laisser vide pour utiliser la traduction par défaut.'
+    })),
     // Informations légales : affichées dans les mentions légales, les CGU et la politique de confidentialité (site et application).
     ...Object.entries(LEGAL_FIELDS).map(([key, field]) => ({
         key,

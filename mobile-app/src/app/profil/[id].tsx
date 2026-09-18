@@ -12,6 +12,7 @@ import { ListRow, ListSection } from '@/components/ui/List'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { StickyFooter } from '@/components/ui/StickyFooter'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { api, ApiError, errorMessage } from '@/lib/api'
 import { compactEuro, formatEuro } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
@@ -31,8 +32,6 @@ import { budgetLabel, dossierCompletion } from '@/lib/projet'
 import { parseCaracteristiques, typesLabel } from '@/lib/recherche'
 import type { BuyerDetails } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
-
-const NOT_SET = 'Non renseigné'
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
@@ -54,6 +53,7 @@ export default function BuyerDossierScreen() {
   const [chatting, setChatting] = useState(false)
   const [mapOpen, setMapOpen] = useState(false)
   const [locked, setLocked] = useState(false)
+  const NOT_SET = t('agency.buyerFile.notSet')
   useStatusBar('dark')
 
   const load = useCallback(async () => {
@@ -75,7 +75,7 @@ export default function BuyerDossierScreen() {
     }, [load]),
   )
 
-  const screen = <Stack.Screen options={{ ...pushedScreenOptions, title: 'Dossier acquéreur' }} />
+  const screen = <Stack.Screen options={{ ...pushedScreenOptions, title: t('agency.buyerFile.title') }} />
 
   if (loading) {
     return (
@@ -94,9 +94,9 @@ export default function BuyerDossierScreen() {
         {screen}
         <EmptyState
           icon={Lock}
-          title="Abonnement requis"
-          message="Les dossiers des acquéreurs sont réservés aux agences disposant d'un abonnement actif."
-          actionLabel="Voir les offres"
+          title={t('agency.buyerFile.subscriptionRequired')}
+          message={t('agency.buyerFile.subscriptionRequiredMessage')}
+          actionLabel={t('agency.buyerFile.seePlans')}
           onAction={() => router.navigate('/agence/profil/abonnement')}
         />
       </View>
@@ -109,9 +109,9 @@ export default function BuyerDossierScreen() {
         {screen}
         <EmptyState
           icon={UserX}
-          title="Dossier introuvable"
-          message="Cet acquéreur a peut-être désactivé sa recherche."
-          actionLabel="Retour"
+          title={t('agency.buyerFile.notFound')}
+          message={t('agency.buyerFile.notFoundMessage')}
+          actionLabel={t('agency.buyerFile.back')}
           onAction={() => router.back()}
         />
       </View>
@@ -120,18 +120,18 @@ export default function BuyerDossierScreen() {
 
   const { profile, unlocked, price, search } = buyer
   const c = parseCaracteristiques(search)
-  const fullName = `${profile.prenom || ''} ${profile.nom || ''}`.replace(/\s+/g, ' ').trim() || 'Acquéreur'
+  const fullName = `${profile.prenom || ''} ${profile.nom || ''}`.replace(/\s+/g, ' ').trim() || t('agency.buyerFile.fallbackName')
   const extras = EXTRAS.filter(({ key }) => c[key]).map(({ label }) => label)
   const completion = search ? dossierCompletion(search) : 0
 
   const unlock = () =>
     Alert.alert(
-      'Débloquer les coordonnées',
-      price > 0 ? `Paiement unique de ${price} € pour afficher l'e-mail et le téléphone.` : 'Ce dossier est gratuit à débloquer.',
+      t('agency.buyerFile.unlockTitle'),
+      price > 0 ? t('agency.buyerFile.unlockPaid', { price }) : t('agency.buyerFile.unlockFree'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('agency.buyerFile.cancel'), style: 'cancel' },
         {
-          text: price > 0 ? `Payer ${price} €` : 'Débloquer',
+          text: price > 0 ? t('agency.buyerFile.pay', { price }) : t('agency.buyerFile.unlock'),
           onPress: async () => {
             setUnlocking(true)
             try {
@@ -142,7 +142,7 @@ export default function BuyerDossierScreen() {
               if (result?.clientSecret) router.push(`/paiement?clientSecret=${encodeURIComponent(result.clientSecret)}&kind=unlock&buyerId=${encodeURIComponent(id)}` as never)
               else await load()
             } catch (err) {
-              Alert.alert('Déblocage impossible', errorMessage(err))
+              Alert.alert(t('agency.buyerFile.unlockFailed'), errorMessage(err))
             } finally {
               setUnlocking(false)
             }
@@ -155,12 +155,12 @@ export default function BuyerDossierScreen() {
     setChatting(true)
     try {
       const data = await api<{ conversationId: string }>('/api/chat/initiate', { method: 'POST', body: { buyerId: id } })
-      openConversation(data.conversationId, fullName, 'Acquéreur')
+      openConversation(data.conversationId, fullName, t('messages.roles.buyer'))
     } catch (err) {
       const limit = err instanceof ApiError && err.data?.limitReached
       Alert.alert(
-        'Discussion impossible',
-        limit ? 'Limite mensuelle de contacts atteinte. Passez à l’annuel pour des échanges illimités.' : errorMessage(err),
+        t('agency.buyerFile.chatFailed'),
+        limit ? t('agency.buyerFile.limitReached') : errorMessage(err),
       )
     } finally {
       setChatting(false)
@@ -181,83 +181,87 @@ export default function BuyerDossierScreen() {
               <MapPin size={14} color={colors.text3} />
               {/* L'inscription ne demande pas de ville : on retombe sur les secteurs recherchés. */}
               <Text variant="footnote" numberOfLines={1}>
-                {profile.ville || search?.localisation?.join(', ') || 'Ville non renseignée'}
+                {profile.ville || search?.localisation?.join(', ') || t('agency.buyerFile.cityNotSet')}
               </Text>
             </View>
           </View>
           <View style={styles.heroPills}>
             <View style={styles.pill}>
-              <ScoreRing value={completion} size={30} label="Dossier" />
-              <Text style={styles.pillText}>Dossier complet à {Math.round(completion * 100)} %</Text>
+              <ScoreRing value={completion} size={30} label={t('agency.buyerFile.dossier')} />
+              <Text style={styles.pillText}>{t('agency.buyerFile.completion', { percent: Math.round(completion * 100) })}</Text>
             </View>
             <View style={[styles.pill, unlocked ? { backgroundColor: colors.successSoft } : null]}>
               {unlocked ? <Unlock size={15} color={colors.success} /> : <Lock size={15} color={colors.text2} />}
               <Text style={[styles.pillText, unlocked ? { color: colors.success } : null]}>
-                {unlocked ? 'Débloqué' : 'Coordonnées masquées'}
+                {unlocked ? t('agency.buyerFile.unlocked') : t('agency.buyerFile.hidden')}
               </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.facts}>
-          <Fact label="Budget max." value={compactEuro(search?.prixMax)} />
+          <Fact label={t('agency.buyerFile.maxBudget')} value={compactEuro(search?.prixMax)} />
           <View style={styles.factDivider} />
-          <Fact label="Pièces" value={search?.nombrePieces?.length ? search.nombrePieces.join(', ') : '—'} />
+          <Fact label={t('agency.buyerFile.rooms')} value={search?.nombrePieces?.length ? search.nombrePieces.join(', ') : '—'} />
           <View style={styles.factDivider} />
-          <Fact label="Délai" value={c.delaiRecherche ? delaiShortLabel(c.delaiRecherche) : '—'} />
+          <Fact label={t('agency.buyerFile.timeline')} value={c.delaiRecherche ? delaiShortLabel(c.delaiRecherche) : '—'} />
         </View>
 
         {c.drawnArea ? (
           <View style={{ gap: 6 }}>
             <Text variant="footnote" style={styles.sectionLabel}>
-              Zone de recherche
+              {t('agency.buyerFile.searchArea')}
             </Text>
             <MapZonePreview value={c.drawnArea} height={180} onPress={() => setMapOpen(true)} />
             <MapZoneModal visible={mapOpen} value={c.drawnArea} readOnly onClose={() => setMapOpen(false)} />
           </View>
         ) : null}
 
-        <ListSection title="Recherche">
-          <ListRow title="Type de bien" value={typesLabel(search?.typeBien) || NOT_SET} />
-          <ListRow title="Secteurs" subtitle={search?.localisation?.join(' · ') || NOT_SET} multiline />
+        <ListSection title={t('agency.buyerFile.search')}>
+          <ListRow title={t('agency.buyerFile.propertyType')} value={typesLabel(search?.typeBien) || NOT_SET} />
+          <ListRow title={t('agency.buyerFile.areas')} subtitle={search?.localisation?.join(' · ') || NOT_SET} multiline />
           <ListRow
-            title="Surface"
-            value={search?.surfaceMin || search?.surfaceMax ? `${search?.surfaceMin || '—'} à ${search?.surfaceMax || '—'} m²` : NOT_SET}
+            title={t('agency.buyerFile.surface')}
+            value={
+              search?.surfaceMin || search?.surfaceMax
+                ? t('agency.buyerFile.surfaceRange', { min: search?.surfaceMin || '—', max: search?.surfaceMax || '—' })
+                : NOT_SET
+            }
           />
-          <ListRow title="Équipements" subtitle={extras.join(' · ') || 'Aucun en particulier'} multiline />
-          <ListRow title="Flexibilité" value={labelFor(FLEXIBILITE, c.flexibilite, NOT_SET).split(' (')[0]} />
-          {c.commentaires ? <ListRow title="Précisions" subtitle={`« ${c.commentaires} »`} multiline /> : null}
+          <ListRow title={t('agency.buyerFile.features')} subtitle={extras.join(' · ') || t('agency.buyerFile.noFeatures')} multiline />
+          <ListRow title={t('agency.buyerFile.flexibility')} value={labelFor(FLEXIBILITE, c.flexibilite, NOT_SET).split(' (')[0]} />
+          {c.commentaires ? <ListRow title={t('agency.buyerFile.details')} subtitle={`« ${c.commentaires} »`} multiline /> : null}
         </ListSection>
 
-        <ListSection title="Financement">
-          <ListRow title="Budget" value={budgetLabel(search?.prixMin, search?.prixMax)} />
-          <ListRow title="Apport" value={c.apport ? formatEuro(c.apport) : NOT_SET} />
-          <ListRow title="Financement" value={labelFor(FINANCEMENT, search?.financement, NOT_SET)} />
-          <ListRow title="Durée du prêt" value={labelFor(DUREE_PRET, c.dureePret, NOT_SET)} />
+        <ListSection title={t('agency.buyerFile.financing')}>
+          <ListRow title={t('agency.buyerFile.budget')} value={budgetLabel(search?.prixMin, search?.prixMax)} />
+          <ListRow title={t('agency.buyerFile.deposit')} value={c.apport ? formatEuro(c.apport) : NOT_SET} />
+          <ListRow title={t('agency.buyerFile.financing')} value={labelFor(FINANCEMENT, search?.financement, NOT_SET)} />
+          <ListRow title={t('agency.buyerFile.loanDuration')} value={labelFor(DUREE_PRET, c.dureePret, NOT_SET)} />
         </ListSection>
 
-        <ListSection title="Situation">
-          <ListRow title="Profession" value={labelFor(SITUATION_PRO, c.situationProfessionnelle, NOT_SET)} />
-          <ListRow title="Revenus nets / mois" value={c.salaire ? formatEuro(c.salaire) : NOT_SET} />
-          <ListRow title="Patrimoine" value={c.patrimoine ? formatEuro(c.patrimoine) : NOT_SET} />
-          <ListRow title="Situation familiale" value={labelFor(SITUATION_FAMILIALE, c.situationFamiliale, NOT_SET)} />
-          <ListRow title="Enfants" value={labelFor(NOMBRE_ENFANTS, c.nombreEnfants, 'Aucun')} />
+        <ListSection title={t('agency.buyerFile.situation')}>
+          <ListRow title={t('agency.buyerFile.profession')} value={labelFor(SITUATION_PRO, c.situationProfessionnelle, NOT_SET)} />
+          <ListRow title={t('agency.buyerFile.income')} value={c.salaire ? formatEuro(c.salaire) : NOT_SET} />
+          <ListRow title={t('agency.buyerFile.assets')} value={c.patrimoine ? formatEuro(c.patrimoine) : NOT_SET} />
+          <ListRow title={t('agency.buyerFile.familyStatus')} value={labelFor(SITUATION_FAMILIALE, c.situationFamiliale, NOT_SET)} />
+          <ListRow title={t('agency.buyerFile.children')} value={labelFor(NOMBRE_ENFANTS, c.nombreEnfants, t('agency.buyerFile.noChildren'))} />
         </ListSection>
 
         <ListSection
-          title="Coordonnées"
-          footer={unlocked ? undefined : "Débloquez le dossier pour afficher l'e-mail et le téléphone de l'acquéreur."}
+          title={t('agency.buyerFile.contact')}
+          footer={unlocked ? undefined : t('agency.buyerFile.contactFooter')}
         >
           <ListRow
             icon={Mail}
             iconBackground={unlocked ? colors.navy : colors.slate300}
-            title={unlocked ? profile.email : 'E-mail masqué'}
+            title={unlocked ? profile.email : t('agency.buyerFile.emailHidden')}
             onPress={unlocked ? () => Linking.openURL(`mailto:${profile.email}`) : undefined}
           />
           <ListRow
             icon={Phone}
             iconBackground={unlocked ? colors.success : colors.slate300}
-            title={unlocked ? profile.telephone || NOT_SET : 'Téléphone masqué'}
+            title={unlocked ? profile.telephone || NOT_SET : t('agency.buyerFile.phoneHidden')}
             onPress={unlocked && profile.telephone ? () => Linking.openURL(`tel:${profile.telephone!.replace(/\s/g, '')}`) : undefined}
           />
         </ListSection>
@@ -266,7 +270,7 @@ export default function BuyerDossierScreen() {
       <StickyFooter>
         <View style={styles.actions}>
           <Button
-            title="Discuter"
+            title={t('agency.buyerFile.chat')}
             icon={MessageSquare}
             variant={unlocked ? 'primary' : 'secondary'}
             size="lg"
@@ -276,7 +280,7 @@ export default function BuyerDossierScreen() {
           />
           {!unlocked ? (
             <Button
-              title={price > 0 ? `Débloquer · ${price} €` : 'Débloquer'}
+              title={price > 0 ? t('agency.buyerFile.unlockWithPrice', { price }) : t('agency.buyerFile.unlock')}
               icon={Unlock}
               variant="accent"
               size="lg"
@@ -286,7 +290,7 @@ export default function BuyerDossierScreen() {
             />
           ) : profile.telephone ? (
             <Button
-              title="Appeler"
+              title={t('agency.buyerFile.call')}
               icon={Phone}
               variant="secondary"
               size="lg"

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { intlLocale, type Locale } from '@/lib/i18n/core'
 
 /**
  * Pages légales (mentions légales, CGU/CGV, confidentialité).
@@ -10,25 +11,25 @@ import { prisma } from '@/lib/prisma'
  */
 
 export const LEGAL_FIELDS = {
-    legal_company_name: { label: 'Raison sociale', placeholder: '[Raison sociale]', value: 'NEOVIA' },
-    legal_company_form: { label: 'Forme juridique', placeholder: '[forme juridique, ex. SAS]', value: 'SAS' },
-    legal_company_capital: { label: 'Capital social (€)', placeholder: '[montant]', value: '' },
-    legal_rcs_city: { label: "Ville d'immatriculation au RCS", placeholder: '[ville]', value: 'Bordeaux' },
-    legal_siret: { label: 'SIREN / SIRET', placeholder: '[SIREN / SIRET]', value: '990 188 724 00019' },
-    legal_address: { label: 'Adresse du siège social', placeholder: '[adresse complète]', value: '9 rue de Condé, 33000 Bordeaux' },
-    legal_vat_number: { label: 'Numéro de TVA intracommunautaire', placeholder: '[FR..]', value: '' },
-    legal_email: { label: 'E-mail de contact', placeholder: '[e-mail]', value: 'contact@immocible.com' },
-    legal_phone: { label: 'Téléphone', placeholder: '[numéro]', value: '' },
-    legal_publication_director: { label: 'Directeur de la publication', placeholder: '[nom du représentant légal]', value: '' },
-    legal_host_name: { label: "Nom de l'hébergeur", placeholder: "[nom de l'hébergeur]", value: 'Hostinger' },
-    legal_host_address: { label: "Adresse de l'hébergeur", placeholder: "[adresse de l'hébergeur]", value: '' },
-    legal_host_contact: { label: "Téléphone ou site de l'hébergeur", placeholder: '[téléphone / site]', value: '' },
-    legal_cgu_duration: { label: "CGU — durée de l'abonnement", placeholder: '[mensuelle / annuelle]', value: "mensuelle ou annuelle selon l'offre choisie" },
-    legal_cgu_renewal: { label: 'CGU — reconduction', placeholder: '[reconductible ou non]', value: 'non reconduit tacitement' },
-    legal_cgu_termination: { label: 'CGU — modalités de résiliation', placeholder: '[modalités de résiliation]', value: '' },
-    legal_cgu_mediator: { label: 'CGU — médiateur de la consommation', placeholder: '[médiateur à désigner]', value: '' },
-    legal_email_provider: { label: "Confidentialité — service d'e-mailing", placeholder: '[Mailjet ou autre]', value: '' },
-    legal_data_retention: { label: 'Confidentialité — conservation après le dernier contact', placeholder: '[ex. 3 ans]', value: '' },
+    legal_company_name: { label: 'Raison sociale', placeholder: '[Raison sociale]', labelEn: 'Company name', placeholderEn: '[Company name]', value: 'NEOVIA' },
+    legal_company_form: { label: 'Forme juridique', placeholder: '[forme juridique, ex. SAS]', labelEn: 'Legal form', placeholderEn: '[legal form, e.g. SAS]', value: 'SAS' },
+    legal_company_capital: { label: 'Capital social (€)', placeholder: '[montant]', labelEn: 'Share capital (€)', placeholderEn: '[amount]', value: '' },
+    legal_rcs_city: { label: "Ville d'immatriculation au RCS", placeholder: '[ville]', labelEn: 'RCS registration city', placeholderEn: '[city]', value: 'Bordeaux' },
+    legal_siret: { label: 'SIREN / SIRET', placeholder: '[SIREN / SIRET]', labelEn: 'SIREN / SIRET', placeholderEn: '[SIREN / SIRET]', value: '990 188 724 00019' },
+    legal_address: { label: 'Adresse du siège social', placeholder: '[adresse complète]', labelEn: 'Registered office address', placeholderEn: '[full address]', value: '9 rue de Condé, 33000 Bordeaux' },
+    legal_vat_number: { label: 'Numéro de TVA intracommunautaire', placeholder: '[FR..]', labelEn: 'EU VAT number', placeholderEn: '[FR..]', value: '' },
+    legal_email: { label: 'E-mail de contact', placeholder: '[e-mail]', labelEn: 'Contact email', placeholderEn: '[email]', value: 'contact@immocible.com' },
+    legal_phone: { label: 'Téléphone', placeholder: '[numéro]', labelEn: 'Phone', placeholderEn: '[number]', value: '' },
+    legal_publication_director: { label: 'Directeur de la publication', placeholder: '[nom du représentant légal]', labelEn: 'Publication director', placeholderEn: '[name of the legal representative]', value: '' },
+    legal_host_name: { label: "Nom de l'hébergeur", placeholder: "[nom de l'hébergeur]", labelEn: 'Hosting provider name', placeholderEn: '[hosting provider name]', value: 'Hostinger' },
+    legal_host_address: { label: "Adresse de l'hébergeur", placeholder: "[adresse de l'hébergeur]", labelEn: 'Hosting provider address', placeholderEn: '[hosting provider address]', value: '' },
+    legal_host_contact: { label: "Téléphone ou site de l'hébergeur", placeholder: '[téléphone / site]', labelEn: 'Hosting provider phone or website', placeholderEn: '[phone / website]', value: '' },
+    legal_cgu_duration: { label: "CGU — durée de l'abonnement", placeholder: '[mensuelle / annuelle]', labelEn: 'Terms — subscription term', placeholderEn: '[monthly / annual]', value: "mensuelle ou annuelle selon l'offre choisie", valueEn: 'monthly or yearly, depending on the chosen plan' },
+    legal_cgu_renewal: { label: 'CGU — reconduction', placeholder: '[reconductible ou non]', labelEn: 'Terms — renewal', placeholderEn: '[renewable or not]', value: 'non reconduit tacitement', valueEn: 'not automatically renewed' },
+    legal_cgu_termination: { label: 'CGU — modalités de résiliation', placeholder: '[modalités de résiliation]', labelEn: 'Terms — cancellation terms', placeholderEn: '[cancellation terms]', value: '' },
+    legal_cgu_mediator: { label: 'CGU — médiateur de la consommation', placeholder: '[médiateur à désigner]', labelEn: 'Terms — consumer mediator', placeholderEn: '[mediator to be appointed]', value: '' },
+    legal_email_provider: { label: "Confidentialité — service d'e-mailing", placeholder: '[Mailjet ou autre]', labelEn: 'Privacy — email service', placeholderEn: '[Mailjet or other]', value: '' },
+    legal_data_retention: { label: 'Confidentialité — conservation après le dernier contact', placeholder: '[ex. 3 ans]', labelEn: 'Privacy — retention after last contact', placeholderEn: '[e.g. 3 years]', value: '' },
 } as const
 
 export type LegalFieldKey = keyof typeof LEGAL_FIELDS
@@ -191,6 +192,152 @@ export const LEGAL_DOCUMENTS = {
 
 export type LegalSlug = keyof typeof LEGAL_DOCUMENTS
 
+/** Version anglaise des documents : traduction fidèle du français (mêmes sections, mêmes champs `legal_*`). */
+export const LEGAL_DOCUMENTS_EN = {
+    'mentions-legales': {
+        title: 'Legal notice',
+        description: 'Legal notice of the IMMOCIBLE website: publisher, hosting provider and intellectual property.',
+        draftNotice: 'Highlighted items are still to be completed.',
+        sections: [
+            {
+                title: 'Website publisher',
+                blocks: [
+                    p('The IMMOCIBLE website and application are published by ', f('legal_company_name'), ', a ', f('legal_company_form'),
+                        ' company with a share capital of €', f('legal_company_capital'), ', registered with the ', f('legal_rcs_city'),
+                        ' Trade and Companies Register (RCS) under number ', f('legal_siret'), '.'),
+                    p('Registered office: ', f('legal_address'), '.'),
+                    p('EU VAT number: ', f('legal_vat_number'), '.'),
+                    p('Email address: ', f('legal_email'), ' — Phone: ', f('legal_phone'), '.'),
+                    p('Publication director: ', f('legal_publication_director'), '.'),
+                ],
+            },
+            {
+                title: 'Hosting',
+                blocks: [p('The service is hosted by ', f('legal_host_name'), ', ', f('legal_host_address'), ', ', f('legal_host_contact'), '.')],
+            },
+            {
+                title: 'Intellectual property',
+                blocks: [p('All content on the service (the IMMOCIBLE brand, logo, texts, visuals, graphic elements, structure) is protected by intellectual property law. Any full or partial reproduction or representation without prior written authorisation is prohibited.')],
+            },
+            {
+                title: 'Liability',
+                blocks: [p('The publisher strives to ensure the accuracy of the information provided but cannot be held liable for errors, unavailability of information or the presence of viruses on the service.')],
+            },
+            {
+                title: 'Contact',
+                blocks: [p('For any question about the service, you can write to ', f('legal_email'), '.')],
+            },
+        ],
+    },
+    cgu: {
+        title: 'Terms and Conditions (Terms of Use / Terms of Sale)',
+        description: 'IMMOCIBLE terms of use and sale: registration, buyer service, agency subscription and payment.',
+        draftNotice: 'Highlighted items are still to be completed. Template to be reviewed by a legal adviser, in particular the clauses on subscription sales, withdrawal and liability.',
+        sections: [
+            {
+                title: '1. Purpose',
+                blocks: [p('These terms govern access to and use of the IMMOCIBLE platform, published by ', f('legal_company_name'), ', a service connecting buyers and real estate agencies around off-market opportunities.')],
+            },
+            {
+                title: '2. Registration and account',
+                blocks: [p('Registration requires a valid email address and a password. Users are responsible for keeping their login details confidential and for all actions carried out from their account.')],
+            },
+            {
+                title: '3. Buyer service',
+                blocks: [p('Creating a buyer profile and receiving proposals are free of charge. A buyer’s contact details are only shared with an agency after an explicit action by that agency.')],
+            },
+            {
+                title: '4. Agency subscription',
+                blocks: [
+                    p('Access to buyer files is reserved for agencies holding a valid paid subscription, whose current price is displayed before payment. Payment is processed by our provider Stripe. The subscription is entered into for a ',
+                        f('legal_cgu_duration'), ' term and is ', f('legal_cgu_renewal'), ', under the conditions specified at the time of subscription.'),
+                    p('In accordance with Article L221-28 of the French Consumer Code, the right of withdrawal does not apply to professionals acting in the course of their business. Cancellation terms: ', f('legal_cgu_termination'), '.'),
+                ],
+            },
+            {
+                title: '5. User obligations',
+                blocks: [p('Users undertake to provide accurate information, not to misuse the service and not to circumvent the matching mechanisms (in particular by sharing contact details outside the intended channels).')],
+            },
+            {
+                title: '6. Liability',
+                blocks: [p('IMMOCIBLE provides a matching service and is not a party to real estate transactions concluded between users. It cannot be held liable for the content of listings or the outcome of introductions.')],
+            },
+            {
+                title: '7. Personal data',
+                blocks: [p('The processing of personal data is described in the ', { text: 'privacy policy', href: '/confidentialite' }, '.')],
+            },
+            {
+                title: '8. Governing law and disputes',
+                blocks: [p('These terms are governed by French law. In the event of a dispute, an amicable solution will be sought before any legal action. Consumers may use a consumer mediator free of charge: ', f('legal_cgu_mediator'), '.')],
+            },
+        ],
+    },
+    confidentialite: {
+        title: 'Privacy policy',
+        description: 'IMMOCIBLE privacy policy: data collected, purposes, retention periods and how to exercise your rights (GDPR).',
+        draftNotice: 'Highlighted items are still to be completed. Document to be validated by the operator (and, where applicable, its adviser).',
+        sections: [
+            {
+                title: 'Data controller',
+                blocks: [p('The data controller is ', f('legal_company_name'), ', ', f('legal_address'), '. For any question about your data: ', f('legal_email'), '.')],
+            },
+            {
+                title: 'Data collected',
+                blocks: [
+                    p('We collect the data you provide to us and the data generated by your use of the service:'),
+                    list(
+                        ['Identification data: last name, first name, email address, phone number.'],
+                        ['Account data: role (buyer / agency), password (stored encrypted), agency name.'],
+                        ['Property search criteria (budget, location, property type, etc.).'],
+                        ['Subscription payment data, processed by our provider Stripe (we do not store your card numbers).'],
+                        ['Browsing and audience measurement data, subject to your consent (see “Cookies”).'],
+                    ),
+                ],
+            },
+            {
+                title: 'Purposes and legal bases',
+                blocks: [list(
+                    ['Providing the matching service (performance of the contract).'],
+                    ['Managing accounts, authentication and support (performance of the contract).'],
+                    ['Managing subscriptions and billing (performance of the contract, legal obligation).'],
+                    ['Sending communications and newsletters (consent, which may be withdrawn at any time).'],
+                    ['Measuring audience and improving the service (consent / legitimate interest).'],
+                )],
+            },
+            {
+                title: 'Recipients',
+                blocks: [p('Your data is accessible to authorised IMMOCIBLE staff and to its technical processors: hosting provider (', f('legal_host_name'), '), payment provider (Stripe), email service (', f('legal_email_provider'), ') and notification service. A buyer’s contact details are only passed on to an agency after the agency has explicitly unlocked them.')],
+            },
+            {
+                title: 'Retention periods',
+                blocks: [list(
+                    ['Account data: for the lifetime of the account, then ', f('legal_data_retention'), ' after the last contact.'],
+                    ['Billing data: 10 years (accounting obligation).'],
+                    ['Audience measurement data: 13 months maximum.'],
+                )],
+            },
+            {
+                title: 'Your rights',
+                blocks: [p('In accordance with the GDPR, you have the right to access, rectify, erase, object to, restrict and port your data, as well as the right to set post-mortem directives. You can exercise these rights at ', f('legal_email'), '. You may also lodge a complaint with the CNIL, the French data protection authority (www.cnil.fr).')],
+            },
+            {
+                title: 'Cookies and audience measurement',
+                blocks: [p('The website places cookies and measures its audience. Trackers that are not strictly necessary are only activated after your consent, collected via the dedicated banner. You can change your choice at any time by clearing your browser’s cookies.')],
+            },
+            {
+                title: 'Transfers outside the European Union',
+                blocks: [p('Some processors may process data outside the European Union. Where applicable, these transfers are governed by appropriate safeguards (European Commission standard contractual clauses).')],
+            },
+        ],
+    },
+} satisfies Record<LegalSlug, LegalDocument>
+
+/** Titre et description d'un document dans la langue demandée (métadonnées des pages). */
+export function getLegalMeta(slug: LegalSlug, locale: Locale = 'fr') {
+    const doc: LegalDocument = locale === 'en' ? LEGAL_DOCUMENTS_EN[slug] : LEGAL_DOCUMENTS[slug]
+    return { title: doc.title, description: doc.description }
+}
+
 export function isLegalSlug(value: string): value is LegalSlug {
     return Object.prototype.hasOwnProperty.call(LEGAL_DOCUMENTS, value)
 }
@@ -228,8 +375,8 @@ async function getLegalValues() {
     return { values, lastUpdated }
 }
 
-export async function getLegalDocument(slug: LegalSlug): Promise<ResolvedLegalDocument> {
-    const doc: LegalDocument = LEGAL_DOCUMENTS[slug]
+export async function getLegalDocument(slug: LegalSlug, locale: Locale = 'fr'): Promise<ResolvedLegalDocument> {
+    const doc: LegalDocument = locale === 'en' ? LEGAL_DOCUMENTS_EN[slug] : LEGAL_DOCUMENTS[slug]
     const { values, lastUpdated } = await getLegalValues()
     let missing = false
 
@@ -237,10 +384,13 @@ export async function getLegalDocument(slug: LegalSlug): Promise<ResolvedLegalDo
         content.map((part) => {
             if (typeof part === 'string') return { text: part }
             if ('href' in part) return { text: part.text, href: part.href }
-            const value = values[part.field]
+            const field = LEGAL_FIELDS[part.field] as { value: string; valueEn?: string; placeholder: string; placeholderEn: string }
+            let value = values[part.field]
+            // Texte par défaut encore en français (jamais modifié dans l'admin) : version anglaise équivalente.
+            if (locale === 'en' && field.valueEn && value === field.value) value = field.valueEn
             if (value) return { text: value }
             missing = true
-            return { text: LEGAL_FIELDS[part.field].placeholder, missing: true }
+            return { text: locale === 'en' ? field.placeholderEn : field.placeholder, missing: true }
         })
 
     const sections = doc.sections.map((section) => ({
@@ -257,7 +407,7 @@ export async function getLegalDocument(slug: LegalSlug): Promise<ResolvedLegalDo
     return {
         slug,
         title: doc.title,
-        lastUpdated: date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }),
+        lastUpdated: date.toLocaleDateString(intlLocale(locale), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }),
         notice: missing ? doc.draftNotice : null,
         sections,
     }

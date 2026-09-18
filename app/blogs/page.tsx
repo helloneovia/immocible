@@ -2,13 +2,15 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNavbar } from '@/components/layout/PublicNavbar'
 import { Footer } from '@/components/layout/Footer'
-import { getAppSettings } from '@/lib/settings'
+import { getAppSettings, localizeSettings } from '@/lib/settings'
+import { getLocale, getT } from '@/lib/i18n/server'
 
-export const metadata: Metadata = {
-  title: 'Blog',
-  description:
-    "Actualités, conseils et analyses du marché de l'immobilier d'exception et off-market par IMMOCIBLE.",
-  alternates: { canonical: '/blogs' },
+export function generateMetadata(): Metadata {
+  return {
+    title: 'Blog',
+    description: getT()('home.blog.metaDescription'),
+    alternates: { canonical: '/blogs' },
+  }
 }
 
 export const revalidate = 3600
@@ -40,7 +42,8 @@ async function getArticles(): Promise<Article[]> {
 }
 
 export default async function BlogsPage() {
-  const settings = await getAppSettings()
+  const settings = localizeSettings(await getAppSettings(), getLocale())
+  const t = getT()
   const articles = await getArticles()
 
   return (
@@ -58,10 +61,10 @@ export default async function BlogsPage() {
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center text-white mt-16">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 drop-shadow-lg">
-            Le Blog IMMOCIBLE
+            {t('home.blog.title')}
           </h1>
           <p className="mt-4 text-lg sm:text-xl text-slate-200 max-w-2xl mx-auto font-light drop-shadow-md">
-            Actualités, conseils et analyses du marché de l&apos;immobilier d&apos;exception.
+            {t('home.blog.subtitle')}
           </p>
         </div>
       </section>
@@ -71,7 +74,7 @@ export default async function BlogsPage() {
         {articles.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-slate-500 font-light">
-              Nos premiers articles arrivent très bientôt. Revenez prochainement !
+              {t('home.blog.empty')}
             </p>
           </div>
         ) : (
@@ -96,7 +99,7 @@ export default async function BlogsPage() {
                     <h2 className="font-semibold text-xl mb-3 text-slate-900 line-clamp-2">{article.title}</h2>
                     <p className="text-slate-500 font-light leading-relaxed line-clamp-3 mb-4">{article.excerpt}</p>
                     <span className="mt-auto text-sm font-semibold text-slate-900 group-hover:text-slate-700 transition-colors flex items-center">
-                      Lire l&apos;article
+                      {t('home.blog.readArticle')}
                       <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>

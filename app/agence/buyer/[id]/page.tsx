@@ -8,6 +8,11 @@ import { ArrowLeft, MapPin, Euro, Home, Ruler, Lock, Unlock, BadgeEuro, CheckCir
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { Navbar } from '@/components/layout/Navbar'
 import { LocationMapDraw } from '@/components/ui/LocationMapDraw'
+import { useI18n } from '@/lib/i18n/client'
+import { intlLocale } from '@/lib/i18n/core'
+
+// Critères supplémentaires : la clé est le champ enregistré, le libellé vient du dictionnaire.
+const AMENITY_KEYS = ['balcon', 'terrasse', 'jardin', 'parking', 'cave', 'ascenseur'] as const
 
 function BuyerProfileContent() {
     const params = useParams()
@@ -15,6 +20,8 @@ function BuyerProfileContent() {
     const id = params?.id as string
     const sessionId = searchParams.get('session_id')
     const router = useRouter()
+    const { t, locale } = useI18n()
+    const amenities = AMENITY_KEYS.map((k) => ({ k, l: t(`buyer.amenities.${k}`) }))
     const [buyerData, setBuyerData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [unlocking, setUnlocking] = useState(false)
@@ -56,7 +63,7 @@ function BuyerProfileContent() {
                 })
 
                 if (res.ok) {
-                    alert('Paiement validé avec succès !')
+                    alert(t('agency.buyerProfile.paymentValidated'))
                     // Clear query param
                     router.replace(`/agence/buyer/${id}`)
                     // Refresh data happens automatically via other useEffect if we trigger it? 
@@ -77,7 +84,7 @@ function BuyerProfileContent() {
     }, [sessionId])
 
     const handleUnlock = async () => {
-        if (!confirm(`Confirmer le paiement de ${buyerData.price}€ pour débloquer ce contact ?`)) return
+        if (!confirm(t('agency.buyerProfile.confirmUnlock', { price: buyerData.price }))) return
 
         setUnlocking(true)
         try {
@@ -105,33 +112,33 @@ function BuyerProfileContent() {
                 const refreshRes = await fetch(`/api/agence/buyer/${id}`)
                 const refreshData = await refreshRes.json()
                 setBuyerData(refreshData)
-                alert('Contact débloqué avec succès !')
+                alert(t('agency.buyerProfile.unlockSuccess'))
             } else {
-                const msg = responseData.details || 'Erreur inconnue'
-                alert(`Erreur lors du paiement: ${msg}\n\nSi le message indique que la table n'existe pas, veuillez redémarrer le serveur (npm run dev).`)
+                const msg = responseData.details || t('agency.buyerProfile.unknownError')
+                alert(t('agency.buyerProfile.paymentError', { message: msg }))
             }
         } catch (error) {
             console.error('Payment error', error)
-            alert('Erreur de connexion.')
+            alert(t('agency.buyerProfile.connectionError'))
         } finally {
             setUnlocking(false)
         }
     }
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
+        return <div className="min-h-screen flex items-center justify-center bg-gray-50">{t('agency.buyerProfile.loading')}</div>
     }
 
     if (subscriptionRequired) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
                 <Lock className="h-10 w-10 text-amber-600 mb-4" />
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Abonnement requis</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{t('agency.buyerProfile.subscriptionRequired')}</h2>
                 <p className="text-gray-500 max-w-md">
-                    Les dossiers des acquéreurs sont réservés aux agences disposant d&apos;un abonnement actif.
+                    {t('agency.buyerProfile.subscriptionRequiredDesc')}
                 </p>
                 <Button className="mt-6" onClick={() => router.push('/agence/dashboard')}>
-                    Voir les offres
+                    {t('agency.buyerProfile.seeOffers')}
                 </Button>
             </div>
         )
@@ -140,10 +147,10 @@ function BuyerProfileContent() {
     if (!buyerData) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Profil introuvable</h2>
-                <p className="text-gray-500">ID recherché: <code className="bg-gray-200 px-1 rounded">{id || 'undefined'}</code></p>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{t('agency.buyerProfile.notFound')}</h2>
+                <p className="text-gray-500">{t('agency.buyerProfile.searchedId')} <code className="bg-gray-200 px-1 rounded">{id || 'undefined'}</code></p>
                 <Button variant="outline" className="mt-4" onClick={() => router.back()}>
-                    Retour
+                    {t('agency.buyerProfile.back')}
                 </Button>
             </div>
         )
@@ -172,9 +179,9 @@ function BuyerProfileContent() {
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
                         <ArrowLeft className="h-4 w-4" />
-                        Retour
+                        {t('agency.buyerProfile.back')}
                     </Button>
-                    <h1 className="text-3xl font-bold text-gray-900">Profil Acquéreur</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">{t('agency.buyerProfile.title')}</h1>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -183,10 +190,10 @@ function BuyerProfileContent() {
                         <CardHeader className="bg-slate-900 text-white p-6">
                             <CardTitle className="text-2xl flex items-center gap-2">
                                 <Home className="h-6 w-6" />
-                                Critères de recherche
+                                {t('agency.buyerProfile.criteria')}
                             </CardTitle>
                             <CardDescription className="text-blue-100">
-                                Ce que recherche cet acquéreur
+                                {t('agency.buyerProfile.criteriaDesc')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
@@ -194,16 +201,16 @@ function BuyerProfileContent() {
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                                         <BadgeEuro className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Budget</span>
+                                        <span className="text-sm font-medium">{t('agency.buyerProfile.budget')}</span>
                                     </div>
                                     <p className="text-lg font-bold text-gray-900 break-words">
-                                        {search?.prixMin ? `${search.prixMin.toLocaleString()} - ` : ''}{search?.prixMax?.toLocaleString()} €
+                                        {search?.prixMin ? `${search.prixMin.toLocaleString(intlLocale(locale))} - ` : ''}{search?.prixMax?.toLocaleString(intlLocale(locale))} €
                                     </p>
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                                         <Ruler className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Surface</span>
+                                        <span className="text-sm font-medium">{t('agency.buyerProfile.surface')}</span>
                                     </div>
                                     <p className="text-lg font-bold text-gray-900">
                                         {search?.surfaceMin || 0}{search?.surfaceMax ? ` - ${search.surfaceMax}` : ''} m²
@@ -212,12 +219,12 @@ function BuyerProfileContent() {
                                 <div className="p-4 bg-gray-50 rounded-xl">
                                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                                         <LayoutGrid className="h-4 w-4" />
-                                        <span className="text-sm font-medium">Pièces</span>
+                                        <span className="text-sm font-medium">{t('agency.buyerProfile.rooms')}</span>
                                     </div>
                                     <p className="text-lg font-bold text-gray-900">
                                         {search?.nombrePieces && search.nombrePieces.length > 0 
                                             ? search.nombrePieces.join(', ') 
-                                            : 'Non spécifié'}
+                                            : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
 
@@ -229,9 +236,9 @@ function BuyerProfileContent() {
                                         <Home className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Type de bien</p>
+                                        <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.propertyType')}</p>
                                         <p className="text-lg font-semibold text-gray-900 capitalize">
-                                            {(search?.typeBien || []).join(', ') || 'Non spécifié'}
+                                            {(search?.typeBien || []).join(', ') || t('agency.buyerProfile.notSpecified')}
                                         </p>
                                     </div>
                                 </div>
@@ -241,13 +248,13 @@ function BuyerProfileContent() {
                                         <MapPin className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Secteur(s)</p>
+                                        <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.sectors')}</p>
                                         <div className="flex flex-wrap gap-2 mt-1 mb-3">
                                             {search?.localisation?.map((zone: string, i: number) => (
                                                 <span key={i} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     {zone}
                                                 </span>
-                                            )) || <span className="text-gray-900">Non spécifié</span>}
+                                            )) || <span className="text-gray-900">{t('agency.buyerProfile.notSpecified')}</span>}
                                         </div>
 
                                         {/* Display Drawn Area if available */}
@@ -255,7 +262,7 @@ function BuyerProfileContent() {
                                             <div className="mt-4 rounded-lg overflow-hidden border border-gray-200">
                                                 <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
                                                     <p className="text-xs font-medium text-gray-500 flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3" /> Zone de recherche précise
+                                                        <MapPin className="h-3 w-3" /> {t('agency.buyerProfile.drawnArea')}
                                                     </p>
                                                 </div>
                                                 <div className="h-[300px] w-full relative">
@@ -277,39 +284,25 @@ function BuyerProfileContent() {
                                         <CheckCircle2 className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Critères supplémentaires</p>
+                                        <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.extras')}</p>
                                         <div className="flex flex-wrap gap-2 mt-1">
-                                            {[
-                                                { k: 'balcon', l: 'Balcon' },
-                                                { k: 'terrasse', l: 'Terrasse' },
-                                                { k: 'jardin', l: 'Jardin' },
-                                                { k: 'parking', l: 'Parking' },
-                                                { k: 'cave', l: 'Cave' },
-                                                { k: 'ascenseur', l: 'Ascenseur' }
-                                            ].filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
+                                            {amenities.filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
                                                 <span key={k} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
                                                     {l}
                                                 </span>
                                             )).length > 0
-                                                ? [
-                                                    { k: 'balcon', l: 'Balcon' },
-                                                    { k: 'terrasse', l: 'Terrasse' },
-                                                    { k: 'jardin', l: 'Jardin' },
-                                                    { k: 'parking', l: 'Parking' },
-                                                    { k: 'cave', l: 'Cave' },
-                                                    { k: 'ascenseur', l: 'Ascenseur' }
-                                                ].filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
+                                                ? amenities.filter(({ k }) => search?.caracteristiques?.[k]).map(({ k, l }) => (
                                                     <span key={k} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
                                                         {l}
                                                     </span>
                                                 ))
-                                                : <span className="text-gray-500 italic">Aucun critère spécifique</span>
+                                                : <span className="text-gray-500 italic">{t('agency.buyerProfile.noExtras')}</span>
                                             }
                                         </div>
                                         {/* Commentaires libres */}
                                         {search?.caracteristiques?.commentaires && (
                                             <div className="mt-3 p-3 bg-orange-50 rounded-lg border border-orange-100">
-                                                <p className="text-xs font-medium text-gray-500 uppercase mb-1">Commentaires</p>
+                                                <p className="text-xs font-medium text-gray-500 uppercase mb-1">{t('agency.buyerProfile.comments')}</p>
                                                 <p className="text-sm text-gray-800 italic">&ldquo;{search.caracteristiques.commentaires}&rdquo;</p>
                                             </div>
                                         )}
@@ -322,22 +315,22 @@ function BuyerProfileContent() {
                                         <Clock className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-gray-500">Projet</p>
+                                        <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.project')}</p>
                                         <div className="grid grid-cols-2 gap-x-8 gap-y-1 mt-1">
                                             <div>
-                                                <span className="text-xs text-gray-500 uppercase">Délai:</span>
+                                                <span className="text-xs text-gray-500 uppercase">{t('agency.buyerProfile.delay')}</span>
                                                 <p className="font-semibold text-gray-900">
-                                                    {search?.caracteristiques?.delaiRecherche === 'urgent' ? 'Urgent (< 1 mois)' :
-                                                        search?.caracteristiques?.delaiRecherche === '1-3' ? '1 à 3 mois' :
-                                                            search?.caracteristiques?.delaiRecherche === '3-6' ? '3 à 6 mois' :
-                                                                search?.caracteristiques?.delaiRecherche === '6-12' ? '6 à 12 mois' :
-                                                                    search?.caracteristiques?.delaiRecherche === '12+' ? '+ 12 mois' : 'Non défini'}
+                                                    {search?.caracteristiques?.delaiRecherche === 'urgent' ? t('agency.delays.urgent') :
+                                                        search?.caracteristiques?.delaiRecherche === '1-3' ? t('agency.delays.m1to3') :
+                                                            search?.caracteristiques?.delaiRecherche === '3-6' ? t('agency.delays.m3to6') :
+                                                                search?.caracteristiques?.delaiRecherche === '6-12' ? t('agency.delays.m6to12') :
+                                                                    search?.caracteristiques?.delaiRecherche === '12+' ? t('agency.delays.m12plus') : t('agency.buyerProfile.notDefined')}
                                                 </p>
                                             </div>
                                             <div>
-                                                <span className="text-xs text-gray-500 uppercase">Flexibilité:</span>
+                                                <span className="text-xs text-gray-500 uppercase">{t('agency.buyerProfile.flexibility')}</span>
                                                 <p className="font-semibold text-gray-900 capitalize">
-                                                    {search?.caracteristiques?.flexibilite || 'Non défini'}
+                                                    {search?.caracteristiques?.flexibilite || t('agency.buyerProfile.notDefined')}
                                                 </p>
                                             </div>
                                         </div>
@@ -352,59 +345,59 @@ function BuyerProfileContent() {
                         <CardHeader className="bg-gradient-to-r from-teal-500 to-green-600 text-white p-6">
                             <CardTitle className="text-2xl flex items-center gap-2">
                                 <Briefcase className="h-6 w-6" />
-                                Situation & Finance
+                                {t('agency.buyerProfile.situationFinance')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <Briefcase className="h-4 w-4" /> Situation Professionnelle
+                                        <Briefcase className="h-4 w-4" /> {t('agency.buyerProfile.professional')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900 capitalize">
-                                        {search?.caracteristiques?.situationProfessionnelle || 'Non spécifié'}
+                                        {search?.caracteristiques?.situationProfessionnelle || t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <Banknote className="h-4 w-4" /> Revenus Mensuels
+                                        <Banknote className="h-4 w-4" /> {t('agency.buyerProfile.income')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {search?.caracteristiques?.salaire ? `${search.caracteristiques.salaire} €` : 'Non spécifié'}
+                                        {search?.caracteristiques?.salaire ? `${search.caracteristiques.salaire} €` : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <Wallet className="h-4 w-4" /> Patrimoine
+                                        <Wallet className="h-4 w-4" /> {t('agency.buyerProfile.assets')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {search?.caracteristiques?.patrimoine ? `${search.caracteristiques.patrimoine} €` : 'Non spécifié'}
+                                        {search?.caracteristiques?.patrimoine ? `${search.caracteristiques.patrimoine} €` : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <BadgeEuro className="h-4 w-4" /> Apport
+                                        <BadgeEuro className="h-4 w-4" /> {t('agency.buyerProfile.deposit')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {search?.caracteristiques?.apport ? `${search.caracteristiques.apport} €` : 'Non spécifié'}
+                                        {search?.caracteristiques?.apport ? `${search.caracteristiques.apport} €` : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                             </div>
                             <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <Banknote className="h-4 w-4" /> Type de Financement
+                                        <Banknote className="h-4 w-4" /> {t('agency.buyerProfile.financing')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900 capitalize">
-                                        {search?.financement ? search.financement.replace('-', ' ') : 'Non spécifié'}
+                                        {search?.financement ? search.financement.replace('-', ' ') : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                                        <Briefcase className="h-4 w-4" /> Durée du Prêt
+                                        <Briefcase className="h-4 w-4" /> {t('agency.buyerProfile.loanDuration')}
                                     </p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {search?.caracteristiques?.dureePret ? `${search.caracteristiques.dureePret} ans` : 'Non spécifié'}
+                                        {search?.caracteristiques?.dureePret ? t('agency.buyerProfile.years', { count: search.caracteristiques.dureePret }) : t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                             </div>
@@ -416,21 +409,21 @@ function BuyerProfileContent() {
                         <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6">
                             <CardTitle className="text-2xl flex items-center gap-2">
                                 <Users className="h-6 w-6" />
-                                Situation Personnelle
+                                {t('agency.buyerProfile.personal')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium text-gray-500">Situation Familiale</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.family')}</p>
                                     <p className="text-lg font-semibold text-gray-900 capitalize">
-                                        {search?.caracteristiques?.situationFamiliale || 'Non spécifié'}
+                                        {search?.caracteristiques?.situationFamiliale || t('agency.buyerProfile.notSpecified')}
                                     </p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium text-gray-500">Enfants</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.children')}</p>
                                     <p className="text-lg font-semibold text-gray-900">
-                                        {search?.caracteristiques?.nombreEnfants ? `${search.caracteristiques.nombreEnfants} enfant(s)` : 'Aucun'}
+                                        {search?.caracteristiques?.nombreEnfants ? t('agency.buyerProfile.childrenCount', { count: search.caracteristiques.nombreEnfants }) : t('agency.buyerProfile.none')}
                                     </p>
                                 </div>
                             </div>
@@ -442,29 +435,29 @@ function BuyerProfileContent() {
                         <CardHeader className={`p-6 ${unlocked ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gray-800'} text-white`}>
                             <CardTitle className="text-2xl flex items-center gap-2">
                                 {unlocked ? <Unlock className="h-6 w-6" /> : <Lock className="h-6 w-6" />}
-                                Coordonnées
+                                {t('agency.buyerProfile.contact')}
                             </CardTitle>
                             <CardDescription className={unlocked ? 'text-green-100' : 'text-gray-300'}>
-                                {unlocked ? 'Informations de contact débloquées' : 'Informations masquées'}
+                                {unlocked ? t('agency.buyerProfile.contactUnlocked') : t('agency.buyerProfile.contactHidden')}
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 relative">
                             <div className={`space-y-6 ${!unlocked ? 'filter blur-sm select-none opacity-50' : ''}`}>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500">Nom complet</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.fullName')}</p>
                                     <p className="text-xl font-bold text-gray-900">{profile.prenom} {profile.nom}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500">Email</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.email')}</p>
                                     <p className="text-lg text-gray-900">{profile.email}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500">Téléphone</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.phone')}</p>
                                     <p className="text-lg text-gray-900">{profile.telephone}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-gray-500">Ville</p>
-                                    <p className="text-lg text-gray-900">{profile.ville || 'Non renseignée'}</p>
+                                    <p className="text-sm font-medium text-gray-500">{t('agency.buyerProfile.city')}</p>
+                                    <p className="text-lg text-gray-900">{profile.ville || t('agency.buyerProfile.cityMissing')}</p>
                                 </div>
                             </div>
 
@@ -472,9 +465,9 @@ function BuyerProfileContent() {
                             {!unlocked && (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10">
                                     <Lock className="h-12 w-12 text-gray-800 mb-4" />
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Contact Verrouillé</h3>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">{t('agency.buyerProfile.locked')}</h3>
                                     <p className="text-gray-600 mb-6 max-w-xs">
-                                        Débloquez les coordonnées complètes de cet acquéreur pour entrer en contact direct.
+                                        {t('agency.buyerProfile.lockedDesc')}
                                     </p>
                                     <Button
                                         size="lg"
@@ -482,11 +475,11 @@ function BuyerProfileContent() {
                                         onClick={handleUnlock}
                                         disabled={unlocking}
                                     >
-                                        {unlocking ? 'Traitement...' : `Débloquer pour ${price} €`}
+                                        {unlocking ? t('agency.buyerProfile.processing') : t('agency.buyerProfile.unlockFor', { price })}
                                         {!unlocking && <Unlock className="ml-2 h-4 w-4" />}
                                     </Button>
                                     <p className="text-xs text-gray-400 mt-3">
-                                        Paiement unique sécurisé. Accès illimité après déblocage.
+                                        {t('agency.buyerProfile.oneTimePayment')}
                                     </p>
                                 </div>
                             )}
@@ -494,7 +487,7 @@ function BuyerProfileContent() {
                         {unlocked && (
                             <CardFooter className="bg-emerald-50 p-4 flex items-center justify-center text-emerald-700 font-medium">
                                 <CheckCircle2 className="h-5 w-5 mr-2" />
-                                Vous avez accès à ce contact
+                                {t('agency.buyerProfile.hasAccess')}
                             </CardFooter>
                         )}
                     </Card>

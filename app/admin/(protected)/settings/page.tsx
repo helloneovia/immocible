@@ -46,7 +46,7 @@ export default function AdminSettingsPage() {
             if (res.ok) {
                 const data = await res.json()
                 // Nouvelles définitions (ex. informations légales) : synchronisées automatiquement.
-                if (Array.isArray(data) && data.some((s: SystemSetting) => s.key === 'legal_company_name')) {
+                if (Array.isArray(data) && ['legal_company_name', 'text_home_hero_title_1_en'].every((key) => data.some((s: SystemSetting) => s.key === key))) {
                     setSettings(data)
                 } else {
                     await initSettings()

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
+import { getT } from '@/lib/i18n/server'
 
 type AuthOk = { user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>; error: null }
 type AuthErr = { user: null; error: NextResponse }
@@ -12,7 +13,7 @@ type AuthErr = { user: null; error: NextResponse }
 export async function requireAuth(): Promise<AuthOk | AuthErr> {
   const user = await getCurrentUser()
   if (!user) {
-    return { user: null, error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { user: null, error: NextResponse.json({ error: getT()('api.common.notAuthenticated') }, { status: 401 }) }
   }
   return { user, error: null }
 }
@@ -30,7 +31,7 @@ export async function requireAdmin(): Promise<AuthOk | AuthErr> {
 export async function requireAgence(): Promise<AuthOk | AuthErr> {
   const user = await getCurrentUser()
   if (!user || user.role !== 'agence') {
-    return { user: null, error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { user: null, error: NextResponse.json({ error: getT()('api.common.forbidden') }, { status: 403 }) }
   }
   return { user, error: null }
 }

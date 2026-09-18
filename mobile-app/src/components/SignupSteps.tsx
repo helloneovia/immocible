@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { CheckCircle2 } from 'lucide-react-native'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors, fonts, radius } from '@/theme'
 
@@ -20,7 +21,7 @@ export function useEmailVerification(email: string) {
     setInfo(null)
     try {
       await api('/api/auth/verify-email/send', { method: 'POST', body: { email: normalized } })
-      if (resend) setInfo('Un nouveau code vient de vous être envoyé.')
+      if (resend) setInfo(t('auth.signup.codeResent'))
       return true
     } catch (err) {
       setError(errorMessage(err))
@@ -65,12 +66,12 @@ export function useStepBack(step: number, setStep: (step: number) => void) {
 
 export function VerifiedEmail({ email }: { email: string }) {
   return (
-    <View style={styles.verified} accessibilityLabel={`E-mail vérifié : ${email}`}>
+    <View style={styles.verified} accessibilityLabel={t('auth.signup.verifiedEmail', { email })}>
       <CheckCircle2 size={18} color={colors.success} />
       <Text numberOfLines={1} style={styles.verifiedText}>
         {email.trim().toLowerCase()}
       </Text>
-      <Text style={styles.verifiedTag}>Vérifié</Text>
+      <Text style={styles.verifiedTag}>{t('auth.signup.verified')}</Text>
     </View>
   )
 }

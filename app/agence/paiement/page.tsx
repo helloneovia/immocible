@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Loader2, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Navbar } from '@/components/layout/Navbar'
+import { useI18n } from '@/lib/i18n/client'
 
 // We will fetch settings in useEffect or just use NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 let stripePromise: Promise<any> | null = null;
@@ -20,6 +21,7 @@ const initStripe = (key: string) => {
 export default function PaiementPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
+    const { t } = useI18n()
     const clientSecret = searchParams.get('client_secret')
     const [stripeKey, setStripeKey] = useState('')
     const [loading, setLoading] = useState(true)
@@ -43,9 +45,9 @@ export default function PaiementPage() {
             <div className="min-h-screen bg-slate-50">
                 <Navbar role="agence" />
                 <div className="flex flex-col items-center justify-center p-20 text-center">
-                    <h1 className="text-2xl font-bold text-slate-900 mb-4">Erreur de Paiement</h1>
-                    <p className="text-slate-500 mb-8">Informations de session manquantes. Veuillez réessayer.</p>
-                    <Button onClick={() => router.back()}>Retour</Button>
+                    <h1 className="text-2xl font-bold text-slate-900 mb-4">{t('agency.payment.errorTitle')}</h1>
+                    <p className="text-slate-500 mb-8">{t('agency.payment.missingSession')}</p>
+                    <Button onClick={() => router.back()}>{t('agency.payment.back')}</Button>
                 </div>
             </div>
         )
@@ -55,7 +57,7 @@ export default function PaiementPage() {
         return (
             <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-400">
                 <Loader2 className="w-10 h-10 animate-spin mb-4" />
-                <p>Initialisation sécurisée du paiement...</p>
+                <p>{t('agency.payment.initializing')}</p>
             </div>
         )
     }
@@ -67,10 +69,10 @@ export default function PaiementPage() {
                 
                 <div className="mb-8 flex items-center justify-between">
                     <Button variant="ghost" onClick={() => router.back()} className="text-slate-500 hover:text-slate-900">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Retour
+                        <ArrowLeft className="w-4 h-4 mr-2" /> {t('agency.payment.back')}
                     </Button>
                     <div className="flex items-center text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
-                        <ShieldCheck className="w-4 h-4 mr-1.5" /> Paiement Sécurisé
+                        <ShieldCheck className="w-4 h-4 mr-1.5" /> {t('agency.payment.secure')}
                     </div>
                 </div>
 

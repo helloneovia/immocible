@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core'
 import { Geolocation } from '@capacitor/geolocation'
 import { MapPin, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useI18n } from '@/lib/i18n/client'
 
 interface NativeLocationButtonProps {
   onLocationFound: (location: string) => void;
@@ -14,6 +15,7 @@ interface NativeLocationButtonProps {
 
 export function NativeLocationButton({ onLocationFound, className, variant = "secondary" }: NativeLocationButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useI18n();
 
   const fetchLocation = async () => {
     setIsLoading(true);
@@ -23,7 +25,7 @@ export function NativeLocationButton({ onLocationFound, className, variant = "se
         if (permissions.location !== 'granted') {
           const req = await Geolocation.requestPermissions();
           if (req.location !== 'granted') {
-            alert("Autorisation de localisation refusée.");
+            alert(t('common.location.denied'));
             setIsLoading(false);
             return;
           }
@@ -40,12 +42,12 @@ export function NativeLocationButton({ onLocationFound, className, variant = "se
         if (city) {
           onLocationFound(city);
         } else {
-          alert('Impossible de déterminer votre ville.');
+          alert(t('common.location.cityUnknown'));
         }
       }
     } catch (error) {
       console.error("Geolocation error:", error);
-      alert("Erreur lors de la récupération de la position.");
+      alert(t('common.location.error'));
     } finally {
       setIsLoading(false);
     }
@@ -58,14 +60,14 @@ export function NativeLocationButton({ onLocationFound, className, variant = "se
       className={className}
       onClick={fetchLocation}
       disabled={isLoading}
-      title="Utiliser ma position"
+      title={t('common.location.title')}
     >
       {isLoading ? (
         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
       ) : (
         <MapPin className="h-4 w-4 mr-2" />
       )}
-      Ma position
+      {t('common.location.button')}
     </Button>
   )
 }

@@ -5,15 +5,18 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { useI18n } from '@/lib/i18n/client'
 
 export function PublicNavbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { t } = useI18n()
 
   return (
     <nav className="absolute top-0 w-full z-50 bg-white/10 backdrop-blur-md border-b border-white/20 pt-[env(safe-area-inset-top)]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 items-center justify-between">
-          <Link href="/" className="group" aria-label="IMMOCIBLE — accueil">
+          <Link href="/" className="group" aria-label={t('common.brand.homeAria')}>
             <Logo
               className="text-white"
               iconClassName="h-16 w-16 transition-transform duration-300 group-hover:scale-105"
@@ -23,12 +26,13 @@ export function PublicNavbar() {
           
           {/* Desktop Navigation */}
           <div className="hidden sm:flex items-center space-x-4">
+            <LanguageSwitcher dark />
             <Link href="/acquereur/connexion">
-              <Button variant="ghost" className="font-medium text-white hover:bg-white/20 hover:text-white">Connexion</Button>
+              <Button variant="ghost" className="font-medium text-white hover:bg-white/20 hover:text-white">{t('common.nav.login')}</Button>
             </Link>
             <Link href="/acquereur/inscription">
               <Button className="bg-slate-900 text-white hover:bg-slate-800 shadow-md transition-all duration-300 border border-slate-700">
-                Commencer
+                {t('common.nav.getStarted')}
               </Button>
             </Link>
           </div>
@@ -48,14 +52,17 @@ export function PublicNavbar() {
           <div className="px-4 pt-4 pb-6 flex flex-col space-y-3">
             <Link href="/acquereur/connexion" onClick={() => setIsOpen(false)}>
               <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10 text-lg">
-                Connexion
+                {t('common.nav.login')}
               </Button>
             </Link>
             <Link href="/acquereur/inscription" onClick={() => setIsOpen(false)}>
               <Button className="w-full justify-start bg-white text-slate-900 hover:bg-slate-200 text-lg">
-                Commencer
+                {t('common.nav.getStarted')}
               </Button>
             </Link>
+            <div className="pt-2 px-4">
+              <LanguageSwitcher dark />
+            </div>
           </div>
         </div>
       )}

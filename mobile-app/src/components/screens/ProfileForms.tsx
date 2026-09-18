@@ -8,6 +8,7 @@ import { StickyFooter } from '@/components/ui/StickyFooter'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { useStatusBar } from '@/lib/hooks'
 import { largeTitleScrollProps, pushedScreenOptions, useTabScreenKeyboardOffset } from '@/lib/navigation'
@@ -34,7 +35,7 @@ function useProfileForm() {
           nomAgence: data.nomAgence || '',
         })
       })
-      .catch((err) => Alert.alert('Profil', errorMessage(err)))
+      .catch((err) => Alert.alert(t('profile.info.profileError'), errorMessage(err)))
   }, [])
 
   return { form, setForm, role, savedEmail }
@@ -56,8 +57,8 @@ export function ProfileInfoScreen() {
 
   const save = async () => {
     if (!form) return
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return Alert.alert('E-mail', 'Saisissez une adresse e-mail valide.')
-    if (emailChanged && !currentPassword) return Alert.alert('E-mail', 'Saisissez votre mot de passe actuel pour changer d’adresse e-mail.')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return Alert.alert(t('profile.info.email'), t('profile.info.invalidEmail'))
+    if (emailChanged && !currentPassword) return Alert.alert(t('profile.info.email'), t('profile.info.passwordForEmail'))
     setSaving(true)
     try {
       await api('/api/user/profile', {
@@ -67,7 +68,7 @@ export function ProfileInfoScreen() {
       await refresh()
       router.back()
     } catch (err) {
-      Alert.alert('Enregistrement impossible', errorMessage(err))
+      Alert.alert(t('profile.info.saveFailed'), errorMessage(err))
       setSaving(false)
     }
   }
@@ -77,13 +78,13 @@ export function ProfileInfoScreen() {
       <Stack.Screen
         options={{
           ...pushedScreenOptions,
-          title: role === 'agence' ? "Informations de l'agence" : 'Informations personnelles',
+          title: role === 'agence' ? t('profile.info.agencyTitle') : t('profile.info.personalTitle'),
           headerRight: () =>
             saving ? (
               <ActivityIndicator color={colors.navy} />
             ) : (
               <Pressable accessibilityRole="button" onPress={save} disabled={!form} hitSlop={10}>
-                <Text style={styles.headerAction}>Enregistrer</Text>
+                <Text style={styles.headerAction}>{t('profile.info.save')}</Text>
               </Pressable>
             ),
         }}
@@ -99,19 +100,19 @@ export function ProfileInfoScreen() {
         ) : (
           <>
             {role === 'agence' ? (
-              <TextField tone="surface" label="Nom de l'agence" icon={Building2} value={form.nomAgence} onChangeText={update('nomAgence')} placeholder="Agence du Centre" autoCorrect={false} />
+              <TextField tone="surface" label={t('profile.info.agencyName')} icon={Building2} value={form.nomAgence} onChangeText={update('nomAgence')} placeholder={t('profile.info.agencyPlaceholder')} autoCorrect={false} />
             ) : null}
             <View style={styles.row}>
               <View style={styles.flex}>
-                <TextField tone="surface" label="Prénom" icon={UserRound} value={form.prenom} onChangeText={update('prenom')} placeholder="Camille" autoComplete="given-name" />
+                <TextField tone="surface" label={t('profile.info.firstName')} icon={UserRound} value={form.prenom} onChangeText={update('prenom')} placeholder={t('profile.info.firstNamePlaceholder')} autoComplete="given-name" />
               </View>
               <View style={styles.flex}>
-                <TextField tone="surface" label="Nom" value={form.nom} onChangeText={update('nom')} placeholder="Martin" autoComplete="family-name" />
+                <TextField tone="surface" label={t('profile.info.lastName')} value={form.nom} onChangeText={update('nom')} placeholder={t('profile.info.lastNamePlaceholder')} autoComplete="family-name" />
               </View>
             </View>
             <TextField
               tone="surface"
-              label="E-mail"
+              label={t('profile.info.email')}
               icon={Mail}
               value={form.email}
               onChangeText={update('email')}
@@ -122,7 +123,7 @@ export function ProfileInfoScreen() {
             {emailChanged ? (
               <TextField
                 tone="surface"
-                label="Mot de passe actuel"
+                label={t('profile.info.currentPassword')}
                 icon={Lock}
                 secure
                 value={currentPassword}
@@ -133,17 +134,17 @@ export function ProfileInfoScreen() {
             ) : null}
             <TextField
               tone="surface"
-              label="Téléphone"
+              label={t('profile.info.phone')}
               icon={Phone}
               value={form.telephone}
               onChangeText={update('telephone')}
               keyboardType="phone-pad"
               autoComplete="tel"
-              placeholder="06 12 34 56 78"
+              placeholder={t('profile.info.phonePlaceholder')}
             />
             {role === 'acquereur' ? (
               <Text variant="footnote" color={colors.text3}>
-                Votre téléphone et votre e-mail ne sont visibles que par les agences qui ont débloqué votre dossier.
+                {t('profile.info.privacyNote')}
               </Text>
             ) : null}
           </>
@@ -165,29 +166,29 @@ export function ProfilePasswordScreen() {
 
   const save = async () => {
     if (!form) return
-    if (!currentPassword) return Alert.alert('Mot de passe', 'Saisissez votre mot de passe actuel.')
-    if (password.length < 8) return Alert.alert('Mot de passe', 'Choisissez un mot de passe d’au moins 8 caractères.')
-    if (password !== confirmPassword) return Alert.alert('Mot de passe', 'Les deux mots de passe ne correspondent pas.')
+    if (!currentPassword) return Alert.alert(t('profile.password.title'), t('profile.password.enterCurrent'))
+    if (password.length < 8) return Alert.alert(t('profile.password.title'), t('profile.password.tooShort'))
+    if (password !== confirmPassword) return Alert.alert(t('profile.password.title'), t('profile.password.mismatch'))
     setSaving(true)
     try {
       await api('/api/user/profile', { method: 'PUT', body: { ...form, password, currentPassword } })
-      Alert.alert('Mot de passe modifié', 'Utilisez-le lors de votre prochaine connexion.')
+      Alert.alert(t('profile.password.changed'), t('profile.password.changedMessage'))
       router.back()
     } catch (err) {
-      Alert.alert('Modification impossible', errorMessage(err))
+      Alert.alert(t('profile.password.changeFailed'), errorMessage(err))
       setSaving(false)
     }
   }
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={keyboardOffset}>
-      <Stack.Screen options={{ ...pushedScreenOptions, title: 'Mot de passe' }} />
+      <Stack.Screen options={{ ...pushedScreenOptions, title: t('profile.password.title') }} />
       {/* Écran poussé sous un grand titre (iOS) : le contenu ne doit pas passer sous l'en-tête. */}
       <ScrollView {...largeTitleScrollProps} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text variant="subhead">Choisissez un mot de passe d’au moins 8 caractères que vous n’utilisez pas ailleurs.</Text>
+        <Text variant="subhead">{t('profile.password.intro')}</Text>
         <TextField
           tone="surface"
-          label="Mot de passe actuel"
+          label={t('profile.password.current')}
           icon={Lock}
           secure
           value={currentPassword}
@@ -198,7 +199,7 @@ export function ProfilePasswordScreen() {
         />
         <TextField
           tone="surface"
-          label="Nouveau mot de passe"
+          label={t('profile.password.new')}
           icon={Lock}
           secure
           value={password}
@@ -208,7 +209,7 @@ export function ProfilePasswordScreen() {
         />
         <TextField
           tone="surface"
-          label="Confirmer"
+          label={t('profile.password.confirm')}
           icon={Lock}
           secure
           value={confirmPassword}
@@ -219,7 +220,7 @@ export function ProfilePasswordScreen() {
         />
       </ScrollView>
       <StickyFooter>
-        <Button title="Modifier le mot de passe" size="lg" loading={saving} disabled={!form || !password || !currentPassword} onPress={save} />
+        <Button title={t('profile.password.submit')} size="lg" loading={saving} disabled={!form || !password || !currentPassword} onPress={save} />
       </StickyFooter>
     </KeyboardAvoidingView>
   )

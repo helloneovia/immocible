@@ -39,6 +39,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { StickyFooter } from '@/components/ui/StickyFooter'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
+import { t, type TKey } from '@/i18n'
 import { api } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
@@ -51,6 +52,7 @@ import {
   NOMBRE_PIECES,
   SITUATION_FAMILIALE,
   SITUATION_PRO,
+  TYPES_BIEN,
 } from '@/lib/labels'
 import {
   flagProjectSaved,
@@ -65,15 +67,15 @@ import {
 import type { QuestionnaireData } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
 
-const TYPE_OPTIONS: { value: string; label: string; icon: LucideIcon }[] = [
-  { value: 'appartement', label: 'Appartement', icon: Building2 },
-  { value: 'maison', label: 'Maison', icon: Home },
-  { value: 'terrain', label: 'Terrain', icon: Trees },
-  { value: 'studio', label: 'Studio', icon: BedSingle },
-  { value: 'loft', label: 'Loft', icon: Warehouse },
-  { value: 'duplex', label: 'Duplex', icon: Layers },
-  { value: 'penthouse', label: 'Penthouse', icon: Sparkles },
-]
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  appartement: Building2,
+  maison: Home,
+  terrain: Trees,
+  studio: BedSingle,
+  loft: Warehouse,
+  duplex: Layers,
+  penthouse: Sparkles,
+}
 
 const FINANCEMENT_ICONS: Record<string, LucideIcon> = {
   'pret-bancaire': Landmark,
@@ -83,28 +85,25 @@ const FINANCEMENT_ICONS: Record<string, LucideIcon> = {
   autre: Ellipsis,
 }
 
-const EQUIPEMENTS: { key: 'balcon' | 'terrasse' | 'jardin' | 'parking' | 'cave' | 'ascenseur'; label: string; icon: LucideIcon }[] = [
-  { key: 'balcon', label: 'Balcon', icon: Fence },
-  { key: 'terrasse', label: 'Terrasse', icon: Sun },
-  { key: 'jardin', label: 'Jardin', icon: Flower2 },
-  { key: 'parking', label: 'Parking', icon: Car },
-  { key: 'cave', label: 'Cave', icon: Wine },
-  { key: 'ascenseur', label: 'Ascenseur', icon: ArrowUpDown },
+type EquipementKey = 'balcon' | 'terrasse' | 'jardin' | 'parking' | 'cave' | 'ascenseur'
+
+const EQUIPEMENTS: { key: EquipementKey; icon: LucideIcon }[] = [
+  { key: 'balcon', icon: Fence },
+  { key: 'terrasse', icon: Sun },
+  { key: 'jardin', icon: Flower2 },
+  { key: 'parking', icon: Car },
+  { key: 'cave', icon: Wine },
+  { key: 'ascenseur', icon: ArrowUpDown },
 ]
 
-const QUESTIONS: Record<StepKey, { title: string; help?: string }> = {
-  type: { title: 'Quel type de bien recherchez-vous ?', help: 'Plusieurs choix possibles.' },
-  pieces: { title: 'Combien de pièces, quelle surface ?', help: 'Plusieurs choix possibles pour les pièces.' },
-  budget: { title: 'Quel est votre budget ?', help: 'Frais de notaire compris.' },
-  financement: { title: 'Comment financez-vous l’achat ?' },
-  lieu: { title: 'Où cherchez-vous ?', help: 'Ajoutez des villes ou dessinez une zone sur la carte.' },
-  criteres: { title: 'Qu’est-ce qui compte pour vous ?', help: 'Sélectionnez les équipements indispensables.' },
-  situation: {
-    title: 'Votre situation',
-    help: 'Elle aide les agences à qualifier votre projet. Vos coordonnées restent masquées.',
-  },
-  revenus: { title: 'Revenus et patrimoine', help: 'Facultatif, mais apprécié des agences pour les biens rares.' },
-  calendrier: { title: 'Quand souhaitez-vous acheter ?' },
+/** Question affichée pour chaque étape (traduite au rendu). */
+const WITHOUT_HELP: StepKey[] = ['financement', 'calendrier']
+
+function question(step: StepKey): { title: string; help?: string } {
+  return {
+    title: t(`questionnaire.steps.${step}.title`),
+    help: WITHOUT_HELP.includes(step) ? undefined : t(`questionnaire.steps.${step}.help` as TKey),
+  }
 }
 
 const digits = (value: string) => value.replace(/\D/g, '')
@@ -180,15 +179,15 @@ export default function QuestionnaireScreen() {
       if (!section) flagProjectSaved()
       router.back()
     } catch {
-      Alert.alert('Enregistrement impossible', 'Vérifiez votre connexion puis réessayez.')
+      Alert.alert(t('questionnaire.saveErrorTitle'), t('questionnaire.saveErrorMessage'))
       setSaving(false)
     }
   }
 
   const close = () => {
-    Alert.alert('Quitter sans enregistrer ?', 'Les réponses de cette session seront perdues.', [
-      { text: 'Continuer', style: 'cancel' },
-      { text: 'Quitter', style: 'destructive', onPress: () => router.back() },
+    Alert.alert(t('questionnaire.quitTitle'), t('questionnaire.quitMessage'), [
+      { text: t('questionnaire.continue'), style: 'cancel' },
+      { text: t('questionnaire.quit'), style: 'destructive', onPress: () => router.back() },
     ])
   }
 
@@ -197,14 +196,14 @@ export default function QuestionnaireScreen() {
       case 'type':
         return (
           <Grid
-            items={TYPE_OPTIONS}
+            items={TYPES_BIEN}
             render={(option) => (
               <OptionCard
                 key={option.value}
                 layout="tile"
                 multiple
                 label={option.label}
-                icon={option.icon}
+                icon={TYPE_ICONS[option.value]}
                 selected={data.typeBien.includes(option.value)}
                 onPress={() => toggle('typeBien', option.value)}
               />
@@ -214,12 +213,12 @@ export default function QuestionnaireScreen() {
       case 'pieces':
         return (
           <>
-            <Group label="Nombre de pièces">
+            <Group label={t('questionnaire.roomsLabel')}>
               {NOMBRE_PIECES.map((pieces) => (
                 <Chip
                   key={pieces}
                   large
-                  label={pieces === '1' ? '1 pièce' : `${pieces} pièces`}
+                  label={pieces === '1' ? t('questionnaire.oneRoom') : t('questionnaire.rooms', { count: pieces })}
                   selected={data.nombrePieces.includes(pieces)}
                   onPress={() => toggle('nombrePieces', pieces)}
                 />
@@ -229,7 +228,7 @@ export default function QuestionnaireScreen() {
               <View style={styles.flex}>
                 <TextField
                   tone="surface"
-                  label="Surface min. (m²)"
+                  label={t('questionnaire.surfaceMin')}
                   value={data.surfaceMin}
                   onChangeText={(v) => set('surfaceMin', digits(v))}
                   placeholder="50"
@@ -239,7 +238,7 @@ export default function QuestionnaireScreen() {
               <View style={styles.flex}>
                 <TextField
                   tone="surface"
-                  label="Surface max. (m²)"
+                  label={t('questionnaire.surfaceMax')}
                   value={data.surfaceMax}
                   onChangeText={(v) => set('surfaceMax', digits(v))}
                   placeholder="120"
@@ -257,18 +256,21 @@ export default function QuestionnaireScreen() {
           <>
             <View style={styles.budgetCard}>
               <Text style={styles.budgetValue} accessibilityLiveRegion="polite">
-                {formatNumber(low)} – {formatNumber(high)}
-                {high >= BUDGET_STEPS[BUDGET_STEPS.length - 1] ? '+' : ''} €
+                {t('questionnaire.budgetValue', {
+                  low: formatNumber(low),
+                  high: formatNumber(high),
+                  plus: high >= BUDGET_STEPS[BUDGET_STEPS.length - 1] ? '+' : '',
+                })}
               </Text>
               <Text variant="footnote" color={defined ? colors.text2 : colors.goldDeep}>
-                {defined ? 'Faites glisser pour ajuster' : 'Faites glisser pour définir votre fourchette'}
+                {defined ? t('questionnaire.dragToAdjust') : t('questionnaire.dragToDefine')}
               </Text>
               <RangeSlider
                 steps={BUDGET_STEPS}
                 low={low}
                 high={high}
-                accessibilityLabel="Fourchette de budget"
-                formatValue={(v) => `${formatNumber(v)} euros`}
+                accessibilityLabel={t('questionnaire.budgetRange')}
+                formatValue={(v) => t('questionnaire.euros', { value: formatNumber(v) })}
                 onChange={(l, h) => setData((prev) => ({ ...prev, budgetMin: String(l), budgetMax: String(h) }))}
               />
             </View>
@@ -276,7 +278,7 @@ export default function QuestionnaireScreen() {
               <View style={styles.flex}>
                 <TextField
                   tone="surface"
-                  label="Minimum (€)"
+                  label={t('questionnaire.minimum')}
                   value={data.budgetMin}
                   onChangeText={(v) => set('budgetMin', digits(v))}
                   placeholder="200000"
@@ -286,7 +288,7 @@ export default function QuestionnaireScreen() {
               <View style={styles.flex}>
                 <TextField
                   tone="surface"
-                  label="Maximum (€)"
+                  label={t('questionnaire.maximum')}
                   value={data.budgetMax}
                   onChangeText={(v) => set('budgetMax', digits(v))}
                   placeholder="500000"
@@ -296,7 +298,7 @@ export default function QuestionnaireScreen() {
             </View>
             <TextField
               tone="surface"
-              label="Apport personnel (€)"
+              label={t('questionnaire.deposit')}
               value={data.apport}
               onChangeText={(v) => set('apport', digits(v))}
               placeholder="80000"
@@ -320,7 +322,7 @@ export default function QuestionnaireScreen() {
               ))}
             </View>
             {data.financement && data.financement !== 'cash' ? (
-              <Group label="Durée du prêt souhaitée">
+              <Group label={t('questionnaire.loanDuration')}>
                 {DUREE_PRET.map((option) => (
                   <Chip
                     key={option.value}
@@ -339,7 +341,7 @@ export default function QuestionnaireScreen() {
           <>
             <View style={styles.rowCenter}>
               <Text variant="label" style={styles.flex}>
-                Villes recherchées
+                {t('questionnaire.cities')}
               </Text>
               <LocationButton onCity={(city) => !data.localisation.includes(city) && set('localisation', [...data.localisation, city])} />
             </View>
@@ -351,21 +353,21 @@ export default function QuestionnaireScreen() {
               </View>
             ) : null}
             <LocationAutocomplete
-              placeholder="Rechercher une ville"
+              placeholder={t('questionnaire.searchCity')}
               onSelect={(city) => !data.localisation.includes(city) && set('localisation', [...data.localisation, city])}
             />
             {data.drawnArea ? (
               <View style={{ gap: 10 }}>
                 <MapZonePreview value={data.drawnArea} height={180} onPress={() => setMapOpen(true)} />
                 <View style={styles.row}>
-                  <Button title="Modifier la zone" icon={MapIcon} variant="secondary" size="sm" onPress={() => setMapOpen(true)} style={styles.flex} />
-                  <Button title="Supprimer" icon={Trash2} variant="danger" size="sm" onPress={() => set('drawnArea', null)} style={styles.flex} />
+                  <Button title={t('questionnaire.editArea')} icon={MapIcon} variant="secondary" size="sm" onPress={() => setMapOpen(true)} style={styles.flex} />
+                  <Button title={t('questionnaire.deleteArea')} icon={Trash2} variant="danger" size="sm" onPress={() => set('drawnArea', null)} style={styles.flex} />
                 </View>
               </View>
             ) : (
               <OptionCard
-                label="Dessiner une zone précise"
-                description="Quartier, rue, bord de mer… sur la carte"
+                label={t('questionnaire.drawArea')}
+                description={t('questionnaire.drawAreaDetail')}
                 icon={MapIcon}
                 selected={false}
                 onPress={() => setMapOpen(true)}
@@ -391,7 +393,7 @@ export default function QuestionnaireScreen() {
                   key={option.key}
                   layout="tile"
                   multiple
-                  label={option.label}
+                  label={t(`labels.extras.${option.key}`)}
                   icon={option.icon}
                   selected={data[option.key]}
                   onPress={() => set(option.key, !data[option.key])}
@@ -400,10 +402,10 @@ export default function QuestionnaireScreen() {
             />
             <TextField
               tone="surface"
-              label="Autres précisions"
+              label={t('questionnaire.otherDetails')}
               value={data.commentaires}
               onChangeText={(v) => set('commentaires', v)}
-              placeholder="Rez-de-jardin, pas de vis-à-vis, exposition sud…"
+              placeholder={t('questionnaire.otherDetailsPlaceholder')}
               multiline
             />
           </>
@@ -411,17 +413,17 @@ export default function QuestionnaireScreen() {
       case 'situation':
         return (
           <>
-            <Group label="Situation familiale">
+            <Group label={t('questionnaire.family')}>
               {SITUATION_FAMILIALE.map((o) => (
                 <Chip key={o.value} large label={o.label} selected={data.situationFamiliale === o.value} onPress={() => set('situationFamiliale', o.value)} />
               ))}
             </Group>
-            <Group label="Enfants">
+            <Group label={t('questionnaire.children')}>
               {NOMBRE_ENFANTS.map((o) => (
                 <Chip key={o.value} large label={o.label} selected={data.nombreEnfants === o.value} onPress={() => set('nombreEnfants', o.value)} />
               ))}
             </Group>
-            <Group label="Situation professionnelle">
+            <Group label={t('questionnaire.professional')}>
               {SITUATION_PRO.map((o) => (
                 <Chip key={o.value} large label={o.label} selected={data.situationProfessionnelle === o.value} onPress={() => set('situationProfessionnelle', o.value)} />
               ))}
@@ -433,7 +435,7 @@ export default function QuestionnaireScreen() {
           <>
             <TextField
               tone="surface"
-              label="Revenus mensuels nets du foyer (€)"
+              label={t('questionnaire.income')}
               value={data.salaire}
               onChangeText={(v) => set('salaire', digits(v))}
               placeholder="4500"
@@ -441,7 +443,7 @@ export default function QuestionnaireScreen() {
             />
             <TextField
               tone="surface"
-              label="Patrimoine total (€)"
+              label={t('questionnaire.assets')}
               value={data.patrimoine}
               onChangeText={(v) => set('patrimoine', digits(v))}
               placeholder="150000"
@@ -463,7 +465,7 @@ export default function QuestionnaireScreen() {
               ))}
             </View>
             <Text variant="label" style={{ marginTop: 8 }}>
-              Flexibilité sur les critères
+              {t('questionnaire.flexibility')}
             </Text>
             <View style={{ gap: 10 }}>
               {FLEXIBILITE.map((option) => {
@@ -484,12 +486,12 @@ export default function QuestionnaireScreen() {
     }
   }
 
-  const question = QUESTIONS[step]
+  const current = question(step)
 
   return (
     <View style={styles.root}>
       <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Fermer" onPress={close} hitSlop={8} style={styles.iconButton}>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('questionnaire.close')} onPress={close} hitSlop={8} style={styles.iconButton}>
           <X size={20} color={colors.ink} />
         </Pressable>
         <View style={styles.segments} accessibilityRole="progressbar" accessibilityValue={{ min: 1, max: steps.length, now: index + 1 }}>
@@ -499,7 +501,7 @@ export default function QuestionnaireScreen() {
         </View>
         {!isLast ? (
           <Pressable accessibilityRole="button" onPress={() => go(index + 1)} hitSlop={8}>
-            <Text style={styles.skip}>Passer</Text>
+            <Text style={styles.skip}>{t('questionnaire.skip')}</Text>
           </Pressable>
         ) : (
           <View style={{ width: 46 }} />
@@ -523,12 +525,12 @@ export default function QuestionnaireScreen() {
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               <Animated.View entering={FadeIn.delay(80)} style={{ gap: 8 }}>
                 <Text variant="footnote" style={styles.counter}>
-                  {singleSection ? 'Modifier' : `Question ${index + 1} sur ${steps.length}`}
+                  {singleSection ? t('questionnaire.edit') : t('questionnaire.counter', { current: index + 1, total: steps.length })}
                 </Text>
                 <Text variant="title1" accessibilityRole="header">
-                  {question.title}
+                  {current.title}
                 </Text>
-                {question.help ? <Text variant="subhead">{question.help}</Text> : null}
+                {current.help ? <Text variant="subhead">{current.help}</Text> : null}
               </Animated.View>
               {renderStep()}
             </ScrollView>
@@ -538,12 +540,12 @@ export default function QuestionnaireScreen() {
         <StickyFooter>
           <View style={styles.footerRow}>
             {index > 0 ? (
-              <Pressable accessibilityRole="button" accessibilityLabel="Question précédente" onPress={() => go(index - 1)} style={styles.back}>
+              <Pressable accessibilityRole="button" accessibilityLabel={t('questionnaire.previous')} onPress={() => go(index - 1)} style={styles.back}>
                 <ArrowLeft size={22} color={colors.ink} />
               </Pressable>
             ) : null}
             <Button
-              title={isLast ? (singleSection ? 'Enregistrer' : 'Enregistrer mon projet') : 'Continuer'}
+              title={isLast ? (singleSection ? t('questionnaire.save') : t('questionnaire.saveProject')) : t('questionnaire.continue')}
               size="lg"
               loading={saving}
               disabled={loading}

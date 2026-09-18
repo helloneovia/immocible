@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native'
 import { Check, X } from 'lucide-react-native'
 import * as Haptics from 'expo-haptics'
 import { Text } from './Text'
+import { t } from '@/i18n'
 import { colors, fonts, radius } from '@/theme'
 
 interface TileProps {
@@ -62,7 +63,7 @@ export function Tag({ label, onRemove, tone = 'neutral' }: { label: string; onRe
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`Retirer ${label}`}
+      accessibilityLabel={t('common.actions.remove', { label })}
       onPress={onRemove}
       hitSlop={6}
       style={[styles.tag, { backgroundColor: palette.bg }]}

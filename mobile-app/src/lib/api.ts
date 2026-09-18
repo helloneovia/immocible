@@ -6,6 +6,8 @@
  * OkHttp + CookieManager sur Android) conserve ce cookie entre les lancements :
  * il suffit d'envoyer `credentials: 'include'`.
  */
+import { getLocale, t } from '@/i18n'
+
 export const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'https://immocible.com').replace(/\/$/, '')
 
 export class ApiError extends Error {
@@ -52,6 +54,8 @@ export async function api<T = any>(path: string, { method = 'GET', body, signal 
       credentials: 'include',
       headers: {
         Accept: 'application/json',
+        // Langue choisie dans l'app : le serveur renvoie ses messages dans cette langue.
+        'X-Immocible-Lang': getLocale(),
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -61,8 +65,8 @@ export async function api<T = any>(path: string, { method = 'GET', body, signal 
     if (error?.name === 'AbortError' && !timedOut) throw error
     throw new ApiError(
       timedOut
-        ? 'Le serveur met trop de temps à répondre. Réessayez dans un instant.'
-        : 'Impossible de joindre le serveur. Vérifiez votre connexion.',
+        ? t('common.errors.timeout')
+        : t('common.errors.network'),
       0,
       null,
     )
@@ -84,15 +88,15 @@ export async function api<T = any>(path: string, { method = 'GET', body, signal 
     }
     const message =
       data?.error || data?.message || (response.status === 429
-        ? 'Trop de tentatives. Veuillez réessayer plus tard.'
-        : 'Une erreur est survenue.')
+        ? t('common.errors.tooManyAttempts')
+        : t('common.errors.generic'))
     throw new ApiError(message, response.status, data)
   }
 
   return data as T
 }
 
-export function errorMessage(error: unknown, fallback = 'Une erreur est survenue.') {
+export function errorMessage(error: unknown, fallback = t('common.errors.generic')) {
   if (error instanceof Error && error.message) return error.message
   return fallback
 }

@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET(request: NextRequest) {
+  const t = getT()
   try {
     const user = await getCurrentUser()
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: t('api.common.notAuthenticated') },
         { status: 401 }
       )
     }
 
     if (user.role !== 'agence') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: t('api.common.forbidden') },
         { status: 403 }
       )
     }
@@ -34,26 +36,27 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Get biens error:', error)
     return NextResponse.json(
-      { error: 'Failed to get biens' },
+      { error: t('api.agency.biensFailed') },
       { status: 500 }
     )
   }
 }
 
 export async function POST(request: NextRequest) {
+  const t = getT()
   try {
     const user = await getCurrentUser()
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: t('api.common.notAuthenticated') },
         { status: 401 }
       )
     }
 
     if (user.role !== 'agence') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: t('api.common.forbidden') },
         { status: 403 }
       )
     }
@@ -78,7 +81,7 @@ export async function POST(request: NextRequest) {
     // Validation
     if (!titre || !typeBien || !prix || !surface || !adresse || !ville || !codePostal) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: t('api.agency.missingFields') },
         { status: 400 }
       )
     }
@@ -107,7 +110,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Create bien error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to create bien' },
+      { error: error.message || t('api.agency.createBienFailed') },
       { status: 500 }
     )
   }

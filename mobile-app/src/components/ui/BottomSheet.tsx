@@ -12,6 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { X } from 'lucide-react-native'
 import { Text } from './Text'
+import { t } from '@/i18n'
 import { colors, radius, spacing } from '@/theme'
 
 interface Props {
@@ -38,7 +39,7 @@ export function BottomSheet({ visible, onClose, title, children, footer }: Props
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       {/* Android edge-to-edge : la fenêtre n'est plus redimensionnée par le clavier, on remonte la feuille nous-mêmes. */}
       <KeyboardAvoidingView style={styles.flex} behavior="padding">
-        <Pressable accessibilityLabel="Fermer" style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={onClose} />
+        <Pressable accessibilityLabel={t('common.actions.close')} style={[StyleSheet.absoluteFill, styles.backdrop]} onPress={onClose} />
         <View style={styles.container} pointerEvents="box-none">
           <Animated.View
             style={[
@@ -52,7 +53,7 @@ export function BottomSheet({ visible, onClose, title, children, footer }: Props
                 <Text variant="heading" style={styles.flex}>
                   {title}
                 </Text>
-                <Pressable accessibilityRole="button" accessibilityLabel="Fermer" hitSlop={12} onPress={onClose} style={styles.close}>
+                <Pressable accessibilityRole="button" accessibilityLabel={t('common.actions.close')} hitSlop={12} onPress={onClose} style={styles.close}>
                   <X size={20} color={colors.slate600} />
                 </Pressable>
               </View>

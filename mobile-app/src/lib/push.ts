@@ -1,6 +1,7 @@
 import { Platform } from 'react-native'
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
+import { t } from '@/i18n'
 import { api } from '@/lib/api'
 
 Notifications.setNotificationHandler({
@@ -25,7 +26,7 @@ export async function registerPushToken(userId: string) {
   try {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
-        name: 'Messages',
+        name: t('common.push.channelMessages'),
         importance: Notifications.AndroidImportance.HIGH,
       })
     }

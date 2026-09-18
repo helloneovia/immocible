@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { hasActiveSubscription, subscriptionRequiredResponse } from '@/lib/subscription'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+    const t = getT()
     try {
         const currentUser = await getCurrentUser()
         if (!currentUser || currentUser.role !== 'agence') {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
         // Seules les agences abonnées (paiement validé, période en cours) accèdent aux acquéreurs.
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
 
             if (activeContactsCount >= LIMIT) {
                 return NextResponse.json({
-                    error: 'Monthly contact limit reached. Upgrade to annual plan for unlimited chats.',
+                    error: t('api.chat.monthlyLimitReached'),
                     limitReached: true
                 }, { status: 403 })
             }
@@ -80,6 +82,6 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('[Chat Initiate] Error:', error)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        return NextResponse.json({ error: t('api.common.serverError') }, { status: 500 })
     }
 }

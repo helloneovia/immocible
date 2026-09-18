@@ -1,0 +1,98 @@
+/** Textes français — espace de noms « api ». Référence : l'anglais doit avoir exactement les mêmes clés. */
+const api = {
+    common: {
+        notAuthenticated: 'Non authentifié',
+        unauthorized: 'Non autorisé',
+        forbidden: 'Accès refusé',
+        serverError: 'Erreur interne du serveur',
+        tooManyAttempts: 'Trop de tentatives. Veuillez réessayer plus tard.',
+    },
+    auth: {
+        emailPasswordRequired: 'Email et mot de passe requis',
+        loginFailed: 'Authentification échouée',
+        invalidCredentials: 'Email ou mot de passe incorrect',
+        wrongPortal: 'Ce compte est un compte {actual}, pas un compte {expected}. Veuillez vous connecter sur le bon portail.',
+        roles: {
+            acquereur: 'acquéreur',
+            agence: 'agence',
+            admin: 'admin',
+        },
+        emailAlreadyExists: 'Un utilisateur avec cet email existe déjà',
+        getUserFailed: "Impossible de récupérer l'utilisateur",
+        register: {
+            requiredFields: 'Email, mot de passe et rôle requis',
+            passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères',
+            invalidRole: 'Rôle invalide',
+            failed: "Échec de l'inscription",
+        },
+        forgotPassword: {
+            emailRequired: "L'email est requis",
+            failed: 'Échec du traitement de la demande',
+        },
+        resetPassword: {
+            tokenPasswordRequired: 'Token et mot de passe requis',
+            passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères',
+            invalidLink: 'Lien invalide ou expiré',
+            linkExpired: 'Lien expiré',
+            failed: 'Erreur lors de la réinitialisation',
+        },
+        verifyEmail: {
+            invalidEmail: 'Email invalide',
+            emailInUse: 'Cet email est déjà utilisé.',
+            sendFailed: "Erreur lors de l'envoi du code.",
+            invalidData: 'Données invalides',
+            invalidCode: 'Code invalide ou expiré',
+            checkFailed: 'Erreur lors de la vérification.',
+        },
+    },
+    profile: {
+        userNotFound: 'Utilisateur introuvable',
+        emailRequired: 'Email est requis',
+        wrongCurrentPassword: 'Mot de passe actuel incorrect.',
+        invalidEmail: 'Adresse e-mail invalide.',
+        emailInUse: 'Cet email est déjà utilisé.',
+        passwordTooShort: 'Le mot de passe doit contenir au moins 8 caractères',
+    },
+    subscription: {
+        required: 'Un abonnement actif est nécessaire pour consulter et contacter les acquéreurs.',
+    },
+    chat: {
+        conversationNotFound: 'Conversation introuvable',
+        subscriptionInactive: 'Abonnement expiré ou inactif.',
+        monthlyLimitReached: 'Limite mensuelle de contacts atteinte. Passez à la formule annuelle pour des échanges illimités.',
+    },
+    buyer: {
+        matchesFailed: 'Impossible de récupérer les correspondances',
+    },
+    agency: {
+        buyerNotFound: 'Acquéreur introuvable',
+        biensFailed: 'Impossible de récupérer les biens',
+        missingFields: 'Champs obligatoires manquants',
+        createBienFailed: 'Impossible de créer le bien',
+    },
+    payment: {
+        emailPlanRequired: 'Email et formule requis',
+        invalidPlan: 'Formule invalide',
+        invalidCoupon: 'Code promo invalide',
+        couponLimitReached: "Ce code promo a atteint sa limite d'utilisation",
+        couponExpired: 'Ce code promo a expiré',
+        couponPlanOnly: 'Ce code est valide uniquement pour le plan {plan}',
+        planMonthly: 'Mensuel',
+        planYearly: 'Annuel',
+        loginToActivate: 'Veuillez vous connecter pour activer cette offre.',
+        offerActivated: 'Offre activée : {days} jours offerts !',
+        discountFailed: "Erreur lors de l'application de la réduction",
+        initiationFailed: "Échec de l'initialisation du paiement",
+        unlockedFree: 'Contact débloqué gratuitement',
+        notCompleted: 'Paiement non finalisé',
+        verificationFailed: 'Échec de la vérification du paiement',
+        productMonthly: 'Formule Mensuelle (Agence)',
+        productYearly: 'Formule Annuelle (Agence)',
+        productDescription: "Accès IMMOCIBLE pour l'agence {agency}",
+        unlockProductName: 'Déblocage Contact: {name}',
+        unlockProductDescription: 'Accès aux coordonnées complètes (Réf: {ref})',
+        buyerFallback: 'Acquéreur',
+    },
+}
+
+export default api

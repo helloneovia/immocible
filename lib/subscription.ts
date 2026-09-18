@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getT } from '@/lib/i18n/server'
 
 type SubscriptionFields = {
     subscriptionStatus?: string | null
@@ -18,7 +19,7 @@ export function hasActiveSubscription(profile: SubscriptionFields) {
 export function subscriptionRequiredResponse() {
     return NextResponse.json(
         {
-            error: 'Un abonnement actif est nécessaire pour consulter et contacter les acquéreurs.',
+            error: getT()('api.subscription.required'),
             subscriptionRequired: true,
         },
         { status: 403 },

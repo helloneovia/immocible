@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Pressable, StyleSheet, TextInput, View } from 'react-native'
 import { Text } from './Text'
+import { t } from '@/i18n'
 import { colors, fonts, radius } from '@/theme'
 
 /** Code à 6 chiffres affiché en cases, saisi via un champ natif invisible (autofill SMS/e-mail compris). */
@@ -51,7 +52,7 @@ export function OtpInput({
         maxLength={length}
         autoFocus={autoFocus}
         caretHidden
-        accessibilityLabel="Code de vérification à 6 chiffres"
+        accessibilityLabel={t('common.otpLabel')}
         style={styles.hidden}
       />
     </Pressable>

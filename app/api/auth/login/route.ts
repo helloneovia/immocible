@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticateUser } from '@/lib/auth'
 import { createSession } from '@/lib/session'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(request: NextRequest) {
+  const t = getT()
   try {
     // Anti brute-force : au plus 10 tentatives par minute et par IP.
     const limited = enforceRateLimit(request, 'login', 10, 60_000)
@@ -14,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: 'Email et mot de passe requis' },
+        { error: t('api.auth.emailPasswordRequired') },
         { status: 400 }
       )
     }
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('[Login] Error:', error.message)
     return NextResponse.json(
-      { error: error.message || 'Authentification échouée' },
+      { error: error.message || t('api.auth.loginFailed') },
       { status: 401 }
     )
   }

@@ -8,6 +8,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
+import { t } from '@/i18n'
 import { colors, radius, spacing } from '@/theme'
 
 /** Bloc de chargement pulsé (remplace les indicateurs « Chargement... »). */
@@ -45,7 +46,7 @@ export function Skeleton({
 /** Squelette d'une liste de lignes (avatar + deux lignes de texte). */
 export function SkeletonRows({ count = 5 }: { count?: number }) {
   return (
-    <View style={styles.group} accessibilityLabel="Chargement">
+    <View style={styles.group} accessibilityLabel={t('common.loading')}>
       {Array.from({ length: count }, (_, i) => (
         <View key={i} style={styles.row}>
           <Skeleton width={46} height={46} rounded={23} />

@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ArrowRight, Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
+import { useI18n } from '@/lib/i18n/client'
 
 function ResetPasswordForm() {
     const router = useRouter()
+    const { t } = useI18n()
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
 
@@ -22,8 +24,9 @@ function ResetPasswordForm() {
 
     useEffect(() => {
         if (!token) {
-            setError('Lien de réinitialisation invalide ou expiré.')
+            setError(t('auth.resetPassword.invalidLink'))
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token])
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -31,11 +34,11 @@ function ResetPasswordForm() {
         setError(null)
 
         if (password !== confirmPassword) {
-            return setError('Les mots de passe ne correspondent pas.')
+            return setError(t('auth.resetPassword.passwordsMismatch'))
         }
 
         if (password.length < 8) {
-            return setError('Le mot de passe doit contenir au moins 8 caractères.')
+            return setError(t('auth.resetPassword.passwordTooShort'))
         }
 
         setLoading(true)
@@ -52,7 +55,7 @@ function ResetPasswordForm() {
             const data = await response.json()
 
             if (!response.ok) {
-                throw new Error(data.error || 'Une erreur est survenue.')
+                throw new Error(data.error || t('auth.resetPassword.error'))
             }
 
             setSuccess(true)
@@ -60,7 +63,7 @@ function ResetPasswordForm() {
                 router.push('/agence/connexion')
             }, 3000)
         } catch (err: any) {
-            setError(err.message || 'Le lien a expiré ou une erreur est survenue.')
+            setError(err.message || t('auth.resetPassword.expiredOrError'))
         } finally {
             setLoading(false)
         }
@@ -76,10 +79,10 @@ function ResetPasswordForm() {
                         <Shield className="h-7 w-7 text-amber-400" />
                     </div>
                     <h1 className="text-2xl font-bold text-slate-900 mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        Nouveau mot de passe
+                        {t('auth.resetPassword.title')}
                     </h1>
                     <p className="text-slate-500 text-sm font-medium">
-                        Entrez votre nouveau mot de passe sécurisé.
+                        {t('auth.resetPassword.subtitle')}
                     </p>
                 </div>
 
@@ -89,16 +92,16 @@ function ResetPasswordForm() {
                             <CheckCircle2 className="h-7 w-7" />
                         </div>
                         <div className="space-y-2">
-                            <h3 className="font-semibold text-lg text-slate-900">Mot de passe modifié !</h3>
+                            <h3 className="font-semibold text-lg text-slate-900">{t('auth.resetPassword.successTitle')}</h3>
                             <p className="text-slate-500 text-sm leading-relaxed">
-                                Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.
+                                {t('auth.resetPassword.successText')}
                             </p>
                         </div>
                         <Button
                             className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl"
                             onClick={() => router.push('/agence/connexion')}
                         >
-                            Retour à la connexion
+                            {t('auth.common.backToLogin')}
                         </Button>
                     </div>
                 ) : (
@@ -111,7 +114,7 @@ function ResetPasswordForm() {
                         )}
                         
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-sm font-semibold text-slate-700">Nouveau mot de passe</Label>
+                            <Label htmlFor="password" className="text-sm font-semibold text-slate-700">{t('auth.resetPassword.newPassword')}</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -125,7 +128,7 @@ function ResetPasswordForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">Confirmer le mot de passe</Label>
+                            <Label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">{t('auth.common.confirmPassword')}</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
@@ -144,7 +147,7 @@ function ResetPasswordForm() {
                             className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 group disabled:opacity-50"
                             size="lg"
                         >
-                            {loading ? 'Enregistrement...' : 'Valider'}
+                            {loading ? t('auth.resetPassword.saving') : t('auth.resetPassword.submit')}
                             {!loading && <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
                         </Button>
                     </form>
@@ -152,7 +155,7 @@ function ResetPasswordForm() {
                 
                 <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-center gap-2 text-xs text-slate-400">
                     <Shield className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Connexion sécurisée SSL</span>
+                    <span>{t('auth.common.sslSecure')}</span>
                 </div>
             </div>
         </div>
@@ -160,6 +163,7 @@ function ResetPasswordForm() {
 }
 
 export default function ResetPassword() {
+    const { t } = useI18n()
     return (
         <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
             {/* Background image - Neutral but elegant */}
@@ -185,7 +189,7 @@ export default function ResetPassword() {
                     </Link>
                 </div>
 
-                <Suspense fallback={<div className="text-white text-center font-medium">Chargement...</div>}>
+                <Suspense fallback={<div className="text-white text-center font-medium">{t('auth.resetPassword.loading')}</div>}>
                    <ResetPasswordForm />
                 </Suspense>
             </div>

@@ -28,13 +28,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Navbar } from '@/components/layout/Navbar'
 import { SecurePaymentOverlay } from '@/components/shared/SecurePaymentOverlay'
-import { DEFAULT_SETTINGS, type AppSettings } from '@/lib/settings'
+import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
 import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
+import { useI18n } from '@/lib/i18n/client'
+import { intlLocale } from '@/lib/i18n/core'
 
 function DashboardContent() {
   const router = useRouter()
   const { signOut, user } = useAuth()
+  const { t, locale } = useI18n()
 
   const subscriptionEndDate = (user?.profile as any)?.subscriptionEndDate
   const showExpiryWarning = subscriptionEndDate &&
@@ -48,7 +51,7 @@ function DashboardContent() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ location: '', budgetMin: '', surfaceMin: '', typeBien: 'all' })
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [settings, setSettings] = useState<AppSettings>(() => localizeSettings(DEFAULT_SETTINGS, locale))
 
   useEffect(() => {
     fetch('/api/public/settings').then(r => r.json()).then(d => { if (d && !d.error) setSettings(d) }).catch(console.error)
@@ -96,8 +99,8 @@ function DashboardContent() {
       })
       const data = await response.json()
       if (response.ok) { router.push(`/agence/messages?conversation=${data.conversationId}`) }
-      else { alert(data.error || 'Une erreur est survenue') }
-    } catch { alert('Impossible de contacter ce profil pour le moment.') }
+      else { alert(data.error || t('agency.dashboard.genericError')) }
+    } catch { alert(t('agency.dashboard.contactError')) }
   }
 
   const handleUpgrade = async (plan: 'monthly' | 'yearly' = 'yearly') => {
@@ -112,11 +115,11 @@ function DashboardContent() {
       const data = await response.json()
       if (response.ok && data.clientSecret) { window.location.href = '/agence/paiement?client_secret=' + data.clientSecret }
       else { 
-        alert('Erreur lors de l\'initialisation du paiement.') 
+        alert(t('agency.dashboard.paymentInitError')) 
         setIsCheckingOut(false)
       }
     } catch { 
-      alert('Erreur de connexion.') 
+      alert(t('agency.dashboard.connectionError')) 
       setIsCheckingOut(false)
     }
   }
@@ -130,9 +133,9 @@ function DashboardContent() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Recherches qualifiées
+            {t('agency.dashboard.title')}
           </h1>
-          <p className="text-lg text-slate-500 font-light">Acquéreurs vérifiés correspondant à vos biens</p>
+          <p className="text-lg text-slate-500 font-light">{t('agency.dashboard.subtitle')}</p>
         </div>
 
         {/* Subscription Expiry Warning */}
@@ -142,12 +145,12 @@ function DashboardContent() {
               <div className="flex items-center gap-3">
                 <Zap className="h-6 w-6 text-amber-600 fill-amber-200" />
                 <div>
-                  <p className="font-bold text-amber-900">Votre abonnement expire dans moins de 7 jours !</p>
-                  <p className="text-sm text-amber-700">Renouvelez maintenant pour éviter toute interruption de service.</p>
+                  <p className="font-bold text-amber-900">{t('agency.dashboard.expiryTitle')}</p>
+                  <p className="text-sm text-amber-700">{t('agency.dashboard.expiryDesc')}</p>
                 </div>
               </div>
               <Button variant="outline" className="border-amber-600 text-amber-800 hover:bg-amber-100" onClick={() => router.push('/settings')}>
-                Gérer mon abonnement
+                {t('agency.dashboard.manageSubscription')}
               </Button>
             </CardContent>
           </Card>
@@ -162,35 +165,35 @@ function DashboardContent() {
               <div className="space-y-4 max-w-2xl">
                 <div className="flex items-center gap-3">
                   <Badge className="bg-amber-500/20 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1 text-sm">
-                    Offre Actuelle : Mensuel
+                    {t('agency.dashboard.currentOffer')}
                   </Badge>
                 </div>
                 <h2 className="text-3xl font-bold flex items-center gap-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Passez à la vitesse supérieure <Zap className="h-7 w-7 text-amber-400 fill-amber-400" />
+                  {t('agency.dashboard.upgradeTitle')} <Zap className="h-7 w-7 text-amber-400 fill-amber-400" />
                 </h2>
                 <p className="text-slate-300 text-lg font-light">
-                  Débloquez l&apos;accès illimité à tous les acquéreurs qualifiés et boostez la visibilité de vos biens.
+                  {t('agency.dashboard.upgradeDesc')}
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm text-slate-300">
-                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Contacts illimités</span>
-                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Badge Agence Vérifiée</span>
-                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Support Prioritaire</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> {t('agency.dashboard.featureUnlimited')}</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> {t('agency.dashboard.featureBadge')}</span>
+                  <span className="flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> {t('agency.dashboard.featureSupport')}</span>
                 </div>
               </div>
 
               <div className="flex-shrink-0 bg-white/5 p-6 rounded-2xl backdrop-blur-sm border border-white/10 text-center min-w-[260px]">
-                <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-2">Offre Annuelle</p>
+                <p className="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-2">{t('agency.dashboard.yearlyOffer')}</p>
                 <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-5xl font-extrabold text-white">{formatPlanPrice(settings.price_yearly)}€</span>
-                  <span className="text-slate-400">/an</span>
+                  <span className="text-5xl font-extrabold text-white">{locale === 'en' ? `€${formatPlanPrice(settings.price_yearly, locale)}` : `${formatPlanPrice(settings.price_yearly, locale)}€`}</span>
+                  <span className="text-slate-400">{t('agency.dashboard.perYear')}</span>
                 </div>
-                <p className="text-sm text-amber-300 mb-6 font-medium">2 mois offerts</p>
+                <p className="text-sm text-amber-300 mb-6 font-medium">{t('agency.dashboard.twoMonthsFree')}</p>
                 <Button size="lg" onClick={() => handleUpgrade('yearly')}
                   className="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold shadow-lg shadow-amber-500/25 border-0 hover:scale-105 transition-all">
                   <Crown className="mr-2 h-5 w-5" />
-                  Passer Premium
+                  {t('agency.dashboard.goPremium')}
                 </Button>
-                <p className="mt-3 text-xs text-center text-slate-500">Paiement sécurisé via Stripe</p>
+                <p className="mt-3 text-xs text-center text-slate-500">{t('agency.dashboard.securePayment')}</p>
               </div>
             </CardContent>
           </Card>
@@ -204,22 +207,22 @@ function DashboardContent() {
               </div>
               <div className="space-y-2 max-w-xl mx-auto">
                 <h2 className="text-2xl font-bold text-slate-900" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Activez votre abonnement
+                  {t('agency.dashboard.paywallTitle')}
                 </h2>
                 <p className="text-slate-500 font-light">
-                  Les dossiers des acquéreurs qualifiés sont réservés aux agences abonnées. Choisissez une offre pour les consulter et les contacter.
+                  {t('agency.dashboard.paywallDesc')}
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
                 <Button size="lg" variant="outline" className="border-2 rounded-xl font-semibold" onClick={() => handleUpgrade('monthly')}>
-                  Mensuel · {formatPlanPrice(settings.price_monthly)}€ / mois
+                  {t('agency.dashboard.monthlyButton', { price: formatPlanPrice(settings.price_monthly, locale) })}
                 </Button>
                 <Button size="lg" className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-xl border-0" onClick={() => handleUpgrade('yearly')}>
                   <Crown className="mr-2 h-5 w-5" />
-                  Annuel · {formatPlanPrice(settings.price_yearly)}€ / an
+                  {t('agency.dashboard.yearlyButton', { price: formatPlanPrice(settings.price_yearly, locale) })}
                 </Button>
               </div>
-              <p className="text-xs text-slate-400">Paiement sécurisé via Stripe</p>
+              <p className="text-xs text-slate-400">{t('agency.dashboard.securePayment')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -230,7 +233,7 @@ function DashboardContent() {
             <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full -translate-y-6 translate-x-6" />
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-400 flex items-center gap-2">
-                <Search className="h-4 w-4" /> Recherches actives
+                <Search className="h-4 w-4" /> {t('agency.dashboard.activeSearches')}
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-white">{activeSearches.length}</CardTitle>
             </CardHeader>
@@ -238,7 +241,7 @@ function DashboardContent() {
           <Card className="border border-slate-200 shadow-sm bg-white rounded-2xl">
             <CardHeader className="pb-3">
               <CardDescription className="text-slate-500 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" /> Matches trouvés
+                <TrendingUp className="h-4 w-4" /> {t('agency.dashboard.matchesFound')}
               </CardDescription>
               <CardTitle className="text-4xl font-bold text-slate-900">0</CardTitle>
             </CardHeader>
@@ -251,7 +254,7 @@ function DashboardContent() {
             className="border-2 border-slate-200 bg-white hover:bg-slate-900 hover:text-white hover:border-slate-900 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl font-semibold"
             onClick={() => setShowFilters(!showFilters)}>
             <Filter className="mr-2 h-5 w-5" />
-            {showFilters ? 'Masquer les filtres' : 'Filtrer les recherches'}
+            {showFilters ? t('agency.dashboard.hideFilters') : t('agency.dashboard.showFilters')}
           </Button>
         </div>
 
@@ -260,19 +263,19 @@ function DashboardContent() {
           <Card className="mb-8 border border-slate-200 shadow-sm bg-white rounded-2xl">
             <CardHeader className="pb-4 border-b border-slate-100 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-bold text-slate-900">Filtres</CardTitle>
-                <CardDescription>Affinez les résultats selon vos critères</CardDescription>
+                <CardTitle className="text-lg font-bold text-slate-900">{t('agency.dashboard.filters')}</CardTitle>
+                <CardDescription>{t('agency.dashboard.filtersDesc')}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={clearFilters} className="text-slate-400 hover:text-red-500 hover:bg-red-50">
-                <X className="mr-2 h-4 w-4" /> Réinitialiser
+                <X className="mr-2 h-4 w-4" /> {t('agency.dashboard.reset')}
               </Button>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">Localisation</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{t('agency.dashboard.location')}</Label>
                   <div className="flex gap-2">
-                    <Input placeholder="Ex: Paris" value={filters.location}
+                    <Input placeholder={t('agency.dashboard.locationPlaceholder')} value={filters.location}
                       onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
                       className="border-slate-200 focus:border-slate-900 rounded-lg flex-1" />
                     <NativeLocationButton 
@@ -283,25 +286,25 @@ function DashboardContent() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">Budget Min</Label>
-                  <Input type="number" placeholder="Min €" value={filters.budgetMin}
+                  <Label className="text-sm font-semibold text-slate-700">{t('agency.dashboard.budgetMin')}</Label>
+                  <Input type="number" placeholder={t('agency.dashboard.budgetMinPlaceholder')} value={filters.budgetMin}
                     onChange={(e) => setFilters(prev => ({ ...prev, budgetMin: e.target.value }))}
                     className="border-slate-200 focus:border-slate-900 rounded-lg" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">Surface Min</Label>
-                  <Input type="number" placeholder="Min m²" value={filters.surfaceMin}
+                  <Label className="text-sm font-semibold text-slate-700">{t('agency.dashboard.surfaceMin')}</Label>
+                  <Input type="number" placeholder={t('agency.dashboard.surfaceMinPlaceholder')} value={filters.surfaceMin}
                     onChange={(e) => setFilters(prev => ({ ...prev, surfaceMin: e.target.value }))}
                     className="border-slate-200 focus:border-slate-900 rounded-lg" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">Type de bien</Label>
+                  <Label className="text-sm font-semibold text-slate-700">{t('agency.dashboard.propertyType')}</Label>
                   <Select value={filters.typeBien} onValueChange={(val) => setFilters(prev => ({ ...prev, typeBien: val }))}>
-                    <SelectTrigger className="border-slate-200 focus:border-slate-900 rounded-lg"><SelectValue placeholder="Tous" /></SelectTrigger>
+                    <SelectTrigger className="border-slate-200 focus:border-slate-900 rounded-lg"><SelectValue placeholder={t('agency.dashboard.all')} /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous</SelectItem>
-                      <SelectItem value="appartement">Appartement</SelectItem>
-                      <SelectItem value="maison">Maison</SelectItem>
+                      <SelectItem value="all">{t('agency.dashboard.all')}</SelectItem>
+                      <SelectItem value="appartement">{t('agency.dashboard.apartment')}</SelectItem>
+                      <SelectItem value="maison">{t('agency.dashboard.house')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -314,7 +317,7 @@ function DashboardContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             <div className="col-span-full py-20 text-center text-slate-400 font-light">
-              Chargement des recherches...
+              {t('agency.dashboard.loadingSearches')}
             </div>
           ) : filteredSearches.length > 0 ? (
             filteredSearches.map((search: any) => (
@@ -326,11 +329,11 @@ function DashboardContent() {
                       <Search className="h-5 w-5 text-slate-600 group-hover:text-amber-400 transition-colors duration-300" />
                     </div>
                     <span className={`text-xs font-semibold px-2 py-1 rounded-full ${search.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                      {search.isActive ? 'Actif' : 'Inactif'}
+                      {search.isActive ? t('agency.dashboard.active') : t('agency.dashboard.inactive')}
                     </span>
                   </div>
                   <CardTitle className="mt-4 text-lg font-bold text-slate-900">
-                    Recherche {(search.typeBien || []).join(', ')}
+                    {t('agency.dashboard.searchTitle', { types: (search.typeBien || []).join(', ') })}
                   </CardTitle>
                   <CardDescription className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
@@ -341,18 +344,18 @@ function DashboardContent() {
                   <div className="space-y-2.5">
                     <div className="flex items-center text-sm text-slate-600">
                       <Euro className="h-4 w-4 mr-2 text-slate-400" />
-                      {(search.prixMax || 0).toLocaleString()} € max
+                      {t('agency.dashboard.maxPrice', { price: (search.prixMax || 0).toLocaleString(intlLocale(locale)) })}
                     </div>
                     <div className="flex items-center text-sm text-slate-600">
                       <TrendingUp className="h-4 w-4 mr-2 text-slate-400" />
-                      {search.surfaceMin} m² min
+                      {t('agency.dashboard.minSurface', { surface: search.surfaceMin })}
                     </div>
                     {search.caracteristiques?.delaiRecherche && (
                       <div className="flex items-center text-sm text-slate-600">
                         <span className="mr-2 text-slate-400 text-xs font-bold">⏱</span>
-                        {search.caracteristiques.delaiRecherche === 'urgent' ? 'Urgent (< 1 mois)' :
-                          search.caracteristiques.delaiRecherche === '1-3' ? '1 à 3 mois' :
-                            search.caracteristiques.delaiRecherche === '3-6' ? '3 à 6 mois' :
+                        {search.caracteristiques.delaiRecherche === 'urgent' ? t('agency.delays.urgent') :
+                          search.caracteristiques.delaiRecherche === '1-3' ? t('agency.delays.m1to3') :
+                            search.caracteristiques.delaiRecherche === '3-6' ? t('agency.delays.m3to6') :
                               search.caracteristiques.delaiRecherche}
                       </div>
                     )}
@@ -364,8 +367,8 @@ function DashboardContent() {
                         {search.owner?.profile?.prenom?.charAt(0) || 'A'}
                       </div>
                       <div className="ml-2 text-xs">
-                        <p className="font-semibold text-slate-900">{search.owner?.profile?.prenom || 'Acquéreur'}</p>
-                        <p className="text-slate-400">{new Date(search.updatedAt).toLocaleDateString()}</p>
+                        <p className="font-semibold text-slate-900">{search.owner?.profile?.prenom || t('agency.dashboard.buyerFallback')}</p>
+                        <p className="text-slate-400">{new Date(search.updatedAt).toLocaleDateString(intlLocale(locale))}</p>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -373,12 +376,12 @@ function DashboardContent() {
                         className="text-slate-700 border-slate-200 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all duration-200 rounded-lg"
                         onClick={() => handleChat(search.owner.id)}>
                         <MessageSquare className="h-4 w-4 mr-1" />
-                        Discuter
+                        {t('agency.dashboard.chat')}
                       </Button>
                       <Link href={`/agence/buyer/${search.owner.id}`}>
                         <Button size="sm" variant="ghost"
                           className="text-slate-600 hover:text-slate-900 hover:bg-slate-100 px-2 rounded-lg">
-                          Voir <ArrowRight className="ml-1 h-3 w-3" />
+                          {t('agency.dashboard.view')} <ArrowRight className="ml-1 h-3 w-3" />
                         </Button>
                       </Link>
                     </div>
@@ -392,10 +395,10 @@ function DashboardContent() {
                 <Search className="h-9 w-9 text-amber-500" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Aucune recherche active
+                {t('agency.dashboard.emptyTitle')}
               </h3>
               <p className="text-slate-400 max-w-sm mx-auto font-light">
-                Les recherches des acquéreurs apparaîtront ici.
+                {t('agency.dashboard.emptyDesc')}
               </p>
             </div>
           )}

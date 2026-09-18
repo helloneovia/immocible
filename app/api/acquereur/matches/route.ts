@@ -4,21 +4,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { calculateMatchScore } from '@/lib/utils'
+import { getT } from '@/lib/i18n/server'
 
 export async function GET(request: NextRequest) {
+  const t = getT()
   try {
     const user = await getCurrentUser()
 
     if (!user) {
       return NextResponse.json(
-        { error: 'Not authenticated' },
+        { error: t('api.common.notAuthenticated') },
         { status: 401 }
       )
     }
 
     if (user.role !== 'acquereur') {
       return NextResponse.json(
-        { error: 'Forbidden' },
+        { error: t('api.common.forbidden') },
         { status: 403 }
       )
     }
@@ -116,7 +118,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Get matches error:', error)
     return NextResponse.json(
-      { error: 'Failed to get matches' },
+      { error: t('api.buyer.matchesFailed') },
       { status: 500 }
     )
   }

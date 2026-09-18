@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatDate, formatPlanPrice } from '@/lib/format'
@@ -53,7 +54,7 @@ export function SubscriptionScreen() {
         couponCode: withCoupon ? coupon : undefined,
       })
       if (result.success) {
-        Alert.alert('Code appliqué', result.message || 'Votre abonnement est actif.')
+        Alert.alert(t('agency.subscription.couponApplied'), result.message || t('agency.subscription.active'))
         setCoupon('')
         load()
         refresh()
@@ -61,7 +62,7 @@ export function SubscriptionScreen() {
         router.push(paymentHref(result.clientSecret, 'subscription') as never)
       }
     } catch (err) {
-      Alert.alert(withCoupon ? 'Code promo refusé' : 'Paiement indisponible', errorMessage(err))
+      Alert.alert(withCoupon ? t('agency.subscription.couponRefused') : t('agency.subscription.paymentUnavailable'), errorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -77,19 +78,19 @@ export function SubscriptionScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior="padding" keyboardVerticalOffset={keyboardOffset}>
-      <Stack.Screen options={{ ...pushedScreenOptions, title: 'Abonnement' }} />
+      <Stack.Screen options={{ ...pushedScreenOptions, title: t('agency.subscription.title') }} />
       <ScrollView {...largeTitleScrollProps} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {!profile ? (
           <Skeleton height={190} rounded={radius.xxl} />
         ) : (
           <View style={styles.planCard}>
             <View style={styles.planHeader}>
-              <Text style={styles.planEyebrow}>Offre actuelle</Text>
+              <Text style={styles.planEyebrow}>{t('agency.subscription.currentPlan')}</Text>
               <View style={[styles.status, active ? styles.statusActive : styles.statusInactive]}>
-                <Text style={[styles.statusText, { color: active ? '#4ADE80' : colors.goldLight }]}>{active ? 'Active' : 'Inactive'}</Text>
+                <Text style={[styles.statusText, { color: active ? '#4ADE80' : colors.goldLight }]}>{active ? t('agency.subscription.statusActive') : t('agency.subscription.statusInactive')}</Text>
               </View>
             </View>
-            <Text style={styles.planName}>{profile.plan ? (yearly ? 'Annuelle' : 'Mensuelle') : 'Aucune offre'}</Text>
+            <Text style={styles.planName}>{profile.plan ? (yearly ? t('agency.subscription.yearly') : t('agency.subscription.monthly')) : t('agency.subscription.noPlan')}</Text>
             {end ? (
               <>
                 <View style={styles.progressTrack}>
@@ -97,12 +98,12 @@ export function SubscriptionScreen() {
                 </View>
                 <Text style={styles.planMeta}>
                   {active
-                    ? `${daysLeft} jour${daysLeft > 1 ? 's' : ''} restant${daysLeft > 1 ? 's' : ''} · jusqu'au ${formatDate(end)}`
-                    : `Expirée le ${formatDate(end)}`}
+                    ? t(daysLeft > 1 ? 'agency.subscription.daysLeftMany' : 'agency.subscription.daysLeftOne', { days: daysLeft, date: formatDate(end) })
+                    : t('agency.subscription.expiredOn', { date: formatDate(end) })}
                 </Text>
               </>
             ) : (
-              <Text style={styles.planMeta}>Souscrivez pour contacter les acquéreurs.</Text>
+              <Text style={styles.planMeta}>{t('agency.subscription.subscribePrompt')}</Text>
             )}
           </View>
         )}
@@ -112,8 +113,8 @@ export function SubscriptionScreen() {
           <Button
             title={
               yearly
-                ? `Renouveler l'offre annuelle · ${formatPlanPrice(settings.price_yearly)} €/an`
-                : `Activer l'offre mensuelle · ${formatPlanPrice(settings.price_monthly)} €/mois`
+                ? t('agency.subscription.renewYearly', { price: formatPlanPrice(settings.price_yearly) })
+                : t('agency.subscription.activateMonthly', { price: formatPlanPrice(settings.price_monthly) })
             }
             icon={Lock}
             size="lg"
@@ -130,10 +131,10 @@ export function SubscriptionScreen() {
                 <Crown size={20} color={colors.navy} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text variant="headline">Passez à l'annuel</Text>
-                <Text variant="footnote">2 mois offerts par rapport au mensuel</Text>
+                <Text variant="headline">{t('agency.subscription.upgradeTitle')}</Text>
+                <Text variant="footnote">{t('agency.subscription.upgradeText')}</Text>
               </View>
-              <Text style={styles.price}>{formatPlanPrice(settings.price_yearly)} €</Text>
+              <Text style={styles.price}>{t('agency.subscription.price', { price: formatPlanPrice(settings.price_yearly) })}</Text>
             </View>
             <View style={{ gap: 8 }}>
               {settings.feature_list_yearly.map((feature) => (
@@ -145,13 +146,13 @@ export function SubscriptionScreen() {
                 </View>
               ))}
             </View>
-            <Button title={`Passer à l'annuel · ${formatPlanPrice(settings.price_yearly)} €/an`} icon={Lock} size="lg" loading={upgrading} onPress={() => checkout(false)} />
+            <Button title={t('agency.subscription.upgradeButton', { price: formatPlanPrice(settings.price_yearly) })} icon={Lock} size="lg" loading={upgrading} onPress={() => checkout(false)} />
           </View>
         ) : null}
 
         {profile && !yearly ? (
           <View style={{ gap: 10 }}>
-            <Text variant="label">Code promo</Text>
+            <Text variant="label">{t('agency.subscription.promoCode')}</Text>
             <View style={styles.couponRow}>
               <View style={{ flex: 1 }}>
                 <TextField
@@ -159,18 +160,18 @@ export function SubscriptionScreen() {
                   icon={Ticket}
                   value={coupon}
                   onChangeText={(v) => setCoupon(v.toUpperCase())}
-                  placeholder="CODE"
+                  placeholder={t('agency.subscription.codePlaceholder')}
                   autoCapitalize="characters"
                   autoCorrect={false}
                 />
               </View>
-              <Button title="Appliquer" variant="secondary" fullWidth={false} disabled={!coupon} loading={applying} onPress={() => checkout(true)} />
+              <Button title={t('agency.subscription.apply')} variant="secondary" fullWidth={false} disabled={!coupon} loading={applying} onPress={() => checkout(true)} />
             </View>
           </View>
         ) : null}
 
         <Text variant="footnote" center color={colors.text3}>
-          Paiement sécurisé par Stripe. Pour résilier ou obtenir une facture, écrivez au support.
+          {t('agency.subscription.footer')}
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

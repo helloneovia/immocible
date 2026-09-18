@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, useMap, AttributionControl } from 'react-leafl
 import { Button } from '@/components/ui/button'
 import { Eraser } from 'lucide-react'
 import type { DrawnAreaGeoJSON } from './LocationMapDraw'
+import { useI18n } from '@/lib/i18n/client'
 
 // Static imports for Leaflet and Geoman
 // This component must be loaded via dynamic import with ssr: false in the parent (LocationMapDraw.tsx)
@@ -38,6 +39,7 @@ const MapDrawCore = forwardRef<
   }
 >(function MapDrawCore({ onChange, initialGeoJSON, readOnly }, ref) {
   const map = useMap()
+  const { locale } = useI18n()
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const initialized = useRef(false)
 
@@ -79,8 +81,8 @@ const MapDrawCore = forwardRef<
       })
     }
 
-    // Set language to French
-    map.pm.setLang('fr')
+    // Langue des outils de dessin : celle choisie par l'utilisateur
+    map.pm.setLang(locale === 'en' ? 'en' : 'fr')
 
     map.pm.setPathOptions({
       color: '#2563eb',
@@ -247,16 +249,20 @@ const MapDrawCore = forwardRef<
   return null
 })
 
-const MAP_FALLBACK = (
-  <div className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-6" style={{ minHeight: 280 }}>
-    <p className="text-sm text-gray-500 text-center">
-      La carte n&apos;est pas disponible ici. Utilisez la recherche de villes ci-dessus pour préciser vos zones.
-    </p>
-  </div>
-)
+function MapFallback() {
+  const { t } = useI18n()
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-6" style={{ minHeight: 280 }}>
+      <p className="text-sm text-gray-500 text-center">
+        {t('buyer.location.mapUnavailable')}
+      </p>
+    </div>
+  )
+}
 
 function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnly }: LocationMapDrawClientProps) {
   const clearRef = useRef<{ clear: () => void }>(null)
+  const { t } = useI18n()
   // Check if MapContainer is available (it is, since we import statically)
   const canRenderMap = true
 
@@ -264,9 +270,9 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnl
     return (
       <div className="space-y-2">
         <p className="text-sm text-gray-600">
-          Dessinez une zone sur la carte (optionnel).
+          {t('buyer.location.drawOptional')}
         </p>
-        {MAP_FALLBACK}
+        <MapFallback />
       </div>
     )
   }
@@ -275,7 +281,7 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnl
     <div className="space-y-2">
       {!readOnly && (
         <p className="text-sm text-gray-600">
-          Dessinez une zone sur la carte (cliquez pour placer les points, fermez le polygone pour valider). Idéal pour des quartiers ou rues précis.
+          {t('buyer.location.drawHelp')}
         </p>
       )}
       <div className="relative rounded-lg overflow-hidden border border-gray-200" style={{ height }}>
@@ -301,7 +307,7 @@ function LocationMapDrawClientInner({ value, onChange, height = '400px', readOnl
             onClick={() => clearRef.current?.clear()}
           >
             <Eraser className="h-4 w-4 mr-1" />
-            Effacer la zone
+            {t('buyer.location.clearArea')}
           </Button>
         )}
       </div>

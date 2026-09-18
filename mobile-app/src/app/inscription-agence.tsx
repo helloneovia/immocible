@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
+import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatPlanPrice } from '@/lib/format'
@@ -40,7 +41,7 @@ function PlanCard({
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${title}, ${formatPlanPrice(price)} euros ${period}`}
+      accessibilityLabel={t('auth.signup.agency.planA11y', { title, price: formatPlanPrice(price), period })}
       onPress={onPress}
       style={[styles.plan, selected ? styles.planSelected : null]}
     >
@@ -92,11 +93,11 @@ export default function InscriptionAgenceScreen() {
     } else if (step === 2) {
       if (await verification.verifyCode(code)) setStep(3)
     } else if (step === 3) {
-      if (!nomAgence.trim()) return setError("Indiquez le nom de l'agence.")
+      if (!nomAgence.trim()) return setError(t('auth.errors.agencyNameRequired'))
       setStep(4)
     } else if (step === 4) {
-      if (password.length < 8) return setError('Choisissez un mot de passe d’au moins 8 caractères.')
-      if (password !== confirmPassword) return setError('Les deux mots de passe ne correspondent pas.')
+      if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+      if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
       setStep(5)
     } else {
       await register()
@@ -111,7 +112,7 @@ export default function InscriptionAgenceScreen() {
         body: { email: verification.normalized, password, role: 'agence', nomAgence: nomAgence.trim(), plan },
       })
     } catch (err) {
-      setError(errorMessage(err, "L'inscription a échoué. Réessayez."))
+      setError(errorMessage(err, t('auth.errors.signupFailed')))
       setSubmitting(false)
       return
     }
@@ -125,30 +126,30 @@ export default function InscriptionAgenceScreen() {
         couponCode,
       })
       if (checkout.clientSecret) setPendingHref(paymentHref(checkout.clientSecret, 'subscription'))
-      else if (checkout.success) Alert.alert('Offre activée', checkout.message || 'Votre abonnement est actif.')
+      else if (checkout.success) Alert.alert(t('auth.signup.agency.offerActivated'), checkout.message || t('auth.signup.agency.subscriptionActive'))
     } catch (err) {
       Alert.alert(
-        'Compte créé',
-        `Le paiement n'a pas pu démarrer : ${errorMessage(err)}\n\nVous pourrez souscrire depuis Profil › Abonnement.`,
+        t('auth.signup.agency.accountCreated'),
+        t('auth.signup.agency.paymentFailed', { error: errorMessage(err) }),
       )
     }
     await refresh()
   }
 
   const copy = {
-    1: { title: settings.text_signup_agency_title || 'Créer un compte agence', subtitle: 'Commencez par l’e-mail professionnel de l’agence.' },
-    2: { title: 'Code de vérification', subtitle: `Saisissez le code à 6 chiffres envoyé à ${verification.normalized}.` },
-    3: { title: 'Votre agence', subtitle: 'Ce nom est affiché aux acquéreurs dans la messagerie.' },
-    4: { title: 'Sécurisez le compte', subtitle: 'Choisissez un mot de passe d’au moins 8 caractères.' },
-    5: { title: 'Choisissez votre offre', subtitle: settings.text_signup_agency_subtitle },
+    1: { title: settings.text_signup_agency_title || t('auth.signup.agency.title'), subtitle: t('auth.signup.agency.subtitle') },
+    2: { title: t('auth.signup.codeTitle'), subtitle: t('auth.signup.codeSubtitle', { email: verification.normalized }) },
+    3: { title: t('auth.signup.agency.agencyTitle'), subtitle: t('auth.signup.agency.agencySubtitle') },
+    4: { title: t('auth.signup.agency.securityTitle'), subtitle: t('auth.signup.agency.securitySubtitle') },
+    5: { title: t('auth.signup.agency.planTitle'), subtitle: settings.text_signup_agency_subtitle },
   }[step as 1 | 2 | 3 | 4 | 5]
 
-  const cta = step === 5 ? 'Continuer vers le paiement' : step === 2 ? 'Vérifier' : 'Continuer'
+  const cta = step === 5 ? t('auth.signup.agency.submit') : step === 2 ? t('auth.signup.verify') : t('auth.signup.continue')
   const disabled = (step === 1 && !email.trim()) || (step === 2 && code.length < 6)
 
   return (
     <AuthScaffold
-      eyebrow={`Espace agence · Étape ${step} sur ${STEPS}`}
+      eyebrow={t('auth.signup.agencyStepOf', { step, total: STEPS })}
       title={copy.title}
       subtitle={copy.subtitle}
       progress={step / STEPS}
@@ -166,7 +167,7 @@ export default function InscriptionAgenceScreen() {
           {step === 1 ? (
             <Pressable accessibilityRole="link" onPress={() => router.replace('/connexion?role=agence')} hitSlop={8}>
               <Text variant="subhead" center>
-                Déjà un compte ? <Text style={styles.link}>Se connecter</Text>
+                {t('auth.signup.alreadyAccount')} <Text style={styles.link}>{t('auth.signup.signIn')}</Text>
               </Text>
             </Pressable>
           ) : step === 5 ? (
@@ -182,11 +183,11 @@ export default function InscriptionAgenceScreen() {
 
       {step === 1 ? (
         <TextField
-          label="E-mail professionnel"
+          label={t('auth.fields.emailPro')}
           icon={Mail}
           value={email}
           onChangeText={setEmail}
-          placeholder="contact@agence.fr"
+          placeholder={t('auth.fields.placeholderAgencyEmail')}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"
@@ -208,10 +209,10 @@ export default function InscriptionAgenceScreen() {
           />
           <View style={styles.codeActions}>
             <Pressable accessibilityRole="button" onPress={() => verification.sendCode(true)} hitSlop={8}>
-              <Text style={styles.link}>Renvoyer le code</Text>
+              <Text style={styles.link}>{t('auth.signup.resendCode')}</Text>
             </Pressable>
             <Pressable accessibilityRole="button" onPress={() => setStep(1)} hitSlop={8}>
-              <Text style={styles.linkMuted}>Modifier l'e-mail</Text>
+              <Text style={styles.linkMuted}>{t('auth.signup.changeEmail')}</Text>
             </Pressable>
           </View>
         </View>
@@ -221,11 +222,11 @@ export default function InscriptionAgenceScreen() {
         <>
           <VerifiedEmail email={email} />
           <TextField
-            label="Nom de l'agence"
+            label={t('auth.fields.agencyName')}
             icon={Building2}
             value={nomAgence}
             onChangeText={setNomAgence}
-            placeholder="Agence du Centre"
+            placeholder={t('auth.fields.placeholderAgencyName')}
             autoComplete="organization"
             textContentType="organizationName"
             autoCorrect={false}
@@ -239,23 +240,23 @@ export default function InscriptionAgenceScreen() {
       {step === 4 ? (
         <>
           <TextField
-            label="Mot de passe"
+            label={t('auth.fields.password')}
             icon={Lock}
             secure
             value={password}
             onChangeText={setPassword}
-            placeholder="Au moins 8 caractères"
+            placeholder={t('auth.fields.placeholderNewPassword')}
             autoComplete="new-password"
             textContentType="newPassword"
             autoFocus
           />
           <TextField
-            label="Confirmer"
+            label={t('auth.fields.confirm')}
             icon={Lock}
             secure
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            placeholder="Retapez le mot de passe"
+            placeholder={t('auth.fields.placeholderConfirm')}
             autoComplete="new-password"
             returnKeyType="next"
             onSubmitEditing={next}
@@ -267,27 +268,27 @@ export default function InscriptionAgenceScreen() {
         <>
           <PlanCard
             selected={plan === 'yearly'}
-            title="Annuel"
+            title={t('auth.signup.agency.yearly')}
             price={settings.price_yearly}
-            period="/ an"
-            badge="2 mois offerts"
+            period={t('auth.signup.agency.perYear')}
+            badge={t('auth.signup.agency.yearlyBadge')}
             features={settings.feature_list_yearly}
             onPress={() => setPlan('yearly')}
           />
           <PlanCard
             selected={plan === 'monthly'}
-            title="Mensuel"
+            title={t('auth.signup.agency.monthly')}
             price={settings.price_monthly}
-            period="/ mois"
+            period={t('auth.signup.agency.perMonth')}
             features={settings.feature_list_monthly}
             onPress={() => setPlan('monthly')}
           />
           <TextField
-            label="Code promo"
+            label={t('auth.fields.promoCode')}
             icon={Ticket}
             value={couponCode}
             onChangeText={(value) => setCouponCode(value.toUpperCase())}
-            placeholder="Facultatif"
+            placeholder={t('auth.fields.placeholderOptional')}
             autoCapitalize="characters"
             autoCorrect={false}
           />

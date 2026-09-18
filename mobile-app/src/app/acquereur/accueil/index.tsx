@@ -13,6 +13,7 @@ import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSettings } from '@/contexts/SettingsContext'
 import { useUnread } from '@/contexts/UnreadContext'
+import { t } from '@/i18n'
 import { api } from '@/lib/api'
 import { fetchArticles } from '@/lib/blog'
 import { formatRelative, singleLine } from '@/lib/format'
@@ -106,18 +107,18 @@ export default function AccueilScreen() {
   const proposed = hasProject && conversations.some((conv) => !conv.isPlatform)
   const timeline = [
     {
-      title: 'Projet enregistré',
-      detail: hasProject ? 'Vos critères sont transmis aux agences partenaires.' : 'Décrivez le bien, le budget et le lieu.',
+      title: t('project.home.stepSaved'),
+      detail: hasProject ? t('project.home.stepSavedDone') : t('project.home.stepSavedTodo'),
       state: hasProject ? ('done' as const) : ('current' as const),
     },
     {
-      title: 'Analyse par les agences',
-      detail: 'Elles comparent votre projet à leurs biens off-market.',
+      title: t('project.home.stepAnalysis'),
+      detail: t('project.home.stepAnalysisDetail'),
       state: proposed ? ('done' as const) : hasProject ? ('current' as const) : ('upcoming' as const),
     },
     {
-      title: 'Première proposition',
-      detail: 'Elle arrive directement dans vos messages.',
+      title: t('project.home.stepProposal'),
+      detail: t('project.home.stepProposalDetail'),
       state: proposed ? ('done' as const) : ('upcoming' as const),
     },
   ]
@@ -126,9 +127,9 @@ export default function AccueilScreen() {
     <>
       <Stack.Screen
         options={{
-          title: firstName ? `Bonjour ${firstName}` : 'Accueil',
+          title: firstName ? t('project.home.greeting', { name: firstName }) : t('project.home.title'),
           headerRight: () => (
-            <Pressable accessibilityRole="button" accessibilityLabel="Profil" onPress={() => router.navigate('/acquereur/profil')}>
+            <Pressable accessibilityRole="button" accessibilityLabel={t('project.home.profile')} onPress={() => router.navigate('/acquereur/profil')}>
               <Avatar name={firstName || user?.email} size={34} />
             </Pressable>
           ),
@@ -151,7 +152,7 @@ export default function AccueilScreen() {
         {/* Carte projet : la cible se remplit avec le bien, le budget et le lieu. */}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={hasProject ? 'Voir mon projet' : 'Définir mon projet'}
+          accessibilityLabel={hasProject ? t('project.home.viewProject') : t('project.home.defineProject')}
           onPress={() => (hasProject ? router.navigate('/acquereur/projet') : router.push('/questionnaire'))}
           style={({ pressed }) => [styles.hero, pressed ? { transform: [{ scale: 0.99 }] } : null]}
         >
@@ -168,9 +169,9 @@ export default function AccueilScreen() {
               <View style={styles.heroRow}>
                 <TargetRing rings={rings} size={128} />
                 <View style={styles.heroText}>
-                  <Text style={styles.heroEyebrow}>Mon projet</Text>
+                  <Text style={styles.heroEyebrow}>{t('project.home.eyebrow')}</Text>
                   <Text variant="serifTitle" numberOfLines={3} style={{ fontSize: 22, lineHeight: 27 }}>
-                    {hasProject ? projectHeadline(data) : 'Définissons votre projet'}
+                    {hasProject ? projectHeadline(data) : t('project.home.emptyHeadline')}
                   </Text>
                   {hasProject ? (
                     <Text style={styles.heroBudget}>{budgetLabel(data.budgetMin, data.budgetMax)}</Text>
@@ -190,11 +191,11 @@ export default function AccueilScreen() {
                 <View style={[styles.status, complete ? styles.statusLive : null]}>
                   <View style={[styles.statusDot, { backgroundColor: complete ? '#4ADE80' : colors.gold }]} />
                   <Text style={styles.statusText}>
-                    {complete ? 'Visible par les agences' : hasProject ? 'À compléter' : '2 minutes pour commencer'}
+                    {complete ? t('project.home.statusVisible') : hasProject ? t('project.home.statusIncomplete') : t('project.home.statusStart')}
                   </Text>
                 </View>
                 <Button
-                  title={hasProject ? (complete ? 'Voir' : 'Compléter') : 'Commencer'}
+                  title={hasProject ? (complete ? t('project.home.view') : t('project.home.complete')) : t('project.home.start')}
                   variant={complete ? 'glass' : 'accent'}
                   size="sm"
                   fullWidth={false}
@@ -205,22 +206,22 @@ export default function AccueilScreen() {
           )}
         </Pressable>
 
-        <ListSection title="Où en est votre recherche">
+        <ListSection title={t('project.home.timelineTitle')}>
           <View>
             <Timeline steps={timeline} />
           </View>
         </ListSection>
 
-        <ListSection title="Messages" action={{ label: 'Tout voir', onPress: () => router.navigate('/acquereur/messages') }}>
+        <ListSection title={t('project.home.messages')} action={{ label: t('project.home.seeAll'), onPress: () => router.navigate('/acquereur/messages') }}>
           {recent.length === 0 ? (
             <ListRow
-              title="Aucun message pour l'instant"
-              subtitle="Les agences vous écriront ici dès qu'un bien correspond."
+              title={t('project.home.noMessages')}
+              subtitle={t('project.home.noMessagesDetail')}
               onPress={() => router.navigate('/acquereur/messages')}
             />
           ) : (
             recent.map((conv) => {
-              const name = conv.agency?.profile?.nomAgence || conv.agency?.email || 'Agence'
+              const name = conv.agency?.profile?.nomAgence || conv.agency?.email || t('project.home.agency')
               const last = conv.messages?.[0]
               const unread = conv._count?.messages ?? 0
               return (
@@ -228,10 +229,10 @@ export default function AccueilScreen() {
                   key={conv.id}
                   left={<Avatar name={name} size={40} />}
                   title={name}
-                  subtitle={last?.content ? singleLine(last.content) : 'Nouvelle conversation'}
+                  subtitle={last?.content ? singleLine(last.content) : t('project.home.newConversation')}
                   value={formatRelative(last?.createdAt ?? conv.updatedAt)}
                   badge={unread || undefined}
-                  onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: conv.id, name, role: conv.isPlatform ? 'Plateforme' : 'Agence' } })}
+                  onPress={() => router.push({ pathname: '/conversation/[id]', params: { id: conv.id, name, role: conv.isPlatform ? t('project.home.platform') : t('project.home.agency') } })}
                 />
               )
             })
@@ -242,10 +243,10 @@ export default function AccueilScreen() {
           <View style={{ gap: 6 }}>
             <View style={styles.sectionHeader}>
               <Text variant="footnote" style={styles.sectionTitle}>
-                Conseils
+                {t('project.home.tips')}
               </Text>
               <Pressable accessibilityRole="link" hitSlop={10} onPress={() => router.push('/blog')}>
-                <Text style={styles.sectionAction}>Blog</Text>
+                <Text style={styles.sectionAction}>{t('project.home.blog')}</Text>
               </Pressable>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel} decelerationRate="fast" snapToInterval={252}>
@@ -277,7 +278,7 @@ export default function AccueilScreen() {
       <BottomSheet
         visible={popupVisible}
         onClose={() => setPopupVisible(false)}
-        footer={<Button title="C'est compris" size="lg" onPress={() => setPopupVisible(false)} />}
+        footer={<Button title={t('project.home.gotIt')} size="lg" onPress={() => setPopupVisible(false)} />}
       >
         <View style={styles.popup}>
           <View style={styles.popupIcon}>

@@ -53,6 +53,17 @@ navigateur intégré (elles restent ainsi synchronisées avec le site).
 L'accès aux écrans est contrôlé dans `src/app/_layout.tsx` avec `Stack.Protected`
 selon le rôle ; quand la session change, la pile revient au premier écran autorisé.
 
+## Langues (français par défaut, anglais)
+
+- Textes dans `src/i18n/fr/*.ts` (référence) et `src/i18n/en/*.ts` : l'anglais est typé
+  `typeof fr`, TypeScript refuse une clé manquante. `t('espace.cle', { param })` depuis `@/i18n`.
+- Le français reste la langue par défaut ; l'anglais se choisit dans l'app (bouton EN de
+  l'accueil, ligne Langue du profil) et est mémorisé (AsyncStorage). La langue de l'appareil
+  n'est pas utilisée.
+- Chaque requête envoie `X-Immocible-Lang` : messages d'erreur, pages légales et textes
+  administrables (versions `*_en` dans l'admin) reviennent dans la langue choisie.
+- Ne jamais appeler `t()` au niveau module : la navigation est remontée au changement de langue.
+
 ## Repères de conception
 
 - **La cible** (logo) est l'élément signature : `components/brand/TargetRing.tsx`.

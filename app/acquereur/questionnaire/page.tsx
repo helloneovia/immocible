@@ -37,6 +37,7 @@ import { LocationMapDraw, type DrawnAreaGeoJSON } from '@/components/ui/Location
 import { MapErrorBoundary } from '@/components/ui/MapErrorBoundary'
 import { Navbar } from '@/components/layout/Navbar'
 import { NativeLocationButton } from '@/components/ui/NativeLocationButton'
+import { useI18n } from '@/lib/i18n/client'
 
 interface QuestionnaireData {
   // Informations personnelles
@@ -77,16 +78,23 @@ interface QuestionnaireData {
 }
 
 const STEPS = [
-  { id: 1, title: 'Situation personnelle', icon: Users },
-  { id: 2, title: 'Type de bien recherché', icon: Building2 },
-  { id: 3, title: 'Budget et financement', icon: Euro },
-  { id: 4, title: 'Localisation', icon: MapPin },
-  { id: 5, title: 'Critères supplémentaires', icon: CheckCircle2 },
-  { id: 6, title: 'Urgence et flexibilité', icon: Home },
-]
+  { id: 1, titleKey: 'buyer.questionnaire.steps.personal', icon: Users },
+  { id: 2, titleKey: 'buyer.questionnaire.steps.propertyType', icon: Building2 },
+  { id: 3, titleKey: 'buyer.questionnaire.steps.budget', icon: Euro },
+  { id: 4, titleKey: 'buyer.questionnaire.steps.location', icon: MapPin },
+  { id: 5, titleKey: 'buyer.questionnaire.steps.extras', icon: CheckCircle2 },
+  { id: 6, titleKey: 'buyer.questionnaire.steps.urgency', icon: Home },
+] as const
+
+// Types de biens : la valeur envoyée à l'API reste l'identifiant français, seul le libellé est traduit.
+const PROPERTY_TYPES = ['appartement', 'maison', 'terrain', 'studio', 'loft', 'duplex', 'penthouse'] as const
+
+// Critères supplémentaires : la clé est le champ enregistré, le libellé vient du dictionnaire.
+const AMENITIES = ['balcon', 'terrasse', 'jardin', 'parking', 'cave', 'ascenseur'] as const
 
 function QuestionnaireContent() {
   const router = useRouter()
+  const { t } = useI18n()
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState<QuestionnaireData>({
@@ -214,12 +222,12 @@ function QuestionnaireContent() {
       router.push('/acquereur/dashboard?profile=completed')
     } catch (error) {
       console.error('Error saving questionnaire:', error)
-      alert('Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.')
+      alert(t('buyer.questionnaire.saveError'))
     }
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Chargement...</div>
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50">{t('buyer.questionnaire.loading')}</div>
   }
 
   const renderStepContent = () => {
@@ -229,7 +237,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="situationFamiliale" className="text-base font-semibold">
-                Situation familiale
+                {t('buyer.questionnaire.personal.familyStatus')}
               </Label>
               <Select
                 key={`situation-${formData.situationFamiliale}`}
@@ -237,22 +245,22 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('situationFamiliale', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Sélectionnez votre situation" />
+                  <SelectValue placeholder={t('buyer.questionnaire.personal.selectSituation')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="celibataire">Célibataire</SelectItem>
-                  <SelectItem value="marie">Marié(e)</SelectItem>
-                  <SelectItem value="pacs">Pacsé(e)</SelectItem>
-                  <SelectItem value="concubinage">En concubinage</SelectItem>
-                  <SelectItem value="divorce">Divorcé(e)</SelectItem>
-                  <SelectItem value="veuf">Veuf(ve)</SelectItem>
+                  <SelectItem value="celibataire">{t('buyer.questionnaire.personal.familyOptions.celibataire')}</SelectItem>
+                  <SelectItem value="marie">{t('buyer.questionnaire.personal.familyOptions.marie')}</SelectItem>
+                  <SelectItem value="pacs">{t('buyer.questionnaire.personal.familyOptions.pacs')}</SelectItem>
+                  <SelectItem value="concubinage">{t('buyer.questionnaire.personal.familyOptions.concubinage')}</SelectItem>
+                  <SelectItem value="divorce">{t('buyer.questionnaire.personal.familyOptions.divorce')}</SelectItem>
+                  <SelectItem value="veuf">{t('buyer.questionnaire.personal.familyOptions.veuf')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="nombreEnfants" className="text-base font-semibold">
-                Nombre d&apos;enfants
+                {t('buyer.questionnaire.personal.children')}
               </Label>
               <Select
                 key={`enfants-${formData.nombreEnfants}`}
@@ -260,21 +268,21 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('nombreEnfants', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Nombre d'enfants" />
+                  <SelectValue placeholder={t('buyer.questionnaire.personal.children')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">Aucun</SelectItem>
-                  <SelectItem value="1">1 enfant</SelectItem>
-                  <SelectItem value="2">2 enfants</SelectItem>
-                  <SelectItem value="3">3 enfants</SelectItem>
-                  <SelectItem value="4+">4 enfants ou plus</SelectItem>
+                  <SelectItem value="0">{t('buyer.questionnaire.personal.childrenOptions.none')}</SelectItem>
+                  <SelectItem value="1">{t('buyer.questionnaire.personal.childrenOptions.one')}</SelectItem>
+                  <SelectItem value="2">{t('buyer.questionnaire.personal.childrenOptions.two')}</SelectItem>
+                  <SelectItem value="3">{t('buyer.questionnaire.personal.childrenOptions.three')}</SelectItem>
+                  <SelectItem value="4+">{t('buyer.questionnaire.personal.childrenOptions.fourPlus')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="situationProfessionnelle" className="text-base font-semibold">
-                Situation professionnelle
+                {t('buyer.questionnaire.personal.professional')}
               </Label>
               <Select
                 key={`pro-${formData.situationProfessionnelle}`}
@@ -282,16 +290,16 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('situationProfessionnelle', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Sélectionnez votre situation" />
+                  <SelectValue placeholder={t('buyer.questionnaire.personal.selectSituation')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cdi">CDI</SelectItem>
-                  <SelectItem value="cdd">CDD</SelectItem>
-                  <SelectItem value="freelance">Freelance / Indépendant</SelectItem>
-                  <SelectItem value="retraite">Retraité(e)</SelectItem>
-                  <SelectItem value="chomage">En recherche d&apos;emploi</SelectItem>
-                  <SelectItem value="etudiant">Étudiant(e)</SelectItem>
-                  <SelectItem value="autre">Autre</SelectItem>
+                  <SelectItem value="cdi">{t('buyer.questionnaire.personal.professionalOptions.cdi')}</SelectItem>
+                  <SelectItem value="cdd">{t('buyer.questionnaire.personal.professionalOptions.cdd')}</SelectItem>
+                  <SelectItem value="freelance">{t('buyer.questionnaire.personal.professionalOptions.freelance')}</SelectItem>
+                  <SelectItem value="retraite">{t('buyer.questionnaire.personal.professionalOptions.retraite')}</SelectItem>
+                  <SelectItem value="chomage">{t('buyer.questionnaire.personal.professionalOptions.chomage')}</SelectItem>
+                  <SelectItem value="etudiant">{t('buyer.questionnaire.personal.professionalOptions.etudiant')}</SelectItem>
+                  <SelectItem value="autre">{t('buyer.questionnaire.personal.professionalOptions.autre')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -299,12 +307,12 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="salaire" className="text-base font-semibold">
-                  Revenus mensuels nets (€)
+                  {t('buyer.questionnaire.personal.income')}
                 </Label>
                 <Input
                   id="salaire"
                   type="number"
-                  placeholder="Ex: 4500"
+                  placeholder={t('buyer.questionnaire.personal.incomePlaceholder')}
                   value={formData.salaire}
                   onChange={(e) => updateFormData('salaire', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -312,12 +320,12 @@ function QuestionnaireContent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="patrimoine" className="text-base font-semibold">
-                  Patrimoine total (€)
+                  {t('buyer.questionnaire.personal.assets')}
                 </Label>
                 <Input
                   id="patrimoine"
                   type="number"
-                  placeholder="Ex: 150000"
+                  placeholder={t('buyer.questionnaire.personal.assetsPlaceholder')}
                   value={formData.patrimoine}
                   onChange={(e) => updateFormData('patrimoine', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -332,24 +340,24 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-3">
               <Label className="text-base font-semibold">
-                Type de bien recherché (plusieurs choix possibles)
+                {t('buyer.questionnaire.property.typeLabel')}
               </Label>
               <div className="grid grid-cols-2 gap-3">
-                {['Appartement', 'Maison', 'Checkboxes', 'Terrain', 'Studio', 'Loft', 'Duplex', 'Penthouse'].filter(t => t !== 'Checkboxes').map((type) => (
+                {PROPERTY_TYPES.map((type) => (
                   <div
                     key={type}
-                    onClick={() => toggleTypeBien(type.toLowerCase())}
-                    className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.typeBien.includes(type.toLowerCase())
+                    onClick={() => toggleTypeBien(type)}
+                    className={`flex items-center space-x-2 p-4 rounded-lg border-2 cursor-pointer transition-all ${formData.typeBien.includes(type)
                       ? 'border-amber-500 bg-amber-50'
                       : 'border-gray-200 hover:border-gray-300'
                       }`}
                   >
                     <Checkbox
-                      checked={formData.typeBien.includes(type.toLowerCase())}
+                      checked={formData.typeBien.includes(type)}
                       className="pointer-events-none"
                       readOnly
                     />
-                    <Label className="cursor-pointer font-medium pointer-events-none">{type}</Label>
+                    <Label className="cursor-pointer font-medium pointer-events-none">{t(`buyer.questionnaire.property.types.${type}`)}</Label>
                   </div>
                 ))}
               </div>
@@ -358,12 +366,12 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="surfaceMin" className="text-base font-semibold">
-                  Surface minimum (m²)
+                  {t('buyer.questionnaire.property.surfaceMin')}
                 </Label>
                 <Input
                   id="surfaceMin"
                   type="number"
-                  placeholder="Ex: 50"
+                  placeholder={t('buyer.questionnaire.property.surfaceMinPlaceholder')}
                   value={formData.surfaceMin}
                   onChange={(e) => updateFormData('surfaceMin', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -371,12 +379,12 @@ function QuestionnaireContent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="surfaceMax" className="text-base font-semibold">
-                  Surface maximum (m²)
+                  {t('buyer.questionnaire.property.surfaceMax')}
                 </Label>
                 <Input
                   id="surfaceMax"
                   type="number"
-                  placeholder="Ex: 120"
+                  placeholder={t('buyer.questionnaire.property.surfaceMaxPlaceholder')}
                   value={formData.surfaceMax}
                   onChange={(e) => updateFormData('surfaceMax', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -386,7 +394,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label className="text-base font-semibold">
-                Nombre de pièces (plusieurs choix possibles)
+                {t('buyer.questionnaire.property.roomsLabel')}
               </Label>
               <div className="grid grid-cols-3 gap-3">
                 {['1', '2', '3', '4', '5', '6+'].map((pieces) => (
@@ -404,7 +412,7 @@ function QuestionnaireContent() {
                       readOnly
                     />
                     <Label className="cursor-pointer font-medium whitespace-nowrap pointer-events-none">
-                      {pieces} {pieces === '1' ? 'pièce' : pieces === '6+' ? 'pièces' : 'pièces'}
+                      {pieces} {pieces === '1' ? t('buyer.questionnaire.property.room') : t('buyer.questionnaire.property.rooms')}
                     </Label>
                   </div>
                 ))}
@@ -419,12 +427,12 @@ function QuestionnaireContent() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="budgetMin" className="text-base font-semibold">
-                  Budget minimum (€)
+                  {t('buyer.questionnaire.budget.budgetMin')}
                 </Label>
                 <Input
                   id="budgetMin"
                   type="number"
-                  placeholder="Ex: 300000"
+                  placeholder={t('buyer.questionnaire.budget.budgetMinPlaceholder')}
                   value={formData.budgetMin}
                   onChange={(e) => updateFormData('budgetMin', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -432,12 +440,12 @@ function QuestionnaireContent() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="budgetMax" className="text-base font-semibold">
-                  Budget maximum (€)
+                  {t('buyer.questionnaire.budget.budgetMax')}
                 </Label>
                 <Input
                   id="budgetMax"
                   type="number"
-                  placeholder="Ex: 600000"
+                  placeholder={t('buyer.questionnaire.budget.budgetMaxPlaceholder')}
                   value={formData.budgetMax}
                   onChange={(e) => updateFormData('budgetMax', e.target.value)}
                   className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -447,12 +455,12 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="apport" className="text-base font-semibold">
-                Apport personnel (€)
+                {t('buyer.questionnaire.budget.deposit')}
               </Label>
               <Input
                 id="apport"
                 type="number"
-                placeholder="Ex: 100000"
+                placeholder={t('buyer.questionnaire.budget.depositPlaceholder')}
                 value={formData.apport}
                 onChange={(e) => updateFormData('apport', e.target.value)}
                 className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors"
@@ -461,7 +469,7 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="financement" className="text-base font-semibold">
-                Type de financement
+                {t('buyer.questionnaire.budget.financing')}
               </Label>
               <Select
                 key={`financement-${formData.financement}`}
@@ -469,14 +477,14 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('financement', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Type de financement" />
+                  <SelectValue placeholder={t('buyer.questionnaire.budget.financing')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pret-bancaire">Prêt bancaire</SelectItem>
-                  <SelectItem value="pret-relais">Prêt relais</SelectItem>
-                  <SelectItem value="cash">Achat au comptant</SelectItem>
-                  <SelectItem value="mixte">Financement mixte</SelectItem>
-                  <SelectItem value="autre">Autre</SelectItem>
+                  <SelectItem value="pret-bancaire">{t('buyer.questionnaire.budget.financingOptions.pretBancaire')}</SelectItem>
+                  <SelectItem value="pret-relais">{t('buyer.questionnaire.budget.financingOptions.pretRelais')}</SelectItem>
+                  <SelectItem value="cash">{t('buyer.questionnaire.budget.financingOptions.cash')}</SelectItem>
+                  <SelectItem value="mixte">{t('buyer.questionnaire.budget.financingOptions.mixte')}</SelectItem>
+                  <SelectItem value="autre">{t('buyer.questionnaire.budget.financingOptions.autre')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -484,7 +492,7 @@ function QuestionnaireContent() {
             {formData.financement !== 'cash' && (
               <div className="space-y-2">
                 <Label htmlFor="dureePret" className="text-base font-semibold">
-                  Durée du prêt souhaitée (années)
+                  {t('buyer.questionnaire.budget.loanDuration')}
                 </Label>
                 <Select
                   key={`duree-${formData.dureePret}`}
@@ -492,14 +500,14 @@ function QuestionnaireContent() {
                   onValueChange={(value) => updateFormData('dureePret', value)}
                 >
                   <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                    <SelectValue placeholder="Durée du prêt" />
+                    <SelectValue placeholder={t('buyer.questionnaire.budget.loanDurationPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">10 ans</SelectItem>
-                    <SelectItem value="15">15 ans</SelectItem>
-                    <SelectItem value="20">20 ans</SelectItem>
-                    <SelectItem value="25">25 ans</SelectItem>
-                    <SelectItem value="30">30 ans</SelectItem>
+                    <SelectItem value="10">{t('buyer.questionnaire.budget.years', { count: 10 })}</SelectItem>
+                    <SelectItem value="15">{t('buyer.questionnaire.budget.years', { count: 15 })}</SelectItem>
+                    <SelectItem value="20">{t('buyer.questionnaire.budget.years', { count: 20 })}</SelectItem>
+                    <SelectItem value="25">{t('buyer.questionnaire.budget.years', { count: 25 })}</SelectItem>
+                    <SelectItem value="30">{t('buyer.questionnaire.budget.years', { count: 30 })}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -513,7 +521,7 @@ function QuestionnaireContent() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <Label htmlFor="localisation" className="text-base font-semibold">
-                  Villes ou régions recherchées
+                  {t('buyer.questionnaire.location.label')}
                 </Label>
                 <NativeLocationButton
                   variant="outline"
@@ -548,24 +556,24 @@ function QuestionnaireContent() {
                     updateFormData('localisation', [...formData.localisation, val])
                   }
                 }}
-                placeholder="Ajouter une ville..."
+                placeholder={t('buyer.questionnaire.location.addCity')}
               />
               <p className="text-sm text-gray-500">
-                {formData.localisation.length === 0 ? "Recherchez et sélectionnez une ville." : "Vous pouvez ajouter d'autres villes."}
+                {formData.localisation.length === 0 ? t('buyer.questionnaire.location.hintEmpty') : t('buyer.questionnaire.location.hintMore')}
               </p>
 
               <div className="pt-4 border-t">
                 <Label className="text-base font-semibold block mb-2">
-                  Ou dessinez une zone précise sur la carte
+                  {t('buyer.questionnaire.location.drawLabel')}
                 </Label>
                 <p className="text-sm text-gray-500 mb-2">
-                  Idéal pour cibler des quartiers ou rues précis. Cliquez sur la carte pour tracer un polygone, puis fermez la forme.
+                  {t('buyer.questionnaire.location.drawHint')}
                 </p>
                 <MapErrorBoundary
                   fallback={
                     <div className="rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center p-6 min-h-[280px]">
                       <p className="text-sm text-gray-500 text-center">
-                        La carte n&apos;est pas disponible. Utilisez la recherche de villes ci-dessus.
+                        {t('buyer.questionnaire.location.mapUnavailable')}
                       </p>
                     </div>
                   }
@@ -585,17 +593,10 @@ function QuestionnaireContent() {
         return (
           <div className="space-y-6">
             <Label className="text-base font-semibold">
-              Critères supplémentaires (au moins un choix)
+              {t('buyer.questionnaire.extras.label')}
             </Label>
             <div className="grid grid-cols-2 gap-4">
-              {[
-                { key: 'balcon', label: 'Balcon' },
-                { key: 'terrasse', label: 'Terrasse' },
-                { key: 'jardin', label: 'Jardin' },
-                { key: 'parking', label: 'Parking' },
-                { key: 'cave', label: 'Cave' },
-                { key: 'ascenseur', label: 'Ascenseur' },
-              ].map(({ key, label }) => (
+              {AMENITIES.map((key) => ({ key, label: t(`buyer.amenities.${key}`) })).map(({ key, label }) => (
                 <div
                   key={key}
                   onClick={() => updateFormData(key as keyof QuestionnaireData, !formData[key as keyof QuestionnaireData])}
@@ -615,16 +616,16 @@ function QuestionnaireContent() {
 
             <div className="space-y-2">
               <Label htmlFor="commentaires" className="text-base font-semibold">
-                Commentaires ou critères spécifiques
+                {t('buyer.questionnaire.extras.comments')}
               </Label>
               <Textarea
                 id="commentaires"
-                placeholder="Ex: Rez-de-jardin souhaité, pas de vis-à-vis, exposition sud..."
+                placeholder={t('buyer.questionnaire.extras.commentsPlaceholder')}
                 value={formData.commentaires}
                 onChange={(e) => updateFormData('commentaires', e.target.value)}
                 className="min-h-[100px]"
               />
-              <p className="text-xs text-gray-500">Précisez ici vos besoins particuliers.</p>
+              <p className="text-xs text-gray-500">{t('buyer.questionnaire.extras.commentsHint')}</p>
             </div>
           </div>
         )
@@ -634,7 +635,7 @@ function QuestionnaireContent() {
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="delaiRecherche" className="text-base font-semibold">
-                Délai de recherche souhaité
+                {t('buyer.questionnaire.urgency.delay')}
               </Label>
               <Select
                 key={`delai-${formData.delaiRecherche}`}
@@ -642,21 +643,21 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('delaiRecherche', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Délai de recherche" />
+                  <SelectValue placeholder={t('buyer.questionnaire.urgency.delayPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="urgent">Urgent (moins de 1 mois)</SelectItem>
-                  <SelectItem value="1-3">1 à 3 mois</SelectItem>
-                  <SelectItem value="3-6">3 à 6 mois</SelectItem>
-                  <SelectItem value="6-12">6 à 12 mois</SelectItem>
-                  <SelectItem value="12+">Plus de 12 mois</SelectItem>
+                  <SelectItem value="urgent">{t('buyer.questionnaire.urgency.delayOptions.urgent')}</SelectItem>
+                  <SelectItem value="1-3">{t('buyer.questionnaire.urgency.delayOptions.m1to3')}</SelectItem>
+                  <SelectItem value="3-6">{t('buyer.questionnaire.urgency.delayOptions.m3to6')}</SelectItem>
+                  <SelectItem value="6-12">{t('buyer.questionnaire.urgency.delayOptions.m6to12')}</SelectItem>
+                  <SelectItem value="12+">{t('buyer.questionnaire.urgency.delayOptions.m12plus')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="flexibilite" className="text-base font-semibold">
-                Flexibilité sur les critères
+                {t('buyer.questionnaire.urgency.flexibility')}
               </Label>
               <Select
                 key={`flex-${formData.flexibilite}`}
@@ -664,19 +665,19 @@ function QuestionnaireContent() {
                 onValueChange={(value) => updateFormData('flexibilite', value)}
               >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-slate-900 transition-colors">
-                  <SelectValue placeholder="Niveau de flexibilité" />
+                  <SelectValue placeholder={t('buyer.questionnaire.urgency.flexibilityPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="strict">Strict (tous les critères doivent être respectés)</SelectItem>
-                  <SelectItem value="modere">Modéré (quelques ajustements possibles)</SelectItem>
-                  <SelectItem value="flexible">Flexible (ouvert aux opportunités)</SelectItem>
+                  <SelectItem value="strict">{t('buyer.questionnaire.urgency.flexibilityOptions.strict')}</SelectItem>
+                  <SelectItem value="modere">{t('buyer.questionnaire.urgency.flexibilityOptions.modere')}</SelectItem>
+                  <SelectItem value="flexible">{t('buyer.questionnaire.urgency.flexibilityOptions.flexible')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="bg-amber-50 border border-amber-200 rounded-xl rounded-lg p-4">
               <p className="text-sm text-slate-800">
-                <strong>💡 Astuce :</strong> Plus vous êtes flexible, plus nous pourrons vous proposer de biens correspondant à votre profil.
+                <strong>{t('buyer.questionnaire.urgency.tipLabel')}</strong> {t('buyer.questionnaire.urgency.tip')}
               </p>
             </div>
           </div>
@@ -696,14 +697,14 @@ function QuestionnaireContent() {
         <div className="max-w-4xl mx-auto">
           <Card className="bg-white/95 backdrop-blur-xl shadow-2xl border border-white/30 rounded-2xl overflow-hidden">
             <CardHeader className="text-center pb-6">
-              <CardTitle className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "\'Playfair Display\', serif" }}>Questionnaire intelligent</CardTitle>
+              <CardTitle className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "\'Playfair Display\', serif" }}>{t('buyer.questionnaire.title')}</CardTitle>
               <CardDescription className="text-base">
-                Créez votre profil en quelques minutes pour recevoir des matches personnalisés
+                {t('buyer.questionnaire.subtitle')}
               </CardDescription>
               <div className="mt-6">
                 <Progress value={progress} className="h-2 bg-slate-100 [&>div]:bg-amber-400" />
                 <p className="text-sm text-muted-foreground mt-2">
-                  Étape {currentStep} sur {STEPS.length} - {Math.round(progress)}% complété
+                  {t('buyer.questionnaire.progress', { current: currentStep, total: STEPS.length, percent: Math.round(progress) })}
                 </p>
               </div>
             </CardHeader>
@@ -731,7 +732,7 @@ function QuestionnaireContent() {
                         </div>
                         <p className={`text-xs mt-2 text-center font-medium ${isActive ? 'text-amber-500' : 'text-gray-500'
                           }`}>
-                          {step.title}
+                          {t(step.titleKey)}
                         </p>
                       </div>
                       {index < STEPS.length - 1 && (
@@ -758,7 +759,7 @@ function QuestionnaireContent() {
                   className="flex items-center gap-2"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Précédent
+                  {t('buyer.questionnaire.previous')}
                 </Button>
 
                 {currentStep < STEPS.length ? (
@@ -767,7 +768,7 @@ function QuestionnaireContent() {
                     onClick={handleNext}
                     className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
                   >
-                    Suivant
+                    {t('buyer.questionnaire.next')}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 ) : (
@@ -776,7 +777,7 @@ function QuestionnaireContent() {
                     onClick={handleFinalize}
                     className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
                   >
-                    Finaliser mon profil
+                    {t('buyer.questionnaire.finalize')}
                     <CheckCircle2 className="h-4 w-4" />
                   </Button>
                 )}

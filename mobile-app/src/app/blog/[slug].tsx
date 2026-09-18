@@ -6,6 +6,7 @@ import { BookOpen } from 'lucide-react-native'
 import { EmptyState, LoadingView } from '@/components/ui/Layout'
 import { pushedScreenOptions } from '@/lib/navigation'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { articleBlocks, fetchArticle } from '@/lib/blog'
 import { useStatusBar } from '@/lib/hooks'
 import type { Article } from '@/lib/types'
@@ -32,8 +33,8 @@ export default function ArticleScreen() {
       ) : !article ? (
         <EmptyState
           icon={BookOpen}
-          title="Article introuvable"
-          actionLabel="Retour au blog"
+          title={t('profile.blog.notFound')}
+          actionLabel={t('profile.blog.backToBlog')}
           onAction={() => router.back()}
           style={{ margin: spacing.screen }}
         />

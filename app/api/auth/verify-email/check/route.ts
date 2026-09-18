@@ -2,8 +2,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { enforceRateLimit } from '@/lib/rate-limit'
+import { getT } from '@/lib/i18n/server'
 
 export async function POST(req: Request) {
+    const t = getT()
     try {
         // Empêche le brute-force du code à 6 chiffres : 10 essais / 10 min / IP.
         const limited = enforceRateLimit(req, 'otp-check', 10, 10 * 60_000)
@@ -12,7 +14,7 @@ export async function POST(req: Request) {
         const { email, code } = await req.json()
 
         if (!email || !code) {
-            return NextResponse.json({ error: 'Données invalides' }, { status: 400 })
+            return NextResponse.json({ error: t('api.auth.verifyEmail.invalidData') }, { status: 400 })
         }
 
         const verificationToken = await prisma.verificationToken.findFirst({
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
         })
 
         if (!verificationToken) {
-            return NextResponse.json({ error: 'Code invalide ou expiré' }, { status: 400 })
+            return NextResponse.json({ error: t('api.auth.verifyEmail.invalidCode') }, { status: 400 })
         }
 
         // Usually we would delete the token here, but we might want to keep it until registration is complete
@@ -42,6 +44,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true })
     } catch (error) {
         console.error('Error verifying email:', error)
-        return NextResponse.json({ error: 'Erreur lors de la vérification.' }, { status: 500 })
+        return NextResponse.json({ error: t('api.auth.verifyEmail.checkFailed') }, { status: 500 })
     }
 }

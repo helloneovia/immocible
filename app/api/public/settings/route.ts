@@ -1,11 +1,13 @@
-import { getAppSettings } from '@/lib/settings'
+import { getAppSettings, localizeSettings } from '@/lib/settings'
+import { getLocale } from '@/lib/i18n/server'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
     try {
-        const settings = await getAppSettings()
+        // Textes administrables dans la langue de la requête (en-tête de l'app ou cookie du site).
+        const settings = localizeSettings(await getAppSettings(), getLocale())
 
         // Only return safe public strings (exclude API keys, secrets)
         const publicSettings = {

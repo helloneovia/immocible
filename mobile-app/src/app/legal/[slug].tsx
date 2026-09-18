@@ -4,6 +4,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router'
 import { FileText } from 'lucide-react-native'
 import { EmptyState, LoadingView } from '@/components/ui/Layout'
 import { Text } from '@/components/ui/Text'
+import { t } from '@/i18n'
 import { api } from '@/lib/api'
 import { useStatusBar } from '@/lib/hooks'
 import { pushedScreenOptions } from '@/lib/navigation'
@@ -77,9 +78,9 @@ export default function LegalScreen() {
       ) : !document ? (
         <EmptyState
           icon={FileText}
-          title="Page indisponible"
-          message="Vérifiez votre connexion puis réessayez."
-          actionLabel="Réessayer"
+          title={t('profile.legal.unavailable')}
+          message={t('profile.legal.checkConnection')}
+          actionLabel={t('profile.legal.retry')}
           onAction={() => {
             setLoading(true)
             load()
@@ -103,7 +104,7 @@ export default function LegalScreen() {
             <Text variant="title1" accessibilityRole="header">
               {document.title}
             </Text>
-            <Text variant="footnote">Dernière mise à jour : {document.lastUpdated}</Text>
+            <Text variant="footnote">{t('profile.legal.lastUpdated', { date: document.lastUpdated })}</Text>
           </View>
 
           {document.notice ? (

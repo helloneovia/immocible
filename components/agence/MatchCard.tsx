@@ -12,6 +12,8 @@ import {
     MessageSquare,
     Loader2
 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n/client'
+import { intlLocale } from '@/lib/i18n/core'
 
 interface MatchCardProps {
     match: {
@@ -32,6 +34,7 @@ interface MatchCardProps {
 
 export function MatchCard({ match }: MatchCardProps) {
     const router = useRouter()
+    const { t, locale } = useI18n()
     const [loading, setLoading] = useState(false)
 
     const handleStartChat = async () => {
@@ -50,15 +53,15 @@ export function MatchCard({ match }: MatchCardProps) {
                 router.push('/agence/messages')
             } else {
                 if (data.code === 'LIMIT_REACHED') {
-                    alert("Limite atteinte : " + data.error)
+                    alert(t('agency.matchCard.limitReached', { error: data.error }))
                 } else {
                     console.error(data.error)
-                    alert("Erreur lors de l'initialisation du chat")
+                    alert(t('agency.matchCard.chatInitError'))
                 }
             }
         } catch (error) {
             console.error(error)
-            alert("Erreur de connexion")
+            alert(t('agency.matchCard.connectionError'))
         } finally {
             setLoading(false)
         }
@@ -69,7 +72,7 @@ export function MatchCard({ match }: MatchCardProps) {
             <CardHeader>
                 <div className="flex items-center justify-between mb-3">
                     <CardTitle className="text-xl font-bold">
-                        {match.user.profile?.prenom || 'Acquéreur'} {match.user.profile?.nom?.charAt(0) || ''}.
+                        {match.user.profile?.prenom || t('agency.matchCard.buyerFallback')} {match.user.profile?.nom?.charAt(0) || ''}.
                     </CardTitle>
                     <span className="text-xs bg-green-500 text-white px-3 py-1.5 rounded-full font-bold flex items-center gap-1 shadow-lg">
                         {match.score}%
@@ -77,18 +80,18 @@ export function MatchCard({ match }: MatchCardProps) {
                 </div>
                 <CardDescription className="flex items-center gap-2 text-base">
                     <Building2 className="h-4 w-4" />
-                    Recherche active
+                    {t('agency.matchCard.activeSearch')}
                 </CardDescription>
                 <CardDescription className="flex items-center gap-1 mt-1">
                     <Euro className="h-3 w-3" />
-                    Budget: {match.budgetMin?.toLocaleString()} - {match.budgetMax?.toLocaleString()}€
+                    {t('agency.matchCard.budget', { min: match.budgetMin?.toLocaleString(intlLocale(locale)) ?? '', max: match.budgetMax?.toLocaleString(intlLocale(locale)) ?? '' })}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="space-y-2.5">
                     <div className="flex items-center gap-2 text-sm">
                         <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span className="font-medium">Acquéreur vérifié</span>
+                        <span className="font-medium">{t('agency.matchCard.verified')}</span>
                     </div>
                 </div>
                 <Button
@@ -102,7 +105,7 @@ export function MatchCard({ match }: MatchCardProps) {
                     ) : (
                         <MessageSquare className="mr-2 h-4 w-4" />
                     )}
-                    Démarrer une discussion
+                    {t('agency.matchCard.startChat')}
                 </Button>
             </CardContent>
         </Card>
