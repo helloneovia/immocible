@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Alert, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { Alert, Keyboard, KeyboardAvoidingView, Pressable, ScrollView, StyleSheet, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router, useLocalSearchParams } from 'expo-router'
-import Animated, { FadeIn, FadeOut, SlideInLeft, SlideInRight } from 'react-native-reanimated'
+import Animated, { FadeIn, SlideInLeft, SlideInRight } from 'react-native-reanimated'
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -178,6 +178,7 @@ export default function QuestionnaireScreen() {
   const stepError = attempted ? errorFor(step) : null
 
   const go = (next: number) => {
+    Keyboard.dismiss()
     if (next > index && errorFor(step)) {
       setAttempted(true)
       return
@@ -541,25 +542,25 @@ export default function QuestionnaireScreen() {
             <Skeleton height={116} rounded={radius.lg} />
           </View>
         ) : (
-          <Animated.View
-            key={step}
-            entering={(forward ? SlideInRight : SlideInLeft).duration(260)}
-            exiting={FadeOut.duration(100)}
-            style={styles.flex}
-          >
+          // Le conteneur qui suit la hauteur de l'écran n'est pas animé : sur Android, une vue
+          // avec animation d'entrée garde la hauteur mesurée clavier ouvert (étape budget), et
+          // le bas de l'étape suivante (financement mixte, autre, durée du prêt) ne répond plus.
+          <View key={step} style={styles.flex}>
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-              <Animated.View entering={FadeIn.delay(80)} style={{ gap: 8 }}>
-                <Text variant="footnote" style={styles.counter}>
-                  {singleSection ? t('questionnaire.edit') : t('questionnaire.counter', { current: index + 1, total: steps.length })}
-                </Text>
-                <Text variant="title1" accessibilityRole="header">
-                  {current.title}
-                </Text>
-                {current.help ? <Text variant="subhead">{current.help}</Text> : null}
+              <Animated.View entering={(forward ? SlideInRight : SlideInLeft).duration(260)} style={styles.stepBody}>
+                <Animated.View entering={FadeIn.delay(80)} style={{ gap: 8 }}>
+                  <Text variant="footnote" style={styles.counter}>
+                    {singleSection ? t('questionnaire.edit') : t('questionnaire.counter', { current: index + 1, total: steps.length })}
+                  </Text>
+                  <Text variant="title1" accessibilityRole="header">
+                    {current.title}
+                  </Text>
+                  {current.help ? <Text variant="subhead">{current.help}</Text> : null}
+                </Animated.View>
+                {renderStep()}
               </Animated.View>
-              {renderStep()}
             </ScrollView>
-          </Animated.View>
+          </View>
         )}
 
         <StickyFooter>
@@ -600,7 +601,8 @@ const styles = StyleSheet.create({
   segment: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.fill },
   segmentOn: { backgroundColor: colors.gold },
   skip: { fontFamily: fonts.semibold, fontSize: 15, color: colors.text2 },
-  content: { padding: spacing.screen, paddingTop: 20, gap: 22, paddingBottom: 32 },
+  content: { padding: spacing.screen, paddingTop: 20, paddingBottom: 32 },
+  stepBody: { gap: 22 },
   counter: { fontFamily: fonts.semibold, color: colors.goldDeep },
   row: { flexDirection: 'row', gap: 10 },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: 10 },
