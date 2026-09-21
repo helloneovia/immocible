@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, Shield, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useI18n } from '@/lib/i18n/client'
+import { passwordProblem } from '@/lib/validation'
 
 function ResetPasswordForm() {
     const router = useRouter()
@@ -37,8 +38,9 @@ function ResetPasswordForm() {
             return setError(t('auth.resetPassword.passwordsMismatch'))
         }
 
-        if (password.length < 8) {
-            return setError(t('auth.resetPassword.passwordTooShort'))
+        const passwordIssue = passwordProblem(password)
+        if (passwordIssue) {
+            return setError(passwordIssue === 'tooLong' ? t('auth.validation.passwordTooLong') : t('auth.resetPassword.passwordTooShort'))
         }
 
         setLoading(true)

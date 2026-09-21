@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { getLocales } from 'expo-localization'
 import { en } from './en'
 import { fr } from './fr'
 
@@ -26,7 +27,19 @@ type Leaves<T, P extends string = ''> = {
 export type TKey = Leaves<Dictionary>
 export type TParams = Record<string, string | number>
 
-let current: Locale = DEFAULT_LOCALE
+/**
+ * Langue du téléphone : anglais si l'appareil est en anglais, français sinon (langue par défaut).
+ * Un choix fait dans l'app (bouton FR / EN) reste prioritaire.
+ */
+function deviceLocale(): Locale {
+  try {
+    return getLocales()[0]?.languageCode === 'en' ? 'en' : DEFAULT_LOCALE
+  } catch {
+    return DEFAULT_LOCALE
+  }
+}
+
+let current: Locale = deviceLocale()
 
 /** Langue active, utilisable hors composants (API, formatage). */
 export function getLocale(): Locale {
@@ -61,7 +74,7 @@ interface I18nValue {
 const I18nContext = createContext<I18nValue>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t })
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
+  const [locale, setLocaleState] = useState<Locale>(current)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {

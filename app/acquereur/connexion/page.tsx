@@ -14,10 +14,11 @@ import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useI18n } from '@/lib/i18n/client'
 import type { TKey } from '@/lib/i18n/core'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 // Les messages de validation sont des clés de traduction, traduites à l'affichage.
 const loginSchema = z.object({
-  email: z.string().email('auth.buyerLogin.invalidEmail'),
+  email: z.string().trim().refine(isValidEmail, 'auth.buyerLogin.invalidEmail'),
   password: z.string().min(1, 'auth.buyerLogin.passwordRequired'),
 })
 
@@ -43,7 +44,7 @@ export default function ConnexionAcquereur() {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: data.email, password: data.password, role: 'acquereur' }),
+        body: JSON.stringify({ email: normalizeEmail(data.email), password: data.password, role: 'acquereur' }),
       })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || t('auth.buyerLogin.invalidCredentials'))

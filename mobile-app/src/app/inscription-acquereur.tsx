@@ -14,6 +14,7 @@ import { useSettings } from '@/contexts/SettingsContext'
 import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors, fonts } from '@/theme'
+import { isValidPhone, passwordProblem } from '@/lib/validation'
 
 const STEPS = 4
 
@@ -43,7 +44,7 @@ export default function InscriptionAcquereurScreen() {
       if (await verification.verifyCode(code)) setStep(3)
     } else if (step === 3) {
       if (!firstName.trim() || !lastName.trim()) return setError(t('auth.errors.nameRequired'))
-      if (telephone.replace(/\D/g, '').length < 10) return setError(t('auth.errors.phoneInvalid'))
+      if (!isValidPhone(telephone)) return setError(t('auth.errors.phoneInvalid'))
       setStep(4)
     } else {
       await register()
@@ -51,7 +52,7 @@ export default function InscriptionAcquereurScreen() {
   }
 
   const register = async () => {
-    if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+    if (passwordProblem(password)) return setError(passwordProblem(password) === 'tooLong' ? t('auth.errors.passwordTooLong') : t('auth.errors.passwordTooShort'))
     if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
     setSubmitting(true)
     try {

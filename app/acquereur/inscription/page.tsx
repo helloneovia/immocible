@@ -11,6 +11,7 @@ import { Logo } from '@/components/ui/Logo'
 import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { useAuth } from '@/contexts/AuthContext'
 import { useI18n } from '@/lib/i18n/client'
+import { isValidEmail, isValidPhone, isVerificationCode, normalizeEmail, passwordProblem } from '@/lib/validation'
 
 export default function InscriptionAcquereur() {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -39,13 +40,14 @@ export default function InscriptionAcquereur() {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loading) return
-    setLoading(true)
     setError(null)
+    if (!isValidEmail(email)) { setError(t('auth.validation.invalidEmail')); return }
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/verify-email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase() })
+        body: JSON.stringify({ email: normalizeEmail(email) })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -60,13 +62,14 @@ export default function InscriptionAcquereur() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (loading) return
-    setLoading(true)
     setError(null)
+    if (!isVerificationCode(otp)) { setError(t('auth.validation.invalidCode')); return }
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/verify-email/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), code: otp })
+        body: JSON.stringify({ email: normalizeEmail(email), code: otp.trim() })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -83,13 +86,15 @@ export default function InscriptionAcquereur() {
     if (loading) return
     setError(null)
     if (password !== confirmPassword) { setError(t('auth.common.passwordsMismatch')); return }
-    if (password.length < 8) { setError(t('auth.common.passwordTooShort')); return }
+    const pwIssue = passwordProblem(password)
+    if (pwIssue) { setError(pwIssue === 'tooLong' ? t('auth.validation.passwordTooLong') : t('auth.common.passwordTooShort')); return }
+    if (telephone.trim() && !isValidPhone(telephone)) { setError(t('auth.validation.invalidPhone')); return }
     setLoading(true)
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password, role: 'acquereur', firstName, lastName, telephone }),
+        body: JSON.stringify({ email: normalizeEmail(email), password, role: 'acquereur', firstName, lastName, telephone }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || t('auth.common.registerError'))

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser, getSession } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
-import { validateEmail } from '@/lib/mail'
+import { AGENCY_NAME_MAX_LENGTH, cleanText, isValidEmail, isValidPhone, NAME_MAX_LENGTH, normalizeEmail, passwordProblem } from '@/lib/validation'
 import { compare, hash } from 'bcryptjs'
 import { getT } from '@/lib/i18n/server'
 
@@ -43,14 +43,25 @@ export async function PUT(request: Request) {
         const user = session.user
 
         const body = await request.json()
-        const { nom, prenom, telephone, password, nomAgence, currentPassword } = body
-        const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+        const { password, currentPassword } = body
+        const email = normalizeEmail(body.email)
+        const nom = cleanText(body.nom, NAME_MAX_LENGTH)
+        const prenom = cleanText(body.prenom, NAME_MAX_LENGTH)
+        const telephone = cleanText(body.telephone, 30)
+        const nomAgence = cleanText(body.nomAgence, AGENCY_NAME_MAX_LENGTH)
+
+        if (telephone && !isValidPhone(telephone)) {
+            return NextResponse.json({ error: t('api.validation.invalidPhone') }, { status: 400 })
+        }
+        if (user.role === 'agence' && !nomAgence) {
+            return NextResponse.json({ error: t('api.validation.agencyNameRequired') }, { status: 400 })
+        }
 
         if (!email) {
             return NextResponse.json({ error: t('api.profile.emailRequired') }, { status: 400 })
         }
 
-        const emailChanged = email !== user.email
+        const emailChanged = email !== user.email.toLowerCase()
         const passwordChanged = typeof password === 'string' && password.length > 0
 
         // Changer l'e-mail ou le mot de passe exige le mot de passe actuel :
@@ -66,18 +77,19 @@ export async function PUT(request: Request) {
         // Prepare User update (Email & Password)
         const userUpdateData: any = { email }
         if (emailChanged) {
-            if (!validateEmail(email)) {
+            if (!isValidEmail(email)) {
                 return NextResponse.json({ error: t('api.profile.invalidEmail') }, { status: 400 })
             }
-            const existing = await prisma.user.findUnique({ where: { email } })
+            const existing = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, NOT: { id: user.id } } })
             if (existing) {
                 return NextResponse.json({ error: t('api.profile.emailInUse') }, { status: 409 })
             }
         }
         if (passwordChanged) {
-            // Même minimum que l'inscription.
-            if (password.length < 8) {
-                return NextResponse.json({ error: t('api.profile.passwordTooShort') }, { status: 400 })
+            // Mêmes règles que l'inscription.
+            const passwordIssue = passwordProblem(password)
+            if (passwordIssue) {
+                return NextResponse.json({ error: passwordIssue === 'tooLong' ? t('api.validation.passwordTooLong') : t('api.profile.passwordTooShort') }, { status: 400 })
             }
             userUpdateData.password = await hash(password, 10)
         }

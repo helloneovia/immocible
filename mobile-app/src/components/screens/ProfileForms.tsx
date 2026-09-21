@@ -14,6 +14,7 @@ import { useStatusBar } from '@/lib/hooks'
 import { largeTitleScrollProps, pushedScreenOptions, useTabScreenKeyboardOffset } from '@/lib/navigation'
 import type { AccountProfile } from '@/lib/types'
 import { colors, fonts, radius, spacing } from '@/theme'
+import { isValidEmail, isValidPhone, passwordProblem } from '@/lib/validation'
 
 type Form = { prenom: string; nom: string; email: string; telephone: string; nomAgence: string }
 
@@ -57,7 +58,9 @@ export function ProfileInfoScreen() {
 
   const save = async () => {
     if (!form) return
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return Alert.alert(t('profile.info.email'), t('profile.info.invalidEmail'))
+    if (!isValidEmail(form.email)) return Alert.alert(t('profile.info.email'), t('profile.info.invalidEmail'))
+    if (form.telephone.trim() && !isValidPhone(form.telephone)) return Alert.alert(t('profile.info.phone'), t('auth.errors.phoneInvalid'))
+    if (role === 'agence' && !form.nomAgence.trim()) return Alert.alert(t('profile.info.agencyName'), t('auth.errors.agencyNameRequired'))
     if (emailChanged && !currentPassword) return Alert.alert(t('profile.info.email'), t('profile.info.passwordForEmail'))
     setSaving(true)
     try {
@@ -167,7 +170,7 @@ export function ProfilePasswordScreen() {
   const save = async () => {
     if (!form) return
     if (!currentPassword) return Alert.alert(t('profile.password.title'), t('profile.password.enterCurrent'))
-    if (password.length < 8) return Alert.alert(t('profile.password.title'), t('profile.password.tooShort'))
+    if (passwordProblem(password)) return Alert.alert(t('profile.password.title'), passwordProblem(password) === 'tooLong' ? t('auth.errors.passwordTooLong') : t('profile.password.tooShort'))
     if (password !== confirmPassword) return Alert.alert(t('profile.password.title'), t('profile.password.mismatch'))
     setSaving(true)
     try {

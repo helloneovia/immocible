@@ -17,6 +17,7 @@ import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/sett
 import { formatPlanPrice } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/client'
 import { intlLocale } from '@/lib/i18n/core'
+import { isValidEmail, isValidPhone, passwordProblem } from '@/lib/validation'
 
 function SettingsContent() {
     const router = useRouter()
@@ -164,8 +165,23 @@ function SettingsContent() {
             return
         }
 
-        if (formData.password && formData.password.length < 8) {
-            alert(t('settings.passwordTooShort'))
+        const passwordIssue = formData.password ? passwordProblem(formData.password) : null
+        if (passwordIssue) {
+            alert(passwordIssue === 'tooLong' ? t('auth.validation.passwordTooLong') : t('settings.passwordTooShort'))
+            setSaving(false)
+            return
+        }
+
+        // Mêmes règles que l'API (qui refuserait sinon l'enregistrement).
+        const invalid = !isValidEmail(formData.email)
+            ? t('auth.validation.invalidEmail')
+            : formData.telephone.trim() && !isValidPhone(formData.telephone)
+                ? t('auth.validation.invalidPhone')
+                : role === 'agence' && !formData.nomAgence.trim()
+                    ? t('auth.validation.agencyNameRequired')
+                    : null
+        if (invalid) {
+            alert(invalid)
             setSaving(false)
             return
         }

@@ -51,6 +51,8 @@ const auth: typeof fr = {
     placeholderOptional: 'Optional',
   },
   errors: {
+    passwordTooLong: 'Password must not exceed 128 characters.',
+    invalidCode: 'Enter the 6-digit code you received by email.',
     invalidEmail: 'Enter a valid email address.',
     passwordRequired: 'Enter your password.',
     badCredentials: 'Incorrect email or password.',
@@ -59,7 +61,7 @@ const auth: typeof fr = {
     signupFailed: 'Sign-up failed. Please try again.',
     accountExists: 'An account already exists with this email. Please sign in.',
     nameRequired: 'Enter your first and last name.',
-    phoneInvalid: 'Enter a 10-digit phone number.',
+    phoneInvalid: 'Enter a valid phone number (8 to 15 digits).',
     agencyNameRequired: 'Enter the agency name.',
     notAgencyAccount: 'This account is not an agency account',
     notBuyerAccount: 'This account is not a buyer account',

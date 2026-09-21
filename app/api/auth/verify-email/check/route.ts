@@ -1,8 +1,10 @@
 
 import { NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/server'
+import { isValidEmail, isVerificationCode, normalizeEmail, verifiedEmailIdentifier } from '@/lib/validation'
 
 export async function POST(req: Request) {
     const t = getT()
@@ -11,10 +13,15 @@ export async function POST(req: Request) {
         const limited = enforceRateLimit(req, 'otp-check', 10, 10 * 60_000)
         if (limited) return limited
 
-        const { email, code } = await req.json()
+        const body = await req.json()
+        const email = normalizeEmail(body.email)
+        const code = typeof body.code === 'string' ? body.code.trim() : ''
 
-        if (!email || !code) {
-            return NextResponse.json({ error: t('api.auth.verifyEmail.invalidData') }, { status: 400 })
+        if (!isValidEmail(email)) {
+            return NextResponse.json({ error: t('api.validation.invalidEmail') }, { status: 400 })
+        }
+        if (!isVerificationCode(code)) {
+            return NextResponse.json({ error: t('api.validation.invalidCode') }, { status: 400 })
         }
 
         const verificationToken = await prisma.verificationToken.findFirst({
@@ -29,16 +36,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: t('api.auth.verifyEmail.invalidCode') }, { status: 400 })
         }
 
-        // Usually we would delete the token here, but we might want to keep it until registration is complete
-        // Or we can delete it now and trust the client state?
-        // Better to delete it on successful registration.
-        // But then anyone can use it.
-        // Let's delete it now and return a signed temporary token?
-        // Or just trust the client flow for now since we are in a single session flow.
-
-        // Deleting the token prevents replay attacks immediately.
+        // Le code est consommé (pas de rejeu) ; l'inscription exigera la preuve de vérification.
         await prisma.verificationToken.delete({
             where: { identifier_token: { identifier: email, token: code } }
+        })
+
+        // Preuve côté serveur que cette adresse a été vérifiée, valable 30 minutes :
+        // /api/auth/register la consomme (la vérification ne repose plus sur le client).
+        const marker = verifiedEmailIdentifier(email)
+        await prisma.verificationToken.deleteMany({ where: { identifier: marker } })
+        await prisma.verificationToken.create({
+            data: { identifier: marker, token: crypto.randomBytes(24).toString('hex'), expires: new Date(Date.now() + 30 * 60 * 1000) },
         })
 
         return NextResponse.json({ success: true })

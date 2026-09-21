@@ -10,6 +10,7 @@ import { ArrowRight, LogIn, Shield, AlertCircle, Building2 } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/contexts/AuthContext'
 import { useI18n } from '@/lib/i18n/client'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 export default function ConnexionAgence() {
   const router = useRouter()
@@ -23,12 +24,13 @@ export default function ConnexionAgence() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    if (!isValidEmail(email)) { setError(t('auth.validation.invalidEmail')); return }
     setLoading(true)
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: 'agence' }),
+        body: JSON.stringify({ email: normalizeEmail(email), password, role: 'agence' }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || t('auth.agencyLogin.invalidCredentials'))

@@ -88,6 +88,10 @@ const questionnaire: typeof fr = {
     short: 'Location',
     myPosition: 'My location',
   },
+  errors: {
+    budgetRange: 'The minimum budget must be less than or equal to the maximum.',
+    surfaceRange: 'The minimum area must be less than or equal to the maximum.',
+  },
 }
 
 export default questionnaire

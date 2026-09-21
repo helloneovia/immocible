@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { getT } from '@/lib/i18n/server'
+import { parseNonNegativeNumber } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   const t = getT()
@@ -86,6 +87,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const prixValue = parseNonNegativeNumber(prix)
+    const surfaceValue = parseNonNegativeNumber(surface)
+    if (!prixValue || !surfaceValue) {
+      return NextResponse.json({ error: t('api.validation.invalidNumber') }, { status: 400 })
+    }
+    if (!/^\d{5}$/.test(String(codePostal).trim())) {
+      return NextResponse.json({ error: t('api.validation.postalCode') }, { status: 400 })
+    }
+
     // Create bien
     const bien = await prisma.bien.create({
       data: {
@@ -93,8 +103,8 @@ export async function POST(request: NextRequest) {
         titre,
         description,
         typeBien,
-        prix: parseFloat(prix),
-        surface: parseFloat(surface),
+        prix: prixValue,
+        surface: surfaceValue,
         nombrePieces: nombrePieces ? parseInt(nombrePieces) : null,
         nombreChambres: nombreChambres ? parseInt(nombreChambres) : null,
         adresse,

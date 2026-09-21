@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/lib/session'
 import { prisma } from '@/lib/prisma'
 import { BienType } from '@prisma/client'
 import { getT } from '@/lib/i18n/server'
+import { isValidRange, parseNonNegativeNumber } from '@/lib/validation'
 
 export const dynamic = 'force-dynamic';
 
@@ -145,14 +146,26 @@ export async function POST(request: Request) {
 
         const body: QuestionnaireData = await request.json()
 
-        console.log('[API] Saving questionnaire for user:', user.id)
+        // Budget et surface : nombres positifs, minimum inférieur ou égal au maximum.
+        const budgetMin = parseNonNegativeNumber(body.budgetMin)
+        const budgetMax = parseNonNegativeNumber(body.budgetMax)
+        const surfaceMin = parseNonNegativeNumber(body.surfaceMin)
+        const surfaceMax = parseNonNegativeNumber(body.surfaceMax)
+        if (!isValidRange(budgetMin, budgetMax)) {
+            return NextResponse.json({ error: t('api.validation.budgetRange') }, { status: 400 })
+        }
+        if (!isValidRange(surfaceMin, surfaceMax)) {
+            return NextResponse.json({ error: t('api.validation.surfaceRange') }, { status: 400 })
+        }
+        const stringList = (value: unknown, max: number) =>
+            Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string' && v.trim() !== '').slice(0, max) : []
 
         // Map Frontend data to Prisma format
 
         // Convert typeBien strings to Enum values
         // Frontend: 'Appartement', 'Maison' -> Backend: 'appartement', 'maison'
         const validTypes = Object.values(BienType) as string[]
-        const mappedTypes = body.typeBien
+        const mappedTypes = stringList(body.typeBien, 20)
             .map(t => t.toLowerCase())
             .filter(t => validTypes.includes(t)) as BienType[]
 
@@ -175,7 +188,7 @@ export async function POST(request: Request) {
             dureePret: body.dureePret,
             delaiRecherche: body.delaiRecherche,
             flexibilite: body.flexibilite,
-            commentaires: body.commentaires,
+            commentaires: typeof body.commentaires === 'string' ? body.commentaires.slice(0, 2000) : body.commentaires,
         }
 
         // Sanitize object to remove undefined values and ensure pure JSON compatibility
@@ -192,13 +205,13 @@ export async function POST(request: Request) {
         let recherche
 
         const commonData = {
-            prixMin: parseFloat(body.budgetMin) || 0,
-            prixMax: parseFloat(body.budgetMax) || 0,
-            surfaceMin: parseFloat(body.surfaceMin) || null,
-            surfaceMax: parseFloat(body.surfaceMax) || null,
+            prixMin: budgetMin || 0,
+            prixMax: budgetMax || 0,
+            surfaceMin: surfaceMin || null,
+            surfaceMax: surfaceMax || null,
             typeBien: mappedTypes,
-            localisation: body.localisation || [],
-            nombrePieces: body.nombrePieces || [],
+            localisation: stringList(body.localisation, 50),
+            nombrePieces: stringList(body.nombrePieces, 20),
             financement: body.financement || null,
             caracteristiques: cleanCaracteristiques
         }

@@ -17,6 +17,7 @@ import { createSubscriptionCheckout, paymentHref } from '@/lib/checkout'
 import { formatPlanPrice } from '@/lib/format'
 import { storeBillingEnabled } from '@/lib/iap'
 import { colors, fonts, radius } from '@/theme'
+import { passwordProblem } from '@/lib/validation'
 
 type Plan = 'monthly' | 'yearly'
 const STEPS = 5
@@ -100,7 +101,7 @@ export default function InscriptionAgenceScreen() {
       if (!nomAgence.trim()) return setError(t('auth.errors.agencyNameRequired'))
       setStep(4)
     } else if (step === 4) {
-      if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+      if (passwordProblem(password)) return setError(passwordProblem(password) === 'tooLong' ? t('auth.errors.passwordTooLong') : t('auth.errors.passwordTooShort'))
       if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
       if (storeBilling) await register()
       else setStep(5)

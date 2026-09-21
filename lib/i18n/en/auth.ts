@@ -2,6 +2,14 @@ import type fr from '../fr/auth'
 
 /** English texts — « auth » namespace (same keys as the French reference). */
 const auth: typeof fr = {
+    validation: {
+        invalidEmail: 'Enter a valid email address (e.g. name@example.com).',
+        invalidCode: 'Enter the 6-digit code you received by email.',
+        passwordTooLong: 'Password must not exceed 128 characters.',
+        invalidPhone: 'Enter a valid phone number (8 to 15 digits).',
+        agencyNameRequired: 'Enter the agency name.',
+        nameRequired: 'Enter your first and last name.',
+    },
     common: {
         email: 'Email',
         emailPlaceholder: 'you@email.com',

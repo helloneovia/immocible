@@ -1,5 +1,6 @@
 
 import nodemailer from 'nodemailer';
+import { isValidEmail } from './validation';
 
 interface SendEmailParams {
   to: string;
@@ -12,8 +13,7 @@ interface SendEmailParams {
  * Validates an email address format
  */
 export function validateEmail(email: string): boolean {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
+  return isValidEmail(email);
 }
 
 /**

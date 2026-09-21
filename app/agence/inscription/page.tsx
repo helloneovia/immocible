@@ -13,6 +13,7 @@ import { MobileAppPaymentNotice } from '@/components/shared/MobileAppPaymentNoti
 import { DEFAULT_SETTINGS, localizeSettings, type AppSettings } from '@/lib/settings'
 import { formatPlanPrice } from '@/lib/utils'
 import { useI18n } from '@/lib/i18n/client'
+import { isValidEmail, isVerificationCode, normalizeEmail, passwordProblem } from '@/lib/validation'
 
 export default function InscriptionAgence() {
   const router = useRouter()
@@ -41,13 +42,15 @@ export default function InscriptionAgence() {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    if (loading) return
     setError(null)
+    if (!isValidEmail(email)) { setError(t('auth.validation.invalidEmail')); return }
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/verify-email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email: normalizeEmail(email) })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -61,13 +64,15 @@ export default function InscriptionAgence() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    if (loading) return
     setError(null)
+    if (!isVerificationCode(otp)) { setError(t('auth.validation.invalidCode')); return }
+    setLoading(true)
     try {
       const res = await fetch('/api/auth/verify-email/check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code: otp })
+        body: JSON.stringify({ email: normalizeEmail(email), code: otp.trim() })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -83,13 +88,15 @@ export default function InscriptionAgence() {
     e.preventDefault()
     setError(null)
     if (password !== confirmPassword) { setError(t('auth.common.passwordsMismatch')); return }
-    if (password.length < 8) { setError(t('auth.common.passwordTooShort')); return }
+    const pwIssue = passwordProblem(password)
+    if (pwIssue) { setError(pwIssue === 'tooLong' ? t('auth.validation.passwordTooLong') : t('auth.common.passwordTooShort')); return }
+    if (!nomAgence.trim()) { setError(t('auth.validation.agencyNameRequired')); return }
     setLoading(true)
     try {
       const registerResponse = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role: 'agence', nomAgence, plan }),
+        body: JSON.stringify({ email: normalizeEmail(email), password, role: 'agence', nomAgence: nomAgence.trim(), plan }),
       })
       const registerData = await registerResponse.json()
       if (!registerResponse.ok) throw new Error(registerData.error || t('auth.common.registerError'))

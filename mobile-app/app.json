@@ -71,7 +71,22 @@
       ],
       "expo-web-browser",
       "expo-image",
-      "expo-iap"
+      "expo-iap",
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": [
+              "fr",
+              "en"
+            ],
+            "android": [
+              "fr",
+              "en"
+            ]
+          }
+        }
+      ]
     ]
   }
 }

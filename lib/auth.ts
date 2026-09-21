@@ -24,8 +24,8 @@ export async function createUser(
   const hashedPassword = await hashPassword(password)
 
   // Check if user already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email },
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
   })
 
   if (existingUser) {
@@ -58,8 +58,9 @@ export async function createUser(
 }
 
 export async function authenticateUser(email: string, password: string, role?: UserRole) {
-  const user = await prisma.user.findUnique({
-    where: { email },
+  // Insensible à la casse : d'anciens comptes peuvent avoir été enregistrés avec des majuscules.
+  const user = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: 'insensitive' } },
     include: {
       profile: true,
     },

@@ -13,10 +13,9 @@ import { useAuth } from '@/contexts/AuthContext'
 import { t } from '@/i18n'
 import { errorMessage } from '@/lib/api'
 import { colors, fonts } from '@/theme'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 type LoginRole = 'acquereur' | 'agence'
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function ConnexionScreen() {
   const params = useLocalSearchParams<{ role?: string }>()
@@ -32,7 +31,7 @@ export default function ConnexionScreen() {
 
   const submit = async () => {
     const errors: typeof fieldErrors = {}
-    if (!EMAIL_RE.test(email.trim())) errors.email = t('auth.errors.invalidEmail')
+    if (!isValidEmail(email)) errors.email = t('auth.errors.invalidEmail')
     if (!password) errors.password = t('auth.errors.passwordRequired')
     setFieldErrors(errors)
     if (errors.email || errors.password) return
@@ -40,7 +39,7 @@ export default function ConnexionScreen() {
     setError(null)
     setLoading(true)
     try {
-      await signIn(email, password, role)
+      await signIn(normalizeEmail(email), password, role)
       // La pile protégée bascule automatiquement vers l'espace du compte.
     } catch (err) {
       setError(errorMessage(err, t('auth.errors.badCredentials')))

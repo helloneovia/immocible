@@ -49,6 +49,8 @@ const auth = {
     placeholderOptional: 'Facultatif',
   },
   errors: {
+    passwordTooLong: 'Le mot de passe ne doit pas dépasser 128 caractères.',
+    invalidCode: 'Saisissez le code à 6 chiffres reçu par e-mail.',
     invalidEmail: 'Saisissez une adresse e-mail valide.',
     passwordRequired: 'Saisissez votre mot de passe.',
     badCredentials: 'E-mail ou mot de passe incorrect.',
@@ -57,7 +59,7 @@ const auth = {
     signupFailed: "L'inscription a échoué. Réessayez.",
     accountExists: 'Un compte existe déjà avec cet e-mail. Connectez-vous.',
     nameRequired: 'Indiquez votre prénom et votre nom.',
-    phoneInvalid: 'Indiquez un numéro de téléphone à 10 chiffres.',
+    phoneInvalid: 'Indiquez un numéro de téléphone valide (8 à 15 chiffres).',
     agencyNameRequired: "Indiquez le nom de l'agence.",
     notAgencyAccount: "Ce compte n'est pas un compte agence",
     notBuyerAccount: "Ce compte n'est pas un compte acquéreur",

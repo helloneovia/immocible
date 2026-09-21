@@ -182,13 +182,20 @@ function QuestionnaireContent() {
     })
   }
 
-  // Validation logic - Now all optional
-  const validateStep = (step: number) => {
-    return true
+  // Champs facultatifs, mais une fourchette saisie doit être cohérente (minimum ≤ maximum).
+  const inverted = (min: string, max: string) => !!min && !!max && Number(max) > 0 && Number(min) > Number(max)
+  const stepError = (step: number): string | null => {
+    if (step === 2 && inverted(formData.surfaceMin, formData.surfaceMax)) return t('buyer.questionnaire.errors.surfaceRange')
+    if (step === 3 && inverted(formData.budgetMin, formData.budgetMax)) return t('buyer.questionnaire.errors.budgetRange')
+    return null
   }
 
   const handleNext = () => {
-    // No validation check needed
+    const error = stepError(currentStep)
+    if (error) {
+      alert(error)
+      return
+    }
     if (currentStep < STEPS.length) {
       setCurrentStep(currentStep + 1)
     }
@@ -201,7 +208,12 @@ function QuestionnaireContent() {
   }
 
   const handleFinalize = async () => {
-    // No validation check needed
+    const invalidStep = [2, 3].find((step) => stepError(step))
+    if (invalidStep) {
+      alert(stepError(invalidStep))
+      setCurrentStep(invalidStep)
+      return
+    }
     try {
       const response = await fetch('/api/acquereur/questionnaire', {
         method: 'POST',
@@ -212,7 +224,8 @@ function QuestionnaireContent() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save questionnaire')
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.error || t('buyer.questionnaire.saveError'))
       }
 
       // Update local storage for client-side immediate feedback
@@ -222,7 +235,7 @@ function QuestionnaireContent() {
       router.push('/acquereur/dashboard?profile=completed')
     } catch (error) {
       console.error('Error saving questionnaire:', error)
-      alert(t('buyer.questionnaire.saveError'))
+      alert(error instanceof Error && error.message ? error.message : t('buyer.questionnaire.saveError'))
     }
   }
 
@@ -312,6 +325,7 @@ function QuestionnaireContent() {
                 <Input
                   id="salaire"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.personal.incomePlaceholder')}
                   value={formData.salaire}
                   onChange={(e) => updateFormData('salaire', e.target.value)}
@@ -325,6 +339,7 @@ function QuestionnaireContent() {
                 <Input
                   id="patrimoine"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.personal.assetsPlaceholder')}
                   value={formData.patrimoine}
                   onChange={(e) => updateFormData('patrimoine', e.target.value)}
@@ -371,6 +386,7 @@ function QuestionnaireContent() {
                 <Input
                   id="surfaceMin"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.property.surfaceMinPlaceholder')}
                   value={formData.surfaceMin}
                   onChange={(e) => updateFormData('surfaceMin', e.target.value)}
@@ -384,6 +400,7 @@ function QuestionnaireContent() {
                 <Input
                   id="surfaceMax"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.property.surfaceMaxPlaceholder')}
                   value={formData.surfaceMax}
                   onChange={(e) => updateFormData('surfaceMax', e.target.value)}
@@ -432,6 +449,7 @@ function QuestionnaireContent() {
                 <Input
                   id="budgetMin"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.budget.budgetMinPlaceholder')}
                   value={formData.budgetMin}
                   onChange={(e) => updateFormData('budgetMin', e.target.value)}
@@ -445,6 +463,7 @@ function QuestionnaireContent() {
                 <Input
                   id="budgetMax"
                   type="number"
+                  min={0}
                   placeholder={t('buyer.questionnaire.budget.budgetMaxPlaceholder')}
                   value={formData.budgetMax}
                   onChange={(e) => updateFormData('budgetMax', e.target.value)}
@@ -460,6 +479,7 @@ function QuestionnaireContent() {
               <Input
                 id="apport"
                 type="number"
+                  min={0}
                 placeholder={t('buyer.questionnaire.budget.depositPlaceholder')}
                 value={formData.apport}
                 onChange={(e) => updateFormData('apport', e.target.value)}

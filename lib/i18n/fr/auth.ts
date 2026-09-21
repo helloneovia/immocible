@@ -1,5 +1,13 @@
 /** Textes français — espace de noms « auth ». Référence : l'anglais doit avoir exactement les mêmes clés. */
 const auth = {
+    validation: {
+        invalidEmail: 'Saisissez une adresse e-mail valide (ex. nom@exemple.fr).',
+        invalidCode: 'Saisissez le code à 6 chiffres reçu par e-mail.',
+        passwordTooLong: 'Le mot de passe ne doit pas dépasser 128 caractères.',
+        invalidPhone: 'Indiquez un numéro de téléphone valide (8 à 15 chiffres).',
+        agencyNameRequired: "Indiquez le nom de l'agence.",
+        nameRequired: 'Indiquez votre prénom et votre nom.',
+    },
     common: {
         email: 'Email',
         emailPlaceholder: 'votre@email.com',

@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/Text'
 import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors, fonts, radius } from '@/theme'
+import { isValidEmail, isVerificationCode } from '@/lib/validation'
 
 /** Envoi et vérification du code e-mail communs aux deux inscriptions. */
 export function useEmailVerification(email: string) {
@@ -15,7 +16,12 @@ export function useEmailVerification(email: string) {
   const normalized = email.trim().toLowerCase()
 
   const sendCode = async (resend = false) => {
-    if (loading || !normalized) return false
+    if (loading) return false
+    // Adresse vérifiée ici : sinon le code partirait vers une adresse impossible et n'arriverait jamais.
+    if (!isValidEmail(normalized)) {
+      setError(t('auth.errors.invalidEmail'))
+      return false
+    }
     setLoading(true)
     setError(null)
     setInfo(null)
@@ -32,11 +38,15 @@ export function useEmailVerification(email: string) {
   }
 
   const verifyCode = async (code: string) => {
-    if (loading || code.length < 6) return false
+    if (loading) return false
+    if (!isVerificationCode(code)) {
+      setError(t('auth.errors.invalidCode'))
+      return false
+    }
     setLoading(true)
     setError(null)
     try {
-      await api('/api/auth/verify-email/check', { method: 'POST', body: { email: normalized, code } })
+      await api('/api/auth/verify-email/check', { method: 'POST', body: { email: normalized, code: code.trim() } })
       return true
     } catch (err) {
       setError(errorMessage(err))

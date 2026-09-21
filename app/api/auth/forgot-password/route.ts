@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/server'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
     const t = getT()
@@ -12,7 +13,8 @@ export async function POST(request: NextRequest) {
         const limited = enforceRateLimit(request, 'forgot-password', 5, 15 * 60_000)
         if (limited) return limited
 
-        const { email } = await request.json()
+        const body = await request.json()
+        const email = normalizeEmail(body.email)
 
         if (!email) {
             return NextResponse.json(
@@ -20,10 +22,13 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             )
         }
+        if (!isValidEmail(email)) {
+            return NextResponse.json({ error: t('api.validation.invalidEmail') }, { status: 400 })
+        }
 
         // Find user
-        const user = await prisma.user.findUnique({
-            where: { email }
+        const user = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: 'insensitive' } }
         })
 
         if (!user) {
@@ -36,12 +41,12 @@ export async function POST(request: NextRequest) {
         const expires = new Date(Date.now() + 3600 * 1000)
 
         await prisma.verificationToken.deleteMany({
-            where: { identifier: email }
+            where: { identifier: user.email }
         })
 
         await prisma.verificationToken.create({
             data: {
-                identifier: email,
+                identifier: user.email,
                 token: resetToken,
                 expires
             }

@@ -86,6 +86,10 @@ const questionnaire = {
     short: 'Position',
     myPosition: 'Ma position',
   },
+  errors: {
+    budgetRange: 'Le budget minimum doit être inférieur ou égal au maximum.',
+    surfaceRange: 'La surface minimum doit être inférieure ou égale au maximum.',
+  },
 }
 
 export default questionnaire

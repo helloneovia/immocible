@@ -40,7 +40,7 @@ import { StickyFooter } from '@/components/ui/StickyFooter'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { t, type TKey } from '@/i18n'
-import { api } from '@/lib/api'
+import { api, errorMessage } from '@/lib/api'
 import { formatNumber } from '@/lib/format'
 import { useStatusBar } from '@/lib/hooks'
 import {
@@ -166,20 +166,43 @@ export default function QuestionnaireScreen() {
 
   const step = steps[index]
   const isLast = index === steps.length - 1
+  // Erreur affichée seulement après une tentative de passage à l'étape suivante.
+  const [attempted, setAttempted] = useState(false)
+
+  const inverted = (min: string, max: string) => !!min && !!max && Number(max) > 0 && Number(min) > Number(max)
+  const errorFor = (key: string): string | null => {
+    if (key === 'budget' && inverted(data.budgetMin, data.budgetMax)) return t('questionnaire.errors.budgetRange')
+    if (key === 'pieces' && inverted(data.surfaceMin, data.surfaceMax)) return t('questionnaire.errors.surfaceRange')
+    return null
+  }
+  const stepError = attempted ? errorFor(step) : null
 
   const go = (next: number) => {
+    if (next > index && errorFor(step)) {
+      setAttempted(true)
+      return
+    }
+    setAttempted(false)
     setForward(next > index)
     setIndex(next)
   }
 
   const save = async () => {
+    // Une étape précédente peut avoir été passée avec une fourchette incohérente.
+    const invalid = steps.findIndex((key) => errorFor(key))
+    if (invalid !== -1) {
+      setForward(invalid > index)
+      setIndex(invalid)
+      setAttempted(true)
+      return
+    }
     setSaving(true)
     try {
       await api('/api/acquereur/questionnaire', { method: 'POST', body: data })
       if (!section) flagProjectSaved()
       router.back()
-    } catch {
-      Alert.alert(t('questionnaire.saveErrorTitle'), t('questionnaire.saveErrorMessage'))
+    } catch (err) {
+      Alert.alert(t('questionnaire.saveErrorTitle'), errorMessage(err, t('questionnaire.saveErrorMessage')))
       setSaving(false)
     }
   }
@@ -241,6 +264,7 @@ export default function QuestionnaireScreen() {
                   label={t('questionnaire.surfaceMax')}
                   value={data.surfaceMax}
                   onChangeText={(v) => set('surfaceMax', digits(v))}
+                  error={stepError}
                   placeholder="120"
                   keyboardType="number-pad"
                 />
@@ -291,6 +315,7 @@ export default function QuestionnaireScreen() {
                   label={t('questionnaire.maximum')}
                   value={data.budgetMax}
                   onChangeText={(v) => set('budgetMax', digits(v))}
+                  error={stepError}
                   placeholder="500000"
                   keyboardType="number-pad"
                 />

@@ -20,6 +20,10 @@ const buyer = {
     welcomeDesc: 'Veuillez compléter le questionnaire pour nous permettre de vous recommander les meilleurs biens selon vos besoins.',
   },
   questionnaire: {
+    errors: {
+      budgetRange: 'Le budget minimum doit être inférieur ou égal au budget maximum.',
+      surfaceRange: 'La surface minimum doit être inférieure ou égale à la surface maximum.',
+    },
     steps: {
       personal: 'Situation personnelle',
       propertyType: 'Type de bien recherché',

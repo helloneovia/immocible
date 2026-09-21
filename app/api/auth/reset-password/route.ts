@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/server'
+import { isValidEmail, passwordProblem } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
     const t = getT()
@@ -10,7 +11,9 @@ export async function POST(request: NextRequest) {
         const limited = enforceRateLimit(request, 'reset-password', 10, 15 * 60_000)
         if (limited) return limited
 
-        const { token, password } = await request.json()
+        const body = await request.json()
+        const token = typeof body.token === 'string' ? body.token.trim() : ''
+        const password = body.password
 
         if (!token || !password) {
             return NextResponse.json(
@@ -19,19 +22,21 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (password.length < 8) {
+        const passwordIssue = passwordProblem(password)
+        if (passwordIssue) {
             return NextResponse.json(
-                { error: t('api.auth.resetPassword.passwordTooShort') },
+                { error: passwordIssue === 'tooLong' ? t('api.validation.passwordTooLong') : t('api.auth.resetPassword.passwordTooShort') },
                 { status: 400 }
             )
         }
 
-        // Find token
-        const verificationToken = await prisma.verificationToken.findFirst({
-            where: { token }
-        })
+        // Seuls les liens de réinitialisation (64 caractères hexadécimaux) sont acceptés :
+        // la même table contient aussi les codes d'inscription à 6 chiffres.
+        const verificationToken = /^[a-f0-9]{64}$/.test(token)
+            ? await prisma.verificationToken.findFirst({ where: { token } })
+            : null
 
-        if (!verificationToken) {
+        if (!verificationToken || !isValidEmail(verificationToken.identifier)) {
             return NextResponse.json(
                 { error: t('api.auth.resetPassword.invalidLink') },
                 { status: 400 }

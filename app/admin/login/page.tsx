@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Lock, ArrowRight, AlertCircle, ShieldCheck } from 'lucide-react'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 export default function AdminLogin() {
     const router = useRouter()
@@ -19,6 +20,10 @@ export default function AdminLogin() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+        if (!isValidEmail(email)) {
+            setError('Adresse e-mail invalide')
+            return
+        }
         setLoading(true)
 
         try {
@@ -28,7 +33,7 @@ export default function AdminLogin() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email,
+                    email: normalizeEmail(email),
                     password,
                     role: 'admin', // Enforce admin role
                 }),

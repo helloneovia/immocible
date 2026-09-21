@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { ArrowRight, Shield, AlertCircle, Mail } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useI18n } from '@/lib/i18n/client'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 export default function ForgotPassword() {
     const { t } = useI18n()
@@ -19,6 +20,10 @@ export default function ForgotPassword() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
+        if (!isValidEmail(email)) {
+            setError(t('auth.validation.invalidEmail'))
+            return
+        }
         setLoading(true)
 
         try {
@@ -27,11 +32,12 @@ export default function ForgotPassword() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: normalizeEmail(email) }),
             })
 
             if (!response.ok) {
-                throw new Error(t('auth.forgotPassword.errorWithDot'))
+                const data = await response.json().catch(() => null)
+                throw new Error(data?.error || t('auth.forgotPassword.errorWithDot'))
             }
 
             setSubmitted(true)

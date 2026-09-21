@@ -22,6 +22,10 @@ const buyer: typeof fr = {
     welcomeDesc: 'Please complete the questionnaire so we can recommend the best properties for your needs.',
   },
   questionnaire: {
+    errors: {
+      budgetRange: 'The minimum budget must be less than or equal to the maximum budget.',
+      surfaceRange: 'The minimum area must be less than or equal to the maximum area.',
+    },
     steps: {
       personal: 'Personal situation',
       propertyType: 'Property type',

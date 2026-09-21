@@ -5,6 +5,7 @@ import { sanitizeContent } from '@/lib/utils'
 import { sendNewMessageNotification } from '@/lib/mail'
 import { hasActiveSubscription } from '@/lib/subscription'
 import { getT } from '@/lib/i18n/server'
+import { MESSAGE_MAX_LENGTH } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
     const t = getT()
@@ -14,10 +15,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: t('api.common.unauthorized') }, { status: 401 })
         }
 
-        const { conversationId, content } = await request.json()
+        const body = await request.json()
+        const conversationId = typeof body.conversationId === 'string' ? body.conversationId : ''
+        const content = typeof body.content === 'string' ? body.content.trim() : ''
 
         if (!conversationId || !content) {
             return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+        }
+        if (content.length > MESSAGE_MAX_LENGTH) {
+            return NextResponse.json({ error: t('api.validation.messageTooLong', { max: MESSAGE_MAX_LENGTH }) }, { status: 400 })
         }
 
         // Verify participant

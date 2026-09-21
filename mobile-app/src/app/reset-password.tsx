@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { t } from '@/i18n'
 import { api, errorMessage } from '@/lib/api'
 import { colors } from '@/theme'
+import { passwordProblem } from '@/lib/validation'
 
 /** Ouvert via immocible://reset-password?token=… */
 export default function ResetPasswordScreen() {
@@ -25,7 +26,7 @@ export default function ResetPasswordScreen() {
 
   const submit = async () => {
     setError(null)
-    if (password.length < 8) return setError(t('auth.errors.passwordTooShort'))
+    if (passwordProblem(password)) return setError(passwordProblem(password) === 'tooLong' ? t('auth.errors.passwordTooLong') : t('auth.errors.passwordTooShort'))
     if (password !== confirmPassword) return setError(t('auth.errors.passwordMismatch'))
     setLoading(true)
     try {

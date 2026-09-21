@@ -3,6 +3,7 @@ import { authenticateUser } from '@/lib/auth'
 import { createSession } from '@/lib/session'
 import { enforceRateLimit } from '@/lib/rate-limit'
 import { getT } from '@/lib/i18n/server'
+import { normalizeEmail, PASSWORD_MAX_LENGTH } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   const t = getT()
@@ -12,9 +13,12 @@ export async function POST(request: NextRequest) {
     if (limited) return limited
 
     const body = await request.json()
-    const { email, password, role } = body
+    // Les comptes sont enregistrés en minuscules : « Nom@Exemple.fr » doit fonctionner.
+    const email = normalizeEmail(body.email)
+    const password = typeof body.password === 'string' ? body.password : ''
+    const role = ['acquereur', 'agence', 'admin'].includes(body.role) ? body.role : undefined
 
-    if (!email || !password) {
+    if (!email || !password || password.length > PASSWORD_MAX_LENGTH) {
       return NextResponse.json(
         { error: t('api.auth.emailPasswordRequired') },
         { status: 400 }

@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/Button'
 import { Text } from '@/components/ui/Text'
 import { TextField } from '@/components/ui/TextField'
 import { t } from '@/i18n'
-import { api } from '@/lib/api'
+import { api, errorMessage } from '@/lib/api'
 import { colors } from '@/theme'
+import { isValidEmail, normalizeEmail } from '@/lib/validation'
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('')
@@ -19,13 +20,14 @@ export default function ForgotPasswordScreen() {
 
   const submit = async () => {
     if (!email.trim()) return
+    if (!isValidEmail(email)) return setError(t('auth.errors.invalidEmail'))
     setError(null)
     setLoading(true)
     try {
-      await api('/api/auth/forgot-password', { method: 'POST', body: { email: email.trim().toLowerCase() } })
+      await api('/api/auth/forgot-password', { method: 'POST', body: { email: normalizeEmail(email) } })
       setSubmitted(true)
-    } catch {
-      setError(t('auth.forgot.sendFailed'))
+    } catch (err) {
+      setError(errorMessage(err, t('auth.forgot.sendFailed')))
     } finally {
       setLoading(false)
     }
